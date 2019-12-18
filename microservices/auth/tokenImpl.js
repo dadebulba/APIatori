@@ -2,20 +2,21 @@ const jwt = require('jsonwebtoken');
 const errors = require('../../errorMsg.js');
 
 module.exports = {
-    createToken: function(userId, key) {
+    createToken: function(userId, groupId, role, key) {
         return new Promise((resolve, reject) => {
             let payload = {
-                id: userId
+                uid: userId,
+                gid: groupId,
+                role: role
             };
     
             let options = {
-                expiresIn: '10d'
+                expiresIn: '1d'
             }
     
             jwt.sign(payload, key, options, (err, token) => {
-                if (err) {
+                if (err)
                     reject(err);
-                }
                 else
                     resolve(token);
             });
@@ -27,7 +28,7 @@ module.exports = {
                 if (err)
                     reject(errors.INVALID_TOKEN);
                 else
-                    resolve(decoded.id);
+                    resolve([decoded.uid, decoded.gid, decoded.role]);
             });
         });
     }
