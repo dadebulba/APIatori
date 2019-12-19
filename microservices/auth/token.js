@@ -1,5 +1,4 @@
 const express = require('express');
-const router = express.Router();
 const bodyParser = require('body-parser');
 const bearerToken = require('express-bearer-token');
 const tokenImpl = require('./tokenImpl.js');
@@ -9,7 +8,7 @@ const errors = require('../../errorMsg.js');
 process.env["NODE_CONFIG_DIR"] = "../../config/";
 const config = require('config'); 
 //const UserDb = require('../../mock/mockedUser.js');
-const PORT = process.env.PORT || config.get('tokenPort');
+const PORT = process.env.TOKEN_PORT || config.get('tokenPort');
 const key = process.env.API_KEY || config.get('API_KEY');
 
 const app = express();
