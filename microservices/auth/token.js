@@ -7,8 +7,8 @@ const errors = require('../../errorMsg.js');
 
 process.env["NODE_CONFIG_DIR"] = "../../config/";
 const config = require('config'); 
-//const UserDb = require('../../mock/mockedUser.js');
-const PORT = process.env.TOKEN_PORT || config.get('tokenPort');
+
+const PORT = process.env.PORT || config.get('tokenPort');
 const key = process.env.API_KEY || config.get('API_KEY');
 
 const app = express();
@@ -17,33 +17,31 @@ app.use(bearerToken());
 
 app.post('/token', async function (req, res) {
     let h_action = req.headers.action;
-    console.log(h_action);
-    if (h_action !== undefined && h_action == 'createToken') {
+    
+    if (h_action == 'createToken') {
         let b_email = req.body.email;
         let b_pwd = req.body.password;
 
         if (apiUtility.validateParamsUndefined(b_email, b_pwd))
             res.status(400).json(errors.PARAMS_UNDEFINED);
 
-        //TODO: UserDB
-        //let userDb = new UserDb();
         try {
-            //let userId = await userDb.authenticate(b_email, b_pwd);
-            let userId = Math.random() * 100;
-            console.log(userId);
-            let token = await tokenImpl.createToken(userId, key);
+            //TO-CHANGE
+            let uid = Math.floor(Math.random() * 100);
+            let gid = Math.floor(Math.random() * 100);
+            let role = "ANIMATO";
+
+            let token = await tokenImpl.createToken(uid, gid, role, key);
             res.status(200).send(token);
         }
         catch (e) {
             res.status(401).json(errors.INVALID_CREDENTIALS);
         }
     }
-    else if(h_action !== undefined && h_action == 'verifyToken'){
+    else if(h_action == 'verifyToken'){
         try {
-            console.log(req.token);
-            let userId = await tokenImpl.verifyToken(req.token, key);
-            console.log(userId);
-            res.send(`${userId}`);
+            let result = await tokenImpl.verifyToken(req.token, key);
+            res.status(200).json({uid: result[0], gid: result[1], role: result[2]});
         }
         catch (e) {
             res.status(401).json(e);
