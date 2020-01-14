@@ -44,7 +44,7 @@ paths:
               [{
               id: 1,
               name: Oratorio,
-              href: localhost/spaces/123
+              href: localhost/bookings/123
               }]
         401:
           description: "Invalid token"
@@ -71,15 +71,6 @@ paths:
             example:
               {
                 "name": "string",
-                "bookings": [
-                    {
-                      "uid": 0,
-                      "gid": 0,
-                      "from": "2019-12-29T15:29:01.388Z",
-                      "to": "2019-12-29T15:29:01.388Z",
-                      "type": "attività"
-                    }
-                  ]
               }
       responses:
         201:
@@ -95,73 +86,74 @@ paths:
           schema:
             $ref: "#/definitions/ApiResponse"
 
+#  /spaces/{spaceId}:
+#    get:
+#      security:
+#        - Bearer : []
+#      tags:
+#        - "spaces"
+#      summary: "Get the searched space"
+#      consumes:
+#        - "application/json"
+#      produces:
+#        - "application/json"
+#      parameters:
+#        - name: "spaceId"
+#          in: "path"
+#          description: "ID of space to return"
+#          required: true
+#          type: "integer"
+#          format: "int64"
+#      responses:
+#        200:
+#          description: "Successful operation"
+#          schema:
+#            $ref: "#/definitions/Spaces"
+#        401:
+#          description: "Invalid token"
+#          schema:
+#            $ref: "#/definitions/ApiResponse"
+#        400:
+#          description: "Bad parameters"
+#          schema:
+#            $ref: "#/definitions/ApiResponse"
+#        404:
+#          description: "Space not found"
+#          schema:
+#            $ref: "#/definitions/ApiResponse"
+#    delete:
+#      security:
+#        - Bearer : []
+#      tags:
+#        - "spaces"
+#      summary: "Delete the specified space"
+#      consumes:
+#        - "application/json"
+#      produces:
+#        - "application/json"
+#      parameters:
+#        - name: "spaceId"
+#          in: "path"
+#          description: "ID of space to delete"
+#          required: true
+#          type: "integer"
+#          format: "int64"
+#      responses:
+#        200:
+#          description: "Successful operation"
+#        401:
+#          description: "Invalid token"
+#          schema:
+#            $ref: "#/definitions/ApiResponse"
+#        400:
+#          description: "Bad parameters"
+#          schema:
+#            $ref: "#/definitions/ApiResponse"
+#        404:
+#          description: "Space not found"
+#          schema:
+#            $ref: "#/definitions/ApiResponse"
   /spaces/{spaceId}:
-    get:
-      security:
-        - Bearer : []
-      tags:
-        - "spaces"
-      summary: "Get the searched space"
-      consumes:
-        - "application/json"
-      produces:
-        - "application/json"
-      parameters:
-        - name: "spaceId"
-          in: "path"
-          description: "ID of space to return"
-          required: true
-          type: "integer"
-          format: "int64"
-      responses:
-        200:
-          description: "Successful operation"
-          schema:
-            $ref: "#/definitions/Spaces"
-        401:
-          description: "Invalid token"
-          schema:
-            $ref: "#/definitions/ApiResponse"
-        400:
-          description: "Bad parameters"
-          schema:
-            $ref: "#/definitions/ApiResponse"
-        404:
-          description: "Space not found"
-          schema:
-            $ref: "#/definitions/ApiResponse"
-    delete:
-      security:
-        - Bearer : []
-      tags:
-        - "spaces"
-      summary: "Delete the specified space"
-      consumes:
-        - "application/json"
-      produces:
-        - "application/json"
-      parameters:
-        - name: "spaceId"
-          in: "path"
-          description: "ID of space to delete"
-          required: true
-          type: "integer"
-          format: "int64"
-      responses:
-        200:
-          description: "Successful operation"
-        401:
-          description: "Invalid token"
-          schema:
-            $ref: "#/definitions/ApiResponse"
-        400:
-          description: "Bad parameters"
-          schema:
-            $ref: "#/definitions/ApiResponse"
-        404:
-          description: "Space not found"
-          schema:
-            $ref: "#/definitions/ApiResponse"
     put:
       security:
         - Bearer : []
@@ -180,7 +172,11 @@ paths:
           description: "Space that need to be edit"
           required: true
           schema:
-            $ref: "#/definitions/Spaces"
+            type: "object"
+            example:
+              {
+                "name": "string",
+              }
       responses:
         200:
           description: "Successful operation"
@@ -261,7 +257,8 @@ paths:
               {
                 "from": "2019-12-29T15:57:35.649Z",
                 "to": "2019-12-29T15:57:35.649Z",
-                "type": "attività"
+                "type": "attività",
+                "gid" : 123
               }
       responses:
         201:
@@ -312,7 +309,8 @@ paths:
               {
                 "from": "2019-12-29T15:57:35.649Z",
                 "to": "2019-12-29T15:57:35.649Z",
-                "type": "attività"
+                "type": "attività",
+                "gid": 123
               }
       responses:
         200:
