@@ -1,3 +1,5 @@
+const { DateTime } = require("luxon");
+
 function canBeParsedInt(n) {
     return Number(n) === parseInt(n);
 }
@@ -15,7 +17,14 @@ module.exports = {
     validateParamsString : function(...params) {
         return !params.some(p => typeof(p) !== 'string');
     },
+    //returns true if all the params are correct DateTime formats
+    validateParamsDate : function(...params) {
+        return !params.some(p => DateTime.fromJSDate(p).isValid === false);
+    },
     castToInt: function(value) {
         return canBeParsedInt(value) ? parseInt(value) : undefined;
+    },
+    validateEventType : function(event) {
+        return 
     }
 }
