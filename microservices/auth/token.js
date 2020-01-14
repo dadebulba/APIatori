@@ -22,8 +22,10 @@ app.post('/token', async function (req, res) {
         let b_email = req.body.email;
         let b_pwd = req.body.password;
 
-        if (apiUtility.validateParamsUndefined(b_email, b_pwd))
+        if (apiUtility.validateParamsUndefined(b_email, b_pwd)){
             res.status(400).json(errors.PARAMS_UNDEFINED);
+            return;
+        }
 
         try {
             //TO-CHANGE
