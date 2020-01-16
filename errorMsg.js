@@ -45,6 +45,6 @@ module.exports = {
     },
     ALREADY_PRESENT: {
         code: 'E012',
-        message: 'the entity is altready present inside the DB'
+        message: 'the entity is already present inside the DB'
     }
 };
