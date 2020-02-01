@@ -5,10 +5,37 @@ const bookingType = {
     OTHER : "altro"
 }
 
-function validateBookingType(type) {
-    return bookingType.some(p => p === type);
-}
-
 module.exports = {
-    validateBookingType : validateBookingType
+    validateBookingType : function(type) {
+        return bookingType.some(p => p === type);
+    },
+    validateBookingId : function (bookingId) {
+        return;
+    },
+    validateSpaceId : function (spaceId) {
+        return;
+    },
+    getSpaces : function () {
+        return;
+    },    
+    editSpace : function (spaceId, name) {
+        return;
+    },
+    createNewSpace : function (name) {
+        return;
+    },
+    getBookings : function (spaceId) {
+        return;
+    },
+    getBookingGid : function (bookingId) {
+        return;
+    },
+    editBooking : function (spaceId, bookingId, from, to, type, gid, uid){
+        return;
+    },
+    deleteBooking : function (spaceId, bookingId, uid) {
+        return;
+    }
+
+
 }

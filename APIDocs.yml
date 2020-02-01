@@ -19,11 +19,171 @@ tags:
   - name: "bookings"
     description: "Bookings management APIs"
   - name: "users"
-    description: "Operations about user"
+    description: "User management APIs"
+  - name: "finances"
+    description: "Finance management APIs"
 
 schemes:
   - "http"
 paths:
+  /finances/{gid}:
+    get:
+      security:
+        - Bearer : []
+      tags:
+        - "finances"
+      summary: "Get finances for the specified group"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "groupId"
+          in: "path"
+          description: "ID of group"
+          required: true
+          type: "string" 
+        - in: query
+          name: year
+          type: integer
+          required: false
+          description: The year for the transactions history
+          default: Current Year
+      responses:
+        200:
+          description: "Successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Finances"
+        401:
+          description: "Invalid token"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        400:
+          description: "Bad parameters"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        404:
+          description: "Finances for spacified group not found"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+    put:
+      security:
+        - Bearer : []
+      tags:
+        - "finances"
+      summary: "Edit a balance in the history for the specified group"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "groupId"
+          in: "path"
+          description: "ID of group"
+          required: true
+          type: "string"
+        - in: "body"
+          name: "body"
+          description: "History object"
+          required: true
+          schema:
+            $ref: "#/definitions/History"
+      responses:
+        200:
+          description: "Successful operation"
+          schema:
+              $ref: "#/definitions/History"
+        401:
+          description: "Invalid token"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        400:
+          description: "Bad parameters"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        404:
+          description: "Finances for specified group not found"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+    delete:
+      security:
+        - Bearer : []
+      tags:
+        - "finances"
+      summary: "Remove an history for the specified group"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "groupId"
+          in: "path"
+          description: "ID of group"
+          required: true
+          type: "string"
+        - in: "body"
+          name: "body"
+          description: "History object"
+          required: true
+          schema:
+            $ref: "#/definitions/History"
+      responses:
+        200:
+          description: "Successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Finances"
+        401:
+          description: "Invalid token"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        400:
+          description: "Bad parameters"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        404:
+          description: "Finances for spacified group not found"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+    post:
+      security:
+        - Bearer : []
+      tags:
+        - "finances"
+      summary: "Add a new movement to balance history"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "groupId"
+          in: "path"
+          description: "ID of group"
+          required: true
+          type: "string"
+        - in: "body"
+          name: "body"
+          description: "History object that needs to be added"
+          required: true
+          schema:
+            $ref: "#/definitions/History"
+      responses:
+        201:
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Finances"
+        401:
+          description: "Invalid token"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        400:
+          description: "Bad parameters"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        404:
+          description: "Finances for specified group not found"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+    
+
+
   /spaces:
     get:
       security:
@@ -76,7 +236,11 @@ paths:
         201:
           description: "Successful operation"
           schema:
-            $ref: "#/definitions/Spaces"
+            type: "object"
+            example:
+              {
+                "name": "string",
+              }
         401:
           description: "Invalid token"
           schema:
@@ -165,8 +329,7 @@ paths:
           in: "path"
           description: "ID of space to edit"
           required: true
-          type: "integer"
-          format: "int64"
+          type: "string"
         - in: "body"
           name: "body"
           description: "Space that need to be edit"
@@ -181,7 +344,42 @@ paths:
         200:
           description: "Successful operation"
           schema:
-            $ref: "#/definitions/Spaces"
+            type: "object"
+            example:
+              {
+                "name": "string",
+              }
+        401:
+          description: "Invalid token"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        400:
+          description: "Bad parameters"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        404:
+          description: "Space not found"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+    delete:
+      security:
+        - Bearer : []
+      tags:
+        - "spaces"
+      summary: "Delete the specified space"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "spaceId"
+          in: "path"
+          description: "ID of space to delete"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "Successful operation"
         401:
           description: "Invalid token"
           schema:
@@ -209,8 +407,7 @@ paths:
           in: "path"
           description: "ID of space"
           required: true
-          type: "integer"
-          format: "int64"
+          type: "string"
       responses:
         200:
           description: "Successful operation"
@@ -245,8 +442,7 @@ paths:
           in: "path"
           description: "ID of space"
           required: true
-          type: "integer"
-          format: "int64"
+          type: "string"
         - in: "body"
           name: "body"
           description: "Booking object"
@@ -258,7 +454,7 @@ paths:
                 "from": "2019-12-29T15:57:35.649Z",
                 "to": "2019-12-29T15:57:35.649Z",
                 "type": "attività",
-                "gid" : 123
+                "gid" : "abc123"
               }
       responses:
         201:
@@ -281,24 +477,29 @@ paths:
           description: "Space ID not found"
           schema:
             $ref: "#/definitions/ApiResponse"
-  /bookings/{bookingId}:
+    
+  /spaces/{spaceId}/bookings/{bookingId}:
     put:
       security:
         - Bearer : []
       tags:
-        - "bookings"
+        - "spaces"
       summary: "Edit a reservation"
       consumes:
         - "application/json"
       produces:
         - "application/json"
       parameters:
+        - name: "spaceId"
+          in: "path"
+          description: "ID of space"
+          required: true
+          type: "string"
         - name: "bookingId"
           in: "path"
           description: "ID of booking"
           required: true
-          type: "integer"
-          format: "int64"
+          type: "string"
         - in: "body"
           name: "body"
           description: "Booking object"
@@ -310,7 +511,7 @@ paths:
                 "from": "2019-12-29T15:57:35.649Z",
                 "to": "2019-12-29T15:57:35.649Z",
                 "type": "attività",
-                "gid": 123
+                "gid": "abc123"
               }
       responses:
         200:
@@ -337,19 +538,23 @@ paths:
       security:
         - Bearer : []
       tags:
-        - "bookings"
+        - "spaces"
       summary: "Delete the specified booking"
       consumes:
         - "application/json"
       produces:
         - "application/json"
       parameters:
+        - name: "spaceId"
+          in: "path"
+          description: "ID of space"
+          required: true
+          type: "string"
         - name: "bookingId"
           in: "path"
           description: "ID of booking to delete"
           required: true
-          type: "integer"
-          format: "int64"
+          type: "string"
       responses:
         200:
           description: "Successful operation"
@@ -543,8 +748,7 @@ definitions:
     type: "object"
     properties:
       id:
-        type: "integer"
-        format: "int32"
+        type: "string"
       name:
         type: "string"
       bookings:
@@ -555,14 +759,11 @@ definitions:
     type: "object"
     properties:
       bid:
-        type: "integer"
-        format: "int32"
+        type: "string"
       uid:
-        type: "integer"
-        format: "int32"
+        type: "string"
       gid:
-        type: "integer"
-        format: "int32"
+        type: "string"
       from:
         type: "string"
         format: "date-time"
@@ -580,9 +781,8 @@ definitions:
     type: "object"
     properties:
       gid:
-        type: "integer"
-        format: "int32"
-      amount:
+        type: "string"
+      total:
         type: "number"
         format: "float"
       history:
@@ -604,8 +804,7 @@ definitions:
     type: "object"
     properties:
       uid:
-        type: "integer"
-        format: "int32"
+        type: "string"
       name:
         type: "string"
       surname:
@@ -654,8 +853,7 @@ definitions:
     type: "object"
     properties:
       gid:
-        type: "integer"
-        format: "int32"
+        type: "string"
       name:
         type: "string"
       educators:
@@ -679,8 +877,7 @@ definitions:
     type: "object"
     properties: 
       id:
-        type: "integer"
-        format: "int32"
+        type: "string"
       weather:
         type: "object"
         properties: 
