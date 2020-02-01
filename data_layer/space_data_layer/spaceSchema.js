@@ -13,4 +13,4 @@ let SpaceSchema = new mongoose.Schema({
     bookings: {type: [BookingSchema], required: true}
 });
 
-module.exports = mongoose.model('Space', SpaceSchema);
+module.exports = [mongoose.model('Space', SpaceSchema), mongoose.model('Booking', BookingSchema)];

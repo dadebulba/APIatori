@@ -27,7 +27,9 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 //Express initialization
 const app = express();
 app.use(bodyParser.json());
-app.listen(config.spaceDataLayerPort);
+app.listen(config.spaceDataLayerPort, () => {
+    console.log("Listening on port " + config.spaceDataLayerPort);
+});
 
 //Routes
 const router = express.Router();
@@ -79,7 +81,7 @@ router.post("/data/spaces", async function(req, res){
             res.status(201).json(result);
         }
     } catch (err){
-        res.status(500).json({error: err});
+        res.status(500).json({error: err.message});
     }
 });
 
@@ -95,16 +97,11 @@ router.put("/data/spaces/:sid", async function(req, res){
 
     try {
         let result = await controller.modifySpaceName(spaceID, body.name);
-        if (result == undefined)
-            res.status(404).send();
-        else {
-            result.sid = result._id;
-            delete result._id;
-            delete result._id;
-            res.status(200).json(result);
-        }
+        var status;
+        (result == undefined) ? status = 404 : status = 200;
+        res.status(status).send();
     } catch (err){
-        res.status(500).json({error: err});
+        res.status(500).json({error: err.message});
     }
     
 });
@@ -123,7 +120,71 @@ router.delete("/data/spaces/:sid", async function(req, res){
         else
             res.status(200).send();
     } catch (err){
-        res.status(500).json(err);
+        res.status(404).send();
+    }
+});
+
+router.post("/data/spaces/:sid/bookings", async function(req, res){
+    let body = req.body;
+    let sid = req.params.sid;
+
+    if (body == undefined || body == "" || sid == undefined || sid == ""){
+        res.status(400).json(errors.INVALID_DATA);
+        return;
+    }
+
+    try {
+        let result = await controller.createBooking(sid, body);
+        if (result == undefined)
+            res.status(400).json(errors.ALREADY_PRESENT);
+        else {
+            result.bid = result._id;
+            delete result._id;
+            delete result.__v;
+            res.status(201).json(result);
+        }
+    } catch (err){
+        res.status(500).json({message: err.message});
+    }
+});
+
+router.put("/data/spaces/:sid/bookings/:bid", async function(req, res){
+    let sid = req.params.sid;
+    let bid = req.params.bid;
+    let body = req.body;
+
+    if (sid == undefined || bid == undefined || body == undefined){
+        res.status(400).json(errors.PARAMS_UNDEFINED);
+        return;
+    }
+
+    try {
+        let result = await controller.editReservation(sid, bid, body);
+        if (result == undefined)
+            res.status(404).send();
+        else    
+            res.status(200).json(result);
+    } catch (err){
+        res.status(500).json({error: err.message});
+    }
+
+});
+
+router.delete("/data/spaces/:sid/bookings/:bid", async function(req, res){
+    let sid = req.params.sid;
+    let bid = req.params.bid;
+
+    if (sid == undefined || bid == undefined){
+        res.status(400).json(errors.PARAMS_UNDEFINED);
+        return;
+    }
+
+    try {
+        let result = await controller.deleteReservation(sid, bid);
+        let status = (result == undefined) ? 404 : 200;
+        res.status(status).send();
+    } catch (err){
+        res.status(500).json({error: err.message});
     }
 });
 
