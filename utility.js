@@ -1,5 +1,12 @@
 const { DateTime } = require("luxon");
 
+const levels = {
+    EDUCATOR :"educator",
+    COLLABORATOR : "collaborator",
+    USER : "user",
+    ADMIN : "admin"
+}
+
 function canBeParsedInt(n) {
     return Number(n) === parseInt(n);
 }
@@ -24,7 +31,31 @@ module.exports = {
     castToInt: function(value) {
         return canBeParsedInt(value) ? parseInt(value) : undefined;
     },
-    validateEventType : function(event) {
-        return 
-    }
+    validateAuth : function(req, requiredLevel, requiredGid) {
+        switch (requiredLevel) {
+            case levels.ADMIN:
+                return req['role'] === levels.ADMIN;
+                break;
+            case levels.EDUCATOR:
+                if(requiredGid === undefined)
+                    return req['educatorIn'].length > 0;
+                else
+                    return req['educatorIn'].some(v => v == requiredGid);
+                break;
+            case levels.COLLABORATOR:
+                if(requiredGid === undefined)
+                    return req['collaboratorIn'].length > 0;
+                else
+                    return req['collaboratorIn'].some(v => v == requiredGid);
+            case levels.USER:
+                return req['role'] == levels.USER;
+            default:
+                return false;
+                break;
+        }
+    },
+    validateGroupId : function (gid) {
+        return;
+    },
+    levels : levels
 }
