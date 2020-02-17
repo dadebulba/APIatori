@@ -25,13 +25,13 @@ async function checkBooking(booking){
     let tsFrom = new Date(booking.from).getTime();
     let tsTo = new Date(booking.to).getTime();
     if (tsTo <= tsFrom || tsFrom < Date.now())
-        return false
+        return false;
 
     let result = await checkUserExist(booking.uid);
     if (!result)
         return false;
 
-    if (edit.gid != undefined) {
+    if (booking.gid != undefined) {
         result = await checkGroupExist(booking.gid);
         if (!result)
             return false;
@@ -47,7 +47,19 @@ function checkIntervalOverlaps(firstStart, firstEnd, secondStart, secondEnd){
     secondStart = new Date(secondStart).getTime();
     secondEnd = new Date(secondEnd).getTime();
 
-    return secondStart>firstStart || secondEnd<firstEnd || (secondStart<firstStart && secondEnd>firstEnd);
+    /*console.log("--- CHECK INTERVALS ---");
+    console.log("FIRST: " + firstStart + ", " + firstEnd);
+    console.log("NEW: " + secondStart + ", " + secondEnd);
+    console.log("TEST1: " + (secondStart>=firstStart && secondEnd>=firstEnd));
+    console.log("TEST2: " + (secondStart<=firstStart && secondEnd<=firstEnd));
+    console.log("TEST3: " + (firstStart<=secondStart && firstEnd>=secondEnd));
+    console.log("TEST4: " + (secondStart<=firstStart && firstEnd<=secondEnd));
+    console.log("-----------------------");*/
+
+    return (secondStart>=firstStart && secondEnd>=firstEnd && secondStart<=firstEnd) ||
+            (secondStart<=firstStart && secondEnd<=firstEnd && firstStart<=secondEnd) ||
+            (firstStart<=secondStart && firstEnd>=secondEnd) ||
+            (secondStart<=firstStart && firstEnd<=secondEnd);
 }
 
 module.exports = {
@@ -64,8 +76,15 @@ module.exports = {
             return undefined;
         
         let space = await Space.findById(sid);
-        if (space !== undefined)
+        if (space !== undefined){
             space = JSON.parse(JSON.stringify(space));
+
+            if (space.bookings != undefined)
+                space.bookings.forEach((item) => {
+                    item.bid = item._id;
+                    delete item._id;
+                });
+        }
 
         return space;
     },
@@ -125,26 +144,33 @@ module.exports = {
             return undefined;
 
         space = JSON.parse(JSON.stringify(space));
+        var toUpdate = false;
+        
         //Search for the right booking
         for (var i=0; i<space.bookings.length; i++)
             if (space.bookings[i]._id === bid && space.bookings[i].uid == edit.uid){
 
                 //Check for possible overlaps
                 for (var j=0; j<space.bookings.length; j++)
-                    if (i!=j && checkIntervalOverlaps(space.bookings[i].from, space.booking[i].to, space.bookings[j].from, space.bookings[j].to))
+                    if (i!=j && checkIntervalOverlaps(space.bookings[i].from, space.bookings[i].to, space.bookings[j].from, space.bookings[j].to))
                         throw new Error("Interval overlap detected");
 
                 space.bookings[i] = edit;
+                toUpdate = true;
                 break;
             }
+        
+        if (!toUpdate)
+            return undefined;
 
         space = await Space.findByIdAndUpdate(sid, $set = {bookings: space.bookings});
+        space = JSON.parse(JSON.stringify(space));
         return space;
     },
 
     deleteReservation : async function(sid, bid){
         if (sid == undefined || bid == undefined || arguments.length !== 2)
-            throw new Error("Error in editReservation function");
+            throw new Error("Error in deleteReservation function");
 
         let result = await Space.updateOne({_id: sid}, {$pull: {"bookings": {_id: bid}}});
         return result;
@@ -163,10 +189,9 @@ module.exports = {
         if (space == undefined)
             throw new Error("Cannot find space");
 
-        for (var i=0; i<space.bookings.length; i++){
+        for (var i=0; i<space.bookings.length; i++)
             if (checkIntervalOverlaps(space.bookings[i].from, space.bookings[i].to, booking.from, booking.to))
-                return undefined;                                                                                   //There is an overlapping interval
-        }
+                return undefined;                                                     
 
         let newBooking = new Booking({
             uid: booking.uid,

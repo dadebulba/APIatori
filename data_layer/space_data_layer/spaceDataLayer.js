@@ -137,12 +137,8 @@ router.post("/data/spaces/:sid/bookings", async function(req, res){
         let result = await controller.createBooking(sid, body);
         if (result == undefined)
             res.status(400).json(errors.ALREADY_PRESENT);
-        else {
-            result.bid = result._id;
-            delete result._id;
-            delete result.__v;
-            res.status(201).json(result);
-        }
+        else 
+            res.status(201).send();
     } catch (err){
         res.status(500).json({message: err.message});
     }
@@ -162,8 +158,16 @@ router.put("/data/spaces/:sid/bookings/:bid", async function(req, res){
         let result = await controller.editReservation(sid, bid, body);
         if (result == undefined)
             res.status(404).send();
-        else    
+        else {    
+            result.sid = result._id;
+            delete result._id;
+            delete result.__v;
+            result.bookings.forEach((item) => {
+                item.bid = item._id;
+                delete item._id;
+            });
             res.status(200).json(result);
+        }
     } catch (err){
         res.status(500).json({error: err.message});
     }

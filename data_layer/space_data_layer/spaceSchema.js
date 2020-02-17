@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
 let BookingSchema = new mongoose.Schema({
-    uid: {type: Number, required: true},
+    uid: {type: String, required: true},
     from: {type: Date, require: true},
     to: {type: Date, required: true},
-    gid: {type: Number, required: false},
+    gid: {type: String, required: false},
     type: {type: String, required: true, default: "Altro"}
 });
 
