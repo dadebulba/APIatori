@@ -1,4 +1,5 @@
 const { DateTime } = require("luxon");
+const fetch = require("node-fetch");
 
 const levels = {
     EDUCATOR :"educator",
@@ -54,8 +55,28 @@ module.exports = {
                 break;
         }
     },
-    validateGroupId : function (gid) {
-        return;
+    validateEmail : function (email){
+        const EMAIL_REGEX = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+        return (typeof email === 'string' && email.length > 5 && email.length < 61 && EMAIL_REGEX.test(email));
+    },
+    validateGroupId : async function (gid) {
+
+        process.env["NODE_CONFIG_DIR"] = "./config/";
+        const config = require('config');
+
+        const groupURL = config.baseURL + ":" + config.groupDataLayerPort + config.groupDLPath + "/" + gid;
+        let response = await fetch(groupURL);
+        return response.status == 200;
+    },
+    validateUserId : async function(uid){
+
+        process.env["NODE_CONFIG_DIR"] = "./config/";
+        const config = require('config');
+
+        const userURL = config.baseURL + ":" + config.userDataLayerPort + config.userDLPath + "/" + uid;
+        console.log("Checking uid " + uid + " @ " + userURL);
+        let response = await fetch(userURL);
+        return response.status == 200;
     },
     levels : levels
 }
