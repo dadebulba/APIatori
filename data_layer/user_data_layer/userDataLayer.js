@@ -77,17 +77,20 @@ router.get("/data/users/:uid", async function(req, res){
         res.status(400).json(errors.PARAMS_UNDEFINED);
         return;
     }
+    try {
+        let result = await controller.getUser(req.params.uid);
+        if (result == undefined)
+            res.status(404).send();
+        else {
+            delete result.password;
+            delete result.__v;
+            result.uid = result._id;
+            delete result._id;
 
-    let result = await controller.getUser(req.params.uid);
-    if (result == undefined)
+            res.status(200).json(result);
+        }
+    } catch (e){
         res.status(404).send();
-    else {
-        delete result.password;
-        delete result.__v;
-        result.uid = result._id;
-        delete result._id;
-
-        res.status(200).json(result);
     }
 })
 

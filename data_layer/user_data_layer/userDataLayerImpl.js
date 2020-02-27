@@ -3,12 +3,6 @@ var crypto = require('crypto');
 const User = require("./userSchema.js");
 const apiUtility = require("../../utility.js");
 
-const EMAIL_REGEX = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
-
-function validateEmail (email) {
-    return (typeof email === 'string' && email.length > 5 && email.length < 61 && EMAIL_REGEX.test(email));
-}
-
 module.exports = {
 
     checkUserBody : function(body){
@@ -18,7 +12,7 @@ module.exports = {
         if (apiUtility.validateParamsUndefined(body.name, body.surname, body.birthdate, body.mail, body.password))
             return false;
         body.mail = body.mail.toLowerCase();
-        if (!validateEmail(body.mail))
+        if (!apiUtility.validateEmail(body.mail))
             return false;
             
         if (body.phone != undefined && apiUtility.castToInt(body.phone) == undefined)
