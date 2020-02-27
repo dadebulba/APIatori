@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const autoIncrement = require("mongodb-autoincrement").setDefaults({ field: "uid", step: 1 });
 
 let ParentSchema = new mongoose.Schema({
     name: {type: String, required: true, max: 40},
@@ -17,8 +16,9 @@ let UserSchema = new mongoose.Schema({
     password: {type:String, required: true},
     parents: {type: [ParentSchema], required: false},
     phone: {type: String, required: false, max: 15},
-    role: {type: String, required: true, default: "User"}
+    role: {type: String, required: true, default: "User"},
+    educatorIn: {type: [mongoose.Schema.Types.ObjectId], required: true, default: []},
+    collaboratorIn: {type: [mongoose.Schema.Types.ObjectId], required: true, default: []}
 });
 
-UserSchema.plugin(autoIncrement.mongoosePlugin); //For autoincrement ObjectID values
 module.exports = mongoose.model('User', UserSchema);
