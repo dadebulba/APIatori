@@ -13,9 +13,6 @@ const DBport = config.mongoDB.port;
 const DBname = config.mongoDB.collection;
 const DBurl = "mongodb://" + DBaddress + ":" + DBport + "/" + DBname;
 
-if (process.env.PROD != undefined)
-    DBurl = "mongodb://mongo:27017/APIATORI";
-
 //MongoDB initialization
 const options = {
     useNewUrlParser: true,

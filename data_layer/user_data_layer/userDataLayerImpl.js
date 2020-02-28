@@ -1,7 +1,7 @@
 var crypto = require('crypto');
 
 const User = require("./userSchema.js");
-const apiUtility = require("../../utility.js");
+const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require('../../utility.js');
 
 module.exports = {
 

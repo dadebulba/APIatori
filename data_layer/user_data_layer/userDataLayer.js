@@ -2,9 +2,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const controller = require('./userDataLayerImpl.js');
-const errors = require('../../errorMsg.js');
+const errors = (process.env.PROD != undefined) ? require("./errorMsg.js") : require('../../errorMsg.js');
 
-process.env["NODE_CONFIG_DIR"] = "../../config/";
+if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config'); 
 
 //Database parameters

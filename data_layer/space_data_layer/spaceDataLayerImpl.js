@@ -1,6 +1,6 @@
 const fetch = require("node-fetch");
 
-process.env["NODE_CONFIG_DIR"] = "../../config/";
+if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config'); 
 
 const Space = require("./spaceSchema.js")[0];
@@ -8,13 +8,11 @@ const Booking = require("./spaceSchema.js")[1];
 
 async function checkGroupExist(gid){
     let result = await fetch(config.baseURL + ":" + config.groupDataLayerPort + "/data/groups/" + gid);
-    console.log("CHECK GID: " + result.status);
     return result.status == 200; 
 }
 
 async function checkUserExist(uid){
     let result = await fetch(config.baseURL + ":" + config.userDataLayerPort + "/data/users/" + uid);
-    console.log("CHECK UID: " + result.status);
     return result.status == 200;
 }
 

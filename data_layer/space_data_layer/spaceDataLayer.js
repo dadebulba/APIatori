@@ -2,9 +2,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const controller = require('./spaceDataLayerImpl.js');
-const errors = require('../../errorMsg.js');
+const errors = (process.env.PROD != undefined) ? require("./errorMsg.js") : require('../../errorMsg.js');
 
-process.env["NODE_CONFIG_DIR"] = "../../config/";
+if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config'); 
 
 //Database parameters
@@ -27,9 +27,7 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 //Express initialization
 const app = express();
 app.use(bodyParser.json());
-app.listen(config.spaceDataLayerPort, () => {
-    console.log("Listening on port " + config.spaceDataLayerPort);
-});
+app.listen(config.spaceDataLayerPort);
 
 //Routes
 const router = express.Router();
