@@ -1,5 +1,6 @@
 const { DateTime } = require("luxon");
 const fetch = require("node-fetch");
+const ObjectId = require("mongoose").Types.ObjectId;
 
 const levels = {
     EDUCATOR: "educator",
@@ -106,6 +107,9 @@ module.exports = {
         catch (err) {
             next(err);
         }
+    },
+    isObjectIdValid: function (id){
+        return id != undefined && ObjectId.isValid(id) && String(new ObjectId(id) === id);
     },
     levels: levels
 }

@@ -10,7 +10,7 @@ if [ $1 == '--datalayer' ] || [ $1 == '--all' ] || [ $1 == '' ]
     then
         # Start mongodb 
         docker build -f mongo/Dockerfile -t mongo .
-        docker run --name mongo --net host -p 27017:27017 -d mongo
+        docker run --name mongo --net host -p 27017:27017 -v ~/data:/data/db -d mongo
         # Start group data layer
         docker build -f data_layer/group_data_layer/Dockerfile -t group_dl .
         docker run --name group_dl --net host -p 3333:3333 -e PROD=true -d group_dl

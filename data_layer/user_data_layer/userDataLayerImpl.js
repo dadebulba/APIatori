@@ -3,11 +3,8 @@ var crypto = require('crypto');
 const User = require("./userSchema.js");
 const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require('../../utility.js');
 
-module.exports = {
-
-    checkUserBody : function(body){
-
-        if (body == undefined || arguments.length !== 1)
+function checkUserBody(body){
+    if (body == undefined || arguments.length !== 1)
             return false;
         if (apiUtility.validateParamsUndefined(body.name, body.surname, body.birthdate, body.mail, body.password))
             return false;
@@ -20,29 +17,33 @@ module.exports = {
 
             
         //Check parent's fields
-        if (body.parents != undefined){
+        if (body.parents != undefined)
             for (var i=0; i<body.parents.length; i++){
                 if (apiUtility.validateParamsUndefined(body.parents[i].name, body.parents[i].surname))
                     return false;
                 
                 if (body.parents[i].mail != undefined){
-                    if (!validateEmail(body.parents[i].mail))
-                        return false;
                     body.parents[i].mail = body.parents[i].mail.toLowerCase();
+                    if (!apiUtility.validateEmail(body.parents[i].mail))
+                        return false;
                 }
 
                 if (body.parents[i].phone != undefined && apiUtility.castToInt(body.parents[i].phone) == undefined)
                     return false;
             }
-        }
 
         return true;
-    },
+}
+
+module.exports = {
 
     createUser : async function(newUser){
 
+        if (newUser == undefined || !checkUserBody(newUser))
+            return undefined;
+
         //Check that there isn't already an user with the same mail
-        let result = User.findOne({mail: new RegExp('^'+newUser.mail+'$', "i")}); // "i" for case-insensitive
+        let result = await User.findOne({mail: new RegExp('^'+newUser.mail+'$', "i")}); // "i" for case-insensitive
         if (result != null)
             return undefined;
 

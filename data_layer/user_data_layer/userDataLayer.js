@@ -34,14 +34,13 @@ const router = express.Router();
 
 router.post("/data/users", async function(req, res){
     let body = req.body;
-    let result = controller.checkUserBody(body);
-    if (!result){
+    if (body == undefined){
         res.status(400).json(errors.PARAMS_UNDEFINED);
         return;
     }
 
     try {
-        result = await controller.createUser(body);
+        let result = await controller.createUser(body);
         if (result == undefined){
             res.status(400).json({message: "User already present"});
             return;
