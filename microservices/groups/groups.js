@@ -60,7 +60,7 @@ app.get('/groups/:id', async function (req, res) {
 });
 
 
-app.post('/groups', function (req, res) {
+app.post('/groups', async function (req, res) {
     const name = req.body.name;
     const educators = req.body.educators;
     const collabs = req.body.collabs;
