@@ -1,22 +1,11 @@
 const fetch = require("node-fetch");
+const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require("../../utility.js");
 
-process.env["NODE_CONFIG_DIR"] = "../../config/";
+if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config'); 
 
 const Space = require("./spaceSchema.js")[0];
 const Booking = require("./spaceSchema.js")[1];
-
-async function checkGroupExist(gid){
-    let result = await fetch(config.baseURL + ":" + config.groupDataLayerPort + "/data/groups/" + gid);
-    console.log("CHECK GID: " + result.status);
-    return result.status == 200; 
-}
-
-async function checkUserExist(uid){
-    let result = await fetch(config.baseURL + ":" + config.userDataLayerPort + "/data/users/" + uid);
-    console.log("CHECK UID: " + result.status);
-    return result.status == 200;
-}
 
 async function checkBooking(booking){
     if (booking.uid == undefined || booking.from == undefined || booking.to == undefined || booking.type == undefined)
@@ -27,12 +16,12 @@ async function checkBooking(booking){
     if (tsTo <= tsFrom || tsFrom < Date.now())
         return false;
 
-    let result = await checkUserExist(booking.uid);
+    let result = await apiUtility.validateUserId(booking.uid);
     if (!result)
         return false;
 
     if (booking.gid != undefined) {
-        result = await checkGroupExist(booking.gid);
+        result = await apiUtility.validateGroupId(booking.gid);
         if (!result)
             return false;
     }
@@ -46,15 +35,6 @@ function checkIntervalOverlaps(firstStart, firstEnd, secondStart, secondEnd){
     firstEnd = new Date(firstEnd).getTime();
     secondStart = new Date(secondStart).getTime();
     secondEnd = new Date(secondEnd).getTime();
-
-    /*console.log("--- CHECK INTERVALS ---");
-    console.log("FIRST: " + firstStart + ", " + firstEnd);
-    console.log("NEW: " + secondStart + ", " + secondEnd);
-    console.log("TEST1: " + (secondStart>=firstStart && secondEnd>=firstEnd));
-    console.log("TEST2: " + (secondStart<=firstStart && secondEnd<=firstEnd));
-    console.log("TEST3: " + (firstStart<=secondStart && firstEnd>=secondEnd));
-    console.log("TEST4: " + (secondStart<=firstStart && firstEnd<=secondEnd));
-    console.log("-----------------------");*/
 
     return (secondStart>=firstStart && secondEnd>=firstEnd && secondStart<=firstEnd) ||
             (secondStart<=firstStart && secondEnd<=firstEnd && firstStart<=secondEnd) ||
@@ -76,7 +56,7 @@ module.exports = {
             return undefined;
         
         let space = await Space.findById(sid);
-        if (space !== undefined){
+        if (space != undefined){
             space = JSON.parse(JSON.stringify(space));
 
             if (space.bookings != undefined)
@@ -131,9 +111,9 @@ module.exports = {
         return result;
     },
 
-    editReservation : async function(sid, bid, edit){
+    editBooking : async function(sid, bid, edit){
         if (sid == undefined || bid == undefined || edit == undefined || arguments.length !== 3)
-            throw new Error("Error in editReservation function");
+            throw new Error("Error in editBooking function");
 
         let check = await checkBooking(edit);
         if (!check)
@@ -168,16 +148,16 @@ module.exports = {
         return space;
     },
 
-    deleteReservation : async function(sid, bid){
+    deleteBooking : async function(sid, bid){
         if (sid == undefined || bid == undefined || arguments.length !== 2)
-            throw new Error("Error in deleteReservation function");
+            throw new Error("Error in deleteBooking function");
 
         let result = await Space.updateOne({_id: sid}, {$pull: {"bookings": {_id: bid}}});
         return result;
     },
 
     createBooking : async function(sid, booking){
-        if (arguments.length != 2 || sid == undefined || sid == "" || booking == undefined || typeof booking !== "object")
+        if (arguments.length != 2 || sid == undefined || booking == undefined || typeof booking !== "object")
             throw new Error("Type error in createBooking");
 
         let result = await checkBooking(booking);
@@ -203,6 +183,33 @@ module.exports = {
         space = await Space.updateOne({_id: sid}, {$push: {"bookings": newBooking}});
         space = JSON.parse(JSON.stringify(space));
         return space;
+    },
+
+    getAllBookings : async function(sid){
+        let result = await Space.findById(sid);
+        if (result == undefined)
+            return undefined;
+        
+        result = JSON.parse(JSON.stringify(result));
+        result = result.bookings;
+        result.forEach(item => {
+            item.bid = item._id;
+            delete item._id;
+        });
+
+        return result;
+    },
+
+    getBooking : async function(sid, bid){
+        let result = await this.getAllBookings(sid);
+        if (result == undefined)
+            return undefined;
+
+        for (var i=0; i<result.length; i++)
+            if (result[i].bid === bid)
+                return result[i];
+
+        return undefined;
     }
 
 }

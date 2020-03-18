@@ -2,9 +2,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const controller = require('./userDataLayerImpl.js');
-const errors = require('../../errorMsg.js');
+const errors = (process.env.PROD != undefined) ? require("./errorMsg.js") : require('../../errorMsg.js');
 
-process.env["NODE_CONFIG_DIR"] = "../../config/";
+if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config'); 
 
 //Database parameters
@@ -34,14 +34,13 @@ const router = express.Router();
 
 router.post("/data/users", async function(req, res){
     let body = req.body;
-    let result = controller.checkUserBody(body);
-    if (!result){
+    if (body == undefined){
         res.status(400).json(errors.PARAMS_UNDEFINED);
         return;
     }
 
     try {
-        result = await controller.createUser(body);
+        let result = await controller.createUser(body);
         if (result == undefined){
             res.status(400).json({message: "User already present"});
             return;

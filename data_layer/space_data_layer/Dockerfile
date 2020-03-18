@@ -19,13 +19,13 @@ RUN npm install
 # RUN npm ci --only=production
 
 # Bundle app source
-COPY ./data_layer/group_data_layer/groupDataLayer.js .
-COPY ./data_layer/group_data_layer/groupDataLayerImpl.js .
-COPY ./data_layer/group_data_layer/groupSchema.js .
+COPY ./data_layer/space_data_layer/spaceDataLayer.js .
+COPY ./data_layer/space_data_layer/spaceDataLayerImpl.js .
+COPY ./data_layer/space_data_layer/spaceSchema.js .
 #COPY ./groupDataLayer.js .
 #COPY ./groupDataLayerImpl.js .
 #COPY ./groupSchema.js .
 
-EXPOSE 3333
+EXPOSE 3334
 # CMD [ "node", "groupDataLayer.js" ]
-CMD [ "node", "groupDataLayer.js" ]
+CMD [ "node", "spaceDataLayer.js" ]
