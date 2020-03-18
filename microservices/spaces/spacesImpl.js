@@ -15,11 +15,6 @@ const bookingType = {
     OTHER: "altro"
 }
 
-//TODO: complete the function and integrate with createBooking() and editBooking()
-function isDateConflict(from, to, newFrom, newTo) {
-
-}
-
 module.exports = {
     validateBookingType: function (type) {
         return bookingType.some(p => p === type);

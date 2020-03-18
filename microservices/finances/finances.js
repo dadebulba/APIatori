@@ -22,7 +22,7 @@ const mwAuth = require('../../middleware/mwAuth');
 app.use(mwAuth)
 
 //*** FINANCES APIs ***/
-app.get('/finances/:id', function (req, res) {
+app.get('/finances/:id', async function (req, res) {
     const groupId = req.params.id;
     const year = req.query.year || new Date().getFullYear();
 
@@ -34,13 +34,13 @@ app.get('/finances/:id', function (req, res) {
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
 
     try {
-        if (apiUtility.validateGroupId(groupId) == false)
+        if (await apiUtility.validateGroupId(groupId) == false)
             return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
         if (!(apiUtility.validateAuth(req, LEVELS.EDUCATOR, groupId) || apiUtility.validateAuth(req, LEVELS.ADMIN)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
-        const finances = financeImpl.getFinances(groupId, year);
+        const finances = await financeImpl.getFinances(groupId, year);
 
         if (apiUtility.validateParamsUndefined(finances))
             return res.status(404).json(errors.ENTITY_NOT_FOUND);
@@ -51,7 +51,7 @@ app.get('/finances/:id', function (req, res) {
     }
 });
 
-app.post('/finances/:id', function (req, res) {
+app.post('/finances/:id', async function (req, res) {
     const groupId = req.params.id;
     const timestamp = Date.parse(req.body.timestamp);
     const amount = req.body.amount;
@@ -67,13 +67,13 @@ app.post('/finances/:id', function (req, res) {
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
 
     try {
-        if (!(apiUtility.validateGroupId(groupId)))
+        if (!(await apiUtility.validateGroupId(groupId)))
             return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
         if (!(apiUtility.validateAuth(req, LEVELS.EDUCATOR, groupId) || apiUtility.validateAuth(req, LEVELS.ADMIN)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
-        const newFinance = financeImpl.addNewHistory(groupId,timestamp,amount,causal);
+        const newFinance = await financeImpl.addNewHistory(groupId,timestamp,amount,causal);
 
         return res.status(201).json(newFinance);
     }
@@ -82,7 +82,7 @@ app.post('/finances/:id', function (req, res) {
     }
 })
 
-app.put('/finances/:id', function (req, res) {
+app.put('/finances/:id', async function (req, res) {
     const groupId = req.params.id;
     const timestamp = Date.parse(req.body.timestamp);
     const amount = req.body.amount;
@@ -98,13 +98,17 @@ app.put('/finances/:id', function (req, res) {
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
 
     try {
-        if (!(apiUtility.validateGroupId(groupId)))
+        if (!(await apiUtility.validateGroupId(groupId)))
             return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
         if (!(apiUtility.validateAuth(req, LEVELS.EDUCATOR, groupId) || apiUtility.validateAuth(req, LEVELS.ADMIN)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
-        const editedHistory = financeImpl.editHistory(groupId,timestamp,amount,causal);
+        
+        const editedHistory = await financeImpl.editHistory(groupId,timestamp,amount,causal);
+
+        if(editedHistory === undefined)
+            return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
         return res.status(200).json(editedHistory);
     }
@@ -113,7 +117,7 @@ app.put('/finances/:id', function (req, res) {
     }
 })
 
-app.delete('/finances/:groupId', function (req, res) {
+app.delete('/finances/:groupId', async function (req, res) {
     const groupId = req.params.id;
     const timestamp = Date.parse(req.body.timestamp);
     const amount = req.body.amount;
@@ -129,15 +133,18 @@ app.delete('/finances/:groupId', function (req, res) {
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
 
     try {
-        if (!(apiUtility.validateGroupId(groupId)))
+        if (!(await apiUtility.validateGroupId(groupId)))
             return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
         if (!(apiUtility.validateAuth(req, LEVELS.EDUCATOR, groupId) || apiUtility.validateAuth(req, LEVELS.ADMIN)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
-        financeImpl.deleteHistory(groupId,timestamp,amount,causal);
+        const isDeleted = await financeImpl.deleteHistory(groupId,timestamp);
 
-        return res.status(200).end();
+        if(!isDeleted)
+            return res.status(404).json(errors.ENTITY_NOT_FOUND);
+        else
+            return res.status(200).end();
     }
     catch (err) {
         next(err); 

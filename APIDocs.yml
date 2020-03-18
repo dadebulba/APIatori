@@ -22,11 +22,13 @@ tags:
     description: "User management APIs"
   - name: "finances"
     description: "Finance management APIs"
+  - name: "groups"
+    description: "Groups management APIs"
 
 schemes:
   - "http"
 paths:
-  /finances/{gid}:
+  /finances/{groupId}:
     get:
       security:
         - Bearer : []
@@ -181,9 +183,156 @@ paths:
           description: "Finances for specified group not found"
           schema:
             $ref: "#/definitions/ApiResponse"
+  
+  /groups:
+    get:
+      security:
+        - Bearer : []
+      tags:
+        - "groups"
+      summary: "Get all the available groups"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "Successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Groups"
+        401:
+          description: "Invalid token"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+    post:
+      security:
+        - Bearer : []
+      tags:
+        - "groups"
+      summary: "Add a new group to groups"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Group object that needs to be added"
+          required: true
+          schema:
+            $ref: "#/definitions/Groups"
+      responses:
+        201:
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Groups"
+        401:
+          description: "Invalid token"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        400:
+          description: "Bad parameters"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+  /groups/{groupId}:
+    get:
+      security:
+        - Bearer : []
+      tags:
+        - "groups"
+      summary: "Get the specified group"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "groupId"
+          in: "path"
+          description: "ID of group"
+          required: true
+          type: "string" 
+      responses:
+        200:
+          description: "Successful operation"
+          schema:
+              $ref: "#/definitions/Groups"
+        401:
+          description: "Invalid token"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        400:
+          description: "Bad parameters"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        404:
+          description: "Finances for spacified group not found"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+    put:
+      security:
+        - Bearer : []
+      tags:
+        - "groups"
+      summary: "Edit a the specified group"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "groupId"
+          in: "path"
+          description: "ID of group"
+          required: true
+          type: "string"
+        - in: "body"
+          name: "body"
+          description: "Group object"
+          required: true
+          schema:
+            $ref: "#/definitions/Groups"
+      responses:
+        200:
+          description: "Successful operation"
+          schema:
+              $ref: "#/definitions/Groups"
+        401:
+          description: "Invalid token"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        400:
+          description: "Bad parameters"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        404:
+          description: "Specified group not found"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+    delete:
+      security:
+        - Bearer : []
+      tags:
+        - "groups"
+      summary: "Remove the specified group"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "groupId"
+          in: "path"
+          description: "ID of group"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "Successful operation"
+        401:
+          description: "Invalid token"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        400:
+          description: "Bad parameters"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        404:
+          description: "Finances for spacified group not found"
+          schema:
+            $ref: "#/definitions/ApiResponse"
     
-
-
   /spaces:
     get:
       security:
@@ -200,6 +349,8 @@ paths:
           description: "Successful operation"
           schema:
             type: "array"
+            items: 
+              type: "object"
             example:
               [{
               id: 1,
@@ -694,7 +845,7 @@ paths:
 
     put:
       security:
-        - ApiKeyAuth: []
+        - Bearer: []
       tags:
       - users
       summary: Edit an existing User
@@ -720,7 +871,7 @@ paths:
           description: User not found
     delete:
       security:
-        - ApiKeyAuth: []
+        - Bearer: []
       tags:
       - users
       summary: delete a user
@@ -866,7 +1017,7 @@ definitions:
         items:
           type: "integer"
           format: "int32"
-      bocias:
+      guys:
         type: "array"
         items:
           type: "integer"
@@ -894,9 +1045,6 @@ definitions:
     type: "object"
     properties:
       code:
-        type: "integer"
-        format: "int32"
-      type:
         type: "string"
       message:
         type: "string"
