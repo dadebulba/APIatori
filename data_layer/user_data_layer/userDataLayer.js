@@ -81,7 +81,6 @@ router.get("/data/users/:uid", async function(req, res){
         if (result == undefined)
             res.status(404).send();
         else {
-            delete result.password;
             delete result.__v;
             result.uid = result._id;
             delete result._id;

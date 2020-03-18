@@ -1,17 +1,16 @@
 const jwt = require('jsonwebtoken');
-const errors = require('../../errorMsg.js');
 
 module.exports = {
-    createToken: function(userId, groupId, role, key) {
+    createToken: function(userId, role, key) {
         return new Promise((resolve, reject) => {
             let payload = {
                 uid: userId,
-                gid: groupId,
                 role: role
             };
     
             let options = {
-                expiresIn: '1d'
+                expiresIn: '1d',
+                algorithm:  "RS256" 
             }
     
             jwt.sign(payload, key, options, (err, token) => {
@@ -24,11 +23,17 @@ module.exports = {
     },
     verifyToken: function(token, key) {
         return new Promise((resolve, reject) => {
-            jwt.verify(token, key, (err, decoded) => {
+
+            let verifyOptions = {
+                expiresIn:  "1d",
+                algorithm:  ["RS256"]
+               };
+
+            jwt.verify(token, key, verifyOptions, (err, decoded) => {
                 if (err)
                     reject(errors.INVALID_TOKEN);
                 else
-                    resolve([decoded.uid, decoded.gid, decoded.role]);
+                    resolve([decoded.uid, decoded.role]);
             });
         });
     }

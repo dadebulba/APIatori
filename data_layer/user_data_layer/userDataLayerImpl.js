@@ -1,4 +1,4 @@
-var crypto = require('crypto');
+const crypto = require('crypto');
 
 const User = require("./userSchema.js");
 const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require('../../utility.js');
@@ -78,7 +78,6 @@ module.exports = {
             nickname: 0,
             parents: 0,
             birthdate: 0,
-            password: 0,
             phone: 0,
             educatorIn: 0,
             collaboratorIn: 0
