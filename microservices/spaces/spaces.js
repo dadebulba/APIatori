@@ -2,15 +2,14 @@ const express = require('express');
 const unless = require('express-unless');
 const bodyParser = require('body-parser');
 const spaceImpl = require('./spacesImpl.js');
-const apiUtility = require('../../utility.js');
-const errors = require('../../errorMsg.js');
+const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require('../../utility.js');
+const errors = (process.env.PROD != undefined) ? require("./errorMsg.js") : require('../../errorMsg.js');
 
-process.env["NODE_CONFIG_DIR"] = "../../config/";
+if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config');
 
-const PORT = process.env.PORT || config.get('spacesPort');
-const key = process.env.API_KEY || config.get('API_KEY');
-const basePath = process.env.BASE_PATH || config.get("basePath");
+const PORT = config.get('spacesPort');
+const basePath = config.get("basePath");
 const LEVELS = apiUtility.levels;
 const app = express();
 app.use(bodyParser.json());
@@ -24,7 +23,7 @@ mwAuth.unless = unless;
 app.use(mwAuth.unless({
     path: [
         {
-            url: `/${basePath}/spaces`,
+            url: `/spaces`,
             methods: [`GET`]
         },
         {
@@ -36,7 +35,7 @@ app.use(mwAuth.unless({
 
 //*** SPACES PART ***//
 
-app.get('/spaces', async function (req, res) {
+app.get('/spaces', async function (req, res, next) {
     try {
         const spaces = await spaceImpl.getSpaces();
         if (spaces === undefined)
@@ -49,7 +48,7 @@ app.get('/spaces', async function (req, res) {
     }
 });
 
-app.post('/spaces', function (req, res) {
+app.post('/spaces', async function (req, res) {
     const name = req.body.name;
 
     if (apiUtility.validateParamsUndefined(name))
@@ -153,7 +152,7 @@ app.get('/bookings/:id', async function (req, res) {
     }
 });
 
-app.post('/bookings/:id', function (req, res) {
+app.post('/bookings/:id', async function (req, res) {
     const spaceId = req.params.id;
     const gid = req.body.gid;
     const from = Date.parse(req.body.from);
@@ -189,7 +188,7 @@ app.post('/bookings/:id', function (req, res) {
     }
 })
 
-app.put('/spaces/:spaceId/bookings/:bookingId', function (req, res) {
+app.put('/spaces/:spaceId/bookings/:bookingId', async function (req, res) {
     const spaceId = req.param.spaceId;
     const bookingId = req.params.bookingId;
     const gid = req.body.gid;

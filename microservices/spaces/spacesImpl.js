@@ -1,10 +1,12 @@
-const apiUtility = require('../../utility.js');
-process.env["NODE_CONFIG_DIR"] = "../../config/";
+const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require('../../utility.js');
+if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config');
 
-const BASE_URL = process.env.baseURL || config.get('baseURL');
-const SPACE_DL_PATH = process.env.spaceDLPath || config.get('spaceDLPath');
-const SPACE_DL_PORT = process.env.spaceDataLayerPort || config.get('spaceDataLayerPort');
+const fetch = require("node-fetch");
+
+const BASE_URL = config.get('baseURL');
+const SPACE_DL_PATH = config.get('spaceDLPath');
+const SPACE_DL_PORT = config.get('spaceDataLayerPort');
 
 const SPACE_DL_ENDPOINT = `${BASE_URL}:${SPACE_DL_PORT}${SPACE_DL_PATH}`;
 
@@ -54,7 +56,7 @@ module.exports = {
                 return undefined;
 
         } catch (err) {
-            next(err);
+            throw(err);
         }
     },
     editSpace: async function (spaceId, name) {
