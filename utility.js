@@ -62,18 +62,6 @@ module.exports = {
             throw new Error(JSON.stringify({ code: 'E000', message: 'CONNECTION ERROR WITH THE DB' }));
         }
     },
-    validateGroupId: async function (gid) {
-        try {
-            const group = await fetch("ENDPOINT TO GROUP").then(apiUtility.checkStatus);
-            if (group === undefined)
-                return false;
-            else
-                return true;
-        }
-        catch (err) {
-            next(err);
-        }
-    },
     validateEmail: function (email) {
         const EMAIL_REGEX = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
         return (typeof email === 'string' && email.length > 5 && email.length < 61 && EMAIL_REGEX.test(email));

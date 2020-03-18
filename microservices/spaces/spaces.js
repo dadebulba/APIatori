@@ -73,7 +73,7 @@ app.post('/spaces', function (req, res) {
     }
 });
 
-app.put('/spaces', async function (req, res) {
+app.put('/spaces/:id', async function (req, res) {
     const spaceId = req.params.id;
     const name = req.body.name;
 
@@ -171,7 +171,7 @@ app.post('/bookings/:id', function (req, res) {
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
 
     try {
-        if (!(await spaceImpl.validateSpaceId(spaceId) && (apiUtility.validateGroupId(gid))))
+        if (!(await spaceImpl.validateSpaceId(spaceId) && (await apiUtility.validateGroupId(gid))))
             return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
         if (!(apiUtility.validateAuth(req, LEVELS.EDUCATOR) || apiUtility.validateAuth(req, LEVELS.ADMIN)))
@@ -209,7 +209,7 @@ app.put('/spaces/:spaceId/bookings/:bookingId', function (req, res) {
     try {
         if (!(await spaceImpl.validateBookingId(bookingId) &&
             await spaceImpl.validateSpaceId(spaceId) &&
-            apiUtility.validateGroupId(gid)))
+            await apiUtility.validateGroupId(gid)))
             return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
         const actualBookingGid = await spaceImpl.getBookingGid(bookingId);

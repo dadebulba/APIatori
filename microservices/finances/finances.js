@@ -104,6 +104,7 @@ app.put('/finances/:id', function (req, res) {
         if (!(apiUtility.validateAuth(req, LEVELS.EDUCATOR, groupId) || apiUtility.validateAuth(req, LEVELS.ADMIN)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
+        //TODO: handle the undefined case
         const editedHistory = financeImpl.editHistory(groupId,timestamp,amount,causal);
 
         return res.status(200).json(editedHistory);
