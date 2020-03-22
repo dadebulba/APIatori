@@ -1,10 +1,12 @@
-const apiUtility = require('../../utility.js');
-process.env["NODE_CONFIG_DIR"] = "../../config/";
+const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require('../../utility.js');
+if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config');
 
-const BASE_URL = process.env.baseURL || config.get('baseURL');
-const SPACE_DL_PATH = process.env.spaceDLPath || config.get('spaceDLPath');
-const SPACE_DL_PORT = process.env.spaceDataLayerPort || config.get('spaceDataLayerPort');
+const fetch = require("node-fetch");
+
+const BASE_URL = config.get('baseURL');
+const SPACE_DL_PATH = config.get('spaceDLPath');
+const SPACE_DL_PORT = config.get('spaceDataLayerPort');
 
 const SPACE_DL_ENDPOINT = `${BASE_URL}:${SPACE_DL_PORT}${SPACE_DL_PATH}`;
 
@@ -33,14 +35,16 @@ module.exports = {
     },
     validateSpaceId: async function (spaceId) {
         try {
-            const spaces = await this.getSpaces();
-            if(spaces === undefined)
-                return false;
-
-            return spaces.some(s => s.sid === spaceId);
+            const res = await fetch(SPACE_DL_ENDPOINT + "/" + spaceId).then(apiUtility.checkStatus);
+            if (res.ok) {
+                const space = await res.json();
+                return space;
+            }
+            else
+                return undefined;
         }
         catch (err) {
-            next(err);
+            throw(err);
         }
     },
     getSpaces: async function (spaceId) {
@@ -59,7 +63,7 @@ module.exports = {
                 return undefined;
 
         } catch (err) {
-            next(err);
+            throw(err);
         }
     },
     editSpace: async function (spaceId, name) {
@@ -80,7 +84,7 @@ module.exports = {
                 return undefined;
 
         } catch (err) {
-            next(err);
+            throw(err);
         }
     },
     createNewSpace: async function (name) {
@@ -101,7 +105,7 @@ module.exports = {
                 return undefined;
 
         } catch (err) {
-            next(err);
+            throw(err);
         }
     },
     deleteSpace: async function (spaceId) {
@@ -110,14 +114,13 @@ module.exports = {
                 method: 'DELETE'
             }).then(apiUtility.checkStatus);
 
-            if (res.ok) {
-                return true;
-            }
-            else
-                return false;
+            if (res.status == 500)
+                throw new Error("Server failure");
+
+            return res.ok;
 
         } catch (err) {
-            next(err);
+            throw(err);
         }
     },
     getBookings: async function (spaceId) {

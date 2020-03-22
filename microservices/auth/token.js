@@ -1,15 +1,23 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const bearerToken = require('express-bearer-token');
-const tokenImpl = require('./tokenImpl.js');
-const apiUtility = require('../../utility.js');
-const errors = require('../../errorMsg.js');
+const fs = require("fs");
+const fetch = require("node-fetch");   
+const crypto = require('crypto');
 
-process.env["NODE_CONFIG_DIR"] = "../../config/";
+const tokenImpl = require('./tokenImpl.js');
+const errors = (process.env.PROD != undefined) ? require("./errorMsg.js") : require('../../errorMsg.js');
+const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require("../../utility.js");
+
+if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config'); 
 
-const PORT = process.env.PORT || config.get('tokenPort');
-const key = process.env.API_KEY || config.get('API_KEY');
+const privateKeyPath = (process.env.PROD == undefined) ? "../../config/private.pem" : "./config/private.pem";
+const publicKeyPath = (process.env.PROD == undefined) ? "../../config/public.crt" : "./config/public.crt";
+
+const PORT = config.get('tokenPort');
+const PRIVATE_KEY = fs.readFileSync(privateKeyPath, "utf8");
+const PUBLIC_KEY = fs.readFileSync(publicKeyPath, "utf8");
 
 const app = express();
 app.use(bodyParser.json());
@@ -19,8 +27,12 @@ app.post('/token', async function (req, res) {
     let h_action = req.headers.action;
     
     if (h_action == 'createToken') {
-        let b_email = req.body.email;
-        let b_pwd = req.body.password;
+        let body = req.body;
+        let b_email = body.email;
+        var b_pwd = body.password;
+
+        if (b_pwd != undefined)
+            b_pwd = crypto.createHash("sha256").update(b_pwd).digest("hex");
 
         if (apiUtility.validateParamsUndefined(b_email, b_pwd)){
             res.status(400).json(errors.PARAMS_UNDEFINED);
@@ -28,13 +40,19 @@ app.post('/token', async function (req, res) {
         }
 
         try {
-            //TO-CHANGE
-            let uid = Math.floor(Math.random() * 100);
-            let gid = Math.floor(Math.random() * 100);
-            let role = "ANIMATO";
+            let queryURL = config.baseURL + ":" + config.userDataLayerPort + config.userDLPath;
+            let response = await fetch(queryURL);
+            let responseBody = await response.json();
+            
+            for (var i=0; i<responseBody.length; i++){
+                if (responseBody[i].mail === b_email && responseBody[i].password === b_pwd){
+                    let token = await tokenImpl.createToken(responseBody[i].uid, responseBody[i].role, PRIVATE_KEY);
+                    res.status(200).send(token);
+                    return;
+                }
+            }
 
-            let token = await tokenImpl.createToken(uid, gid, role, key);
-            res.status(200).send(token);
+            res.status(401).json(errors.INVALID_CREDENTIALS);
         }
         catch (e) {
             res.status(401).json(errors.INVALID_CREDENTIALS);
@@ -42,8 +60,8 @@ app.post('/token', async function (req, res) {
     }
     else if(h_action == 'verifyToken'){
         try {
-            let result = await tokenImpl.verifyToken(req.token, key);
-            res.status(200).json({uid: result[0], gid: result[1], role: result[2]});
+            let result = await tokenImpl.verifyToken(req.token, PUBLIC_KEY);
+            res.status(200).json({uid: result[0], role: result[1]});
         }
         catch (e) {
             res.status(401).json(e);

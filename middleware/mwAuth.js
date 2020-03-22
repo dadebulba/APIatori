@@ -1,16 +1,19 @@
 const fetch = require("node-fetch");
 const express = require('express');
-const bearerToken = require('express-bearer-token');
-process.env["NODE_CONFIG_DIR"] = "../config/";
+//const bearerToken = require('express-bearer-token');
+if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../config";
 const config = require('config');
-const errors = require('../errorMsg.js');
+const errors = (process.env.PROD != undefined) ? require("./errorMsg.js") : require('../errorMsg.js');
 
 const app = express();
-app.use(bearerToken());
+//app.use(bearerToken());
 
-const IdP_URL = config.tokenURL + ":" + config.tokenPort;;
+const IdP_URL = config.tokenURL + ":" + config.tokenPort + config.tokenPath;
 
 module.exports = async function (req, res, next) {
+
+    if (req.headers.authorization != undefined)
+        req.token = req.headers.authorization.substr(7);
 
     let options = {
         method: 'POST',
@@ -25,9 +28,7 @@ module.exports = async function (req, res, next) {
             let body = await idpResponse.json();
 
             req['uid'] = body.uid;
-            req['gid'] = body.gid;
             req['role'] = body.role;
-            req['educatorIn'] = body.educatorIn;
             return next();
         }
         else {

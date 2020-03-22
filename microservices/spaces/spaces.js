@@ -2,15 +2,14 @@ const express = require('express');
 const unless = require('express-unless');
 const bodyParser = require('body-parser');
 const spaceImpl = require('./spacesImpl.js');
-const apiUtility = require('../../utility.js');
-const errors = require('../../errorMsg.js');
+const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require('../../utility.js');
+const errors = (process.env.PROD != undefined) ? require("./errorMsg.js") : require('../../errorMsg.js');
 
-process.env["NODE_CONFIG_DIR"] = "../../config/";
+if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config');
 
-const PORT = process.env.PORT || config.get('spacesPort');
-const key = process.env.API_KEY || config.get('API_KEY');
-const basePath = process.env.BASE_PATH || config.get("basePath");
+const PORT = config.get('spacesPort');
+const basePath = config.get("basePath");
 const LEVELS = apiUtility.levels;
 const app = express();
 app.use(bodyParser.json());
@@ -24,7 +23,7 @@ mwAuth.unless = unless;
 app.use(mwAuth.unless({
     path: [
         {
-            url: `/${basePath}/spaces`,
+            url: `/spaces`,
             methods: [`GET`]
         },
         {
@@ -109,16 +108,16 @@ app.put('/spaces/:id', async function (req, res, next) {
     if (!apiUtility.validateParamsString(spaceId, name))
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
     try {
-        if (await spaceImpl.validateSpaceId(spaceId))
-            return res.status(404).json(errors.ENTITY_NOT_FOUND);
+        /*if (!(await spaceImpl.validateSpaceId(spaceId)))
+            return res.status(404).json(errors.ENTITY_NOT_FOUND);*/
 
         if (!(apiUtility.validateAuth(req, LEVELS.ADMIN)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
         const editedSpace = await spaceImpl.editSpace(spaceId, name);
 
-        if (editedSpace === undefined)
-            return res.status(400).json(errors.ALREADY_PRESENT);
+        if (editedSpace == undefined)
+            return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
         return res.status(200).json(editedSpace);
     }
@@ -137,8 +136,8 @@ app.delete('/spaces/:id', async function (req, res, next) {
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
 
     try {
-        if (!await spaceImpl.validateSpaceId(spaceId))
-            return res.status(404).json(errors.ENTITY_NOT_FOUND);
+        /*if (!await spaceImpl.validateSpaceId(spaceId))
+            return res.status(404).json(errors.ENTITY_NOT_FOUND);*/
 
         if (!(apiUtility.validateAuth(req, LEVELS.ADMIN)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
@@ -216,7 +215,7 @@ app.post('/spaces/:spaceId/bookings/:bookingId', function (req, res) {
     }
 })
 
-app.put('/spaces/:spaceId/bookings/:bookingId', function (req, res) {
+app.put('/spaces/:spaceId/bookings/:bookingId', async function (req, res) {
     const spaceId = req.param.spaceId;
     const bookingId = req.params.bookingId;
     const gid = req.body.gid;
