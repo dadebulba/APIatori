@@ -43,12 +43,17 @@ module.exports = {
             next(err);
         }
     },
-    getSpaces: async function () {
+    getSpaces: async function (spaceId) {
         try {
             const res = await fetch(SPACE_DL_ENDPOINT).then(apiUtility.checkStatus);
             if (res.ok) {
                 const spaces = await res.json();
-                return spaces;
+                if(spaceId){
+                    return space.find(s.sid === spaceId)
+                }
+                else {
+                    return spaces;
+                }
             }
             else
                 return undefined;
@@ -146,7 +151,7 @@ module.exports = {
             next(err);
         }
     },
-    createNewBooking : async function (from, to, type, gid, uid) {
+    createNewBooking : async function (from, to, type, gid, uid, spaceId) {
         const body = { uid : uid, from : from, to : to, type : type, gid : gid };
         try {
             const res = await fetch(`${SPACE_DL_ENDPOINT}/${spaceId}/bookings`, {

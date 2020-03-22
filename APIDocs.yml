@@ -16,8 +16,6 @@ externalDocs:
 tags:
   - name: "spaces"
     description: "Spaces management APIs"
-  - name: "bookings"
-    description: "Bookings management APIs"
   - name: "users"
     description: "User management APIs"
   - name: "finances"
@@ -544,12 +542,12 @@ paths:
           schema:
             $ref: "#/definitions/ApiResponse"
 
-  /bookings/{spaceId}:
+  /spaces/{spaceId}/bookings:
     get:
       security:
         - Bearer : []
       tags:
-        - "bookings"
+        - "spaces"
       summary: "Get bookings for the specified space"
       produces:
         - "application/json"
@@ -630,6 +628,44 @@ paths:
             $ref: "#/definitions/ApiResponse"
     
   /spaces/{spaceId}/bookings/{bookingId}:
+    get:
+      security:
+        - Bearer : []
+      tags:
+        - "spaces"
+      summary: "Get a specific reservation"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "spaceId"
+          in: "path"
+          description: "ID of space"
+          required: true
+          type: "string"
+        - name: "bookingId"
+          in: "path"
+          description: "ID of booking"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Booking"
+        401:
+          description: "Invalid token"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        400:
+          description: "Bad parameters"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        404:
+          description: "Space or Booking ID not found"
+          schema:
+            $ref: "#/definitions/ApiResponse"
     put:
       security:
         - Bearer : []
