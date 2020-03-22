@@ -97,8 +97,19 @@ module.exports = {
             return undefined;
 
         let result = await Space.findByIdAndUpdate(sid, $set = {name: newName});
-        if (result != undefined)
+        if (result != undefined) {
             result = JSON.parse(JSON.stringify(result));
+            result.name = newName;
+
+            result.sid = result._id;
+            delete result._id;
+            delete result.__v;
+
+            result.bookings.forEach((item) => {
+                item.bid = item._id;
+                delete item._id;
+            })
+        }
 
         return result;
     },

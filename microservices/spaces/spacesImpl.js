@@ -35,14 +35,16 @@ module.exports = {
     },
     validateSpaceId: async function (spaceId) {
         try {
-            const spaces = await this.getSpaces();
-            if(spaces === undefined)
-                return false;
-
-            return spaces.some(s => s.sid === spaceId);
+            const res = await fetch(SPACE_DL_ENDPOINT + "/" + spaceId).then(apiUtility.checkStatus);
+            if (res.ok) {
+                const space = await res.json();
+                return space;
+            }
+            else
+                return undefined;
         }
         catch (err) {
-            next(err);
+            throw(err);
         }
     },
     getSpaces: async function () {
@@ -77,7 +79,7 @@ module.exports = {
                 return undefined;
 
         } catch (err) {
-            next(err);
+            throw(err);
         }
     },
     createNewSpace: async function (name) {
@@ -98,7 +100,7 @@ module.exports = {
                 return undefined;
 
         } catch (err) {
-            next(err);
+            throw(err);
         }
     },
     deleteSpace: async function (spaceId) {
@@ -107,14 +109,13 @@ module.exports = {
                 method: 'DELETE'
             }).then(apiUtility.checkStatus);
 
-            if (res.ok) {
-                return true;
-            }
-            else
-                return false;
+            if (res.status == 500)
+                throw new Error("Server failure");
+
+            return res.ok;
 
         } catch (err) {
-            next(err);
+            throw(err);
         }
     },
     getBookings: async function (spaceId) {

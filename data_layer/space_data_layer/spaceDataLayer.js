@@ -36,7 +36,7 @@ const router = express.Router();
 router.get("/data/spaces", async function(req, res){
     let spacesList = await controller.retrieveAllSpaces();
     spacesList.forEach((item, index) => {
-        item.href = config.baseURL + ":" + config.bookingPort + "/spaces/" + item._id;
+        item.href = config.baseURL + ":" + config.spacesPort + "/spaces/" + item._id;
         item.sid = item._id;
         delete item._id;
     });
@@ -96,11 +96,12 @@ router.put("/data/spaces/:sid", async function(req, res){
 
     try {
         let result = await controller.modifySpaceName(sid, body.name);
-        var status;
-        (result == undefined) ? status = 404 : status = 200;
-        res.status(status).send();
+        if (result == undefined)
+            res.status(404).send();
+        else
+            res.status(200).json(result);
     } catch (err){
-        res.status(500).json({error: err.message});
+        res.status(400).json({error: err.message});
     }
     
 });

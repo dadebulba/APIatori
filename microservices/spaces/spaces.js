@@ -48,7 +48,7 @@ app.get('/spaces', async function (req, res, next) {
     }
 });
 
-app.post('/spaces', async function (req, res) {
+app.post('/spaces', async function (req, res, next) {
     const name = req.body.name;
 
     if (apiUtility.validateParamsUndefined(name))
@@ -72,7 +72,7 @@ app.post('/spaces', async function (req, res) {
     }
 });
 
-app.put('/spaces/:id', async function (req, res) {
+app.put('/spaces/:id', async function (req, res, next) {
     const spaceId = req.params.id;
     const name = req.body.name;
 
@@ -81,16 +81,16 @@ app.put('/spaces/:id', async function (req, res) {
     if (!apiUtility.validateParamsString(spaceId, name))
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
     try {
-        if (await spaceImpl.validateSpaceId(spaceId))
-            return res.status(404).json(errors.ENTITY_NOT_FOUND);
+        /*if (!(await spaceImpl.validateSpaceId(spaceId)))
+            return res.status(404).json(errors.ENTITY_NOT_FOUND);*/
 
         if (!(apiUtility.validateAuth(req, LEVELS.ADMIN)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
         const editedSpace = await spaceImpl.editSpace(spaceId, name);
 
-        if (editedSpace === undefined)
-            return res.status(400).json(errors.ALREADY_PRESENT);
+        if (editedSpace == undefined)
+            return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
         return res.status(200).json(editedSpace);
     }
@@ -100,7 +100,7 @@ app.put('/spaces/:id', async function (req, res) {
 
 })
 
-app.delete('/spaces/:id', async function (req, res) {
+app.delete('/spaces/:id', async function (req, res, next) {
     const spaceId = req.params.id;
 
     if (apiUtility.validateParamsUndefined(spaceId))
@@ -109,8 +109,8 @@ app.delete('/spaces/:id', async function (req, res) {
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
 
     try {
-        if (!await spaceImpl.validateSpaceId(spaceId))
-            return res.status(404).json(errors.ENTITY_NOT_FOUND);
+        /*if (!await spaceImpl.validateSpaceId(spaceId))
+            return res.status(404).json(errors.ENTITY_NOT_FOUND);*/
 
         if (!(apiUtility.validateAuth(req, LEVELS.ADMIN)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);

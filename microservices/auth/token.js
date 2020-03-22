@@ -27,9 +27,12 @@ app.post('/token', async function (req, res) {
     let h_action = req.headers.action;
     
     if (h_action == 'createToken') {
-        let b_email = req.body.email;
-        var b_pwd = req.body.password;
-        b_pwd = crypto.createHash("sha256").update(b_pwd).digest("hex");
+        let body = req.body;
+        let b_email = body.email;
+        var b_pwd = body.password;
+
+        if (b_pwd != undefined)
+            b_pwd = crypto.createHash("sha256").update(b_pwd).digest("hex");
 
         if (apiUtility.validateParamsUndefined(b_email, b_pwd)){
             res.status(400).json(errors.PARAMS_UNDEFINED);

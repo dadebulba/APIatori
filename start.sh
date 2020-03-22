@@ -28,6 +28,8 @@ if [ $1 == '--services' ] || [ $1 == '--all' ] || [ $1 == '' ]
 
         # Start spaces service
 
+        # Start groups service
+
         # Start identity server
         docker build -f microservices/auth/Dockerfile -t auth .
         docker run --name auth --net host -p 3000:3000 -e PROD=true -d auth
