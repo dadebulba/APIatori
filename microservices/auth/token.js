@@ -6,8 +6,9 @@ const fetch = require("node-fetch");
 const crypto = require('crypto');
 
 const tokenImpl = require('./tokenImpl.js');
-const errors = (process.env.PROD != undefined) ? require("./errorMsg.js") : require('../../errorMsg.js');
-const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require("../../utility.js");
+const errors = process.env.PROD ? require("./errorMsg.js") : require('../../errorMsg.js');
+const apiUtility = process.env.PROD ? require("./utility.js") : require("../../utility.js");
+const userDataLayer = process.env.PROD ? require("./user_data_layer/userDataLayer.js") : require("../../data_layer/user_data_layer/userDataLayer.js");
 
 if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config'); 
@@ -35,11 +36,13 @@ app.post('/token', async function (req, res) {
             b_pwd = crypto.createHash("sha256").update(b_pwd).digest("hex");
 
         if (apiUtility.validateParamsUndefined(b_email, b_pwd)){
+            console.log("Email",b_email, "Password",b_pwd)
             res.status(400).json(errors.PARAMS_UNDEFINED);
             return;
         }
 
         try {
+            //TODO modificare con nuovo user_data_layer
             let queryURL = config.baseURL + ":" + config.userDataLayerPort + config.userDLPath;
             let response = await fetch(queryURL);
             let responseBody = await response.json();

@@ -2,11 +2,13 @@ const apiUtility = require('../../utility.js');
 process.env["NODE_CONFIG_DIR"] = "../../config/";
 const config = require('config');
 
-const BASE_URL = process.env.baseURL || config.get('baseURL');
-const GROUP_DL_PATH = process.env.groupDLPath || config.get('groupDLPath');
-const GROUP_DL_PORT = process.env.groupDataLayerPort || config.get('groupDataLayerPort');
+//const BASE_URL = process.env.baseURL || config.get('baseURL');
+//const GROUP_DL_PATH = process.env.groupDLPath || config.get('groupDLPath');
+//const GROUP_DL_PORT = process.env.groupDataLayerPort || config.get('groupDataLayerPort');
+//
+//const GROUP_DL_ENDPOINT = `${BASE_URL}:${GROUP_DL_PORT}${GROUP_DL_PATH}`;
 
-const GROUP_DL_ENDPOINT = `${BASE_URL}:${GROUP_DL_PORT}${GROUP_DL_PATH}`;
+const userDataLayer = process.env.PROD ? require("./group_data_layer/groupDataLayer") : require("../../data_layer/group_data_layer/groupDataLayer");
 
 module.exports = {
     getFinances: async function (groupId, year) {
@@ -14,6 +16,7 @@ module.exports = {
         var yearTimestamp = new Date(year, 0).getTime();
 
         try {
+            //TODO modificare con nuovo userDataLayer
             const res = await fetch(`${GROUP_DL_ENDPOINT}/${groupId}`).then(apiUtility.checkStatus);
             if (res.ok) {
                 let group = await res.json();
@@ -42,6 +45,7 @@ module.exports = {
             causal : causal
         }
         try {
+            //TODO modificare con nuovo userDataLayer
             let response = await fetch(`${GROUP_DL_ENDPOINT}/${groupId}`).then(apiUtility.checkStatus);
             if(response.ok) {
                 let group = await response.json();
@@ -60,6 +64,7 @@ module.exports = {
                     transactions : transactions
                 };
                 try {
+                    //TODO modificare con nuovo userDataLayer
                     const res = await fetch(`${GROUP_DL_ENDPOINT}/${groupId}`, {
                         method: 'POST',
                         body: JSON.stringify(body),
@@ -106,6 +111,7 @@ module.exports = {
             causal : causal
         }
         try {
+            //TODO modificare con nuovo userDataLayer
             let response = await fetch(`${GROUP_DL_ENDPOINT}/${groupId}`).then(apiUtility.checkStatus);
             if(response.ok) {
                 let group = await response.json();
@@ -130,6 +136,7 @@ module.exports = {
                     transactions : transactions
                 };
                 try {
+                    //TODO modificare con nuovo userDataLayer
                     const res = await fetch(`${GROUP_DL_ENDPOINT}/${groupId}`, {
                         method: 'PUT',
                         body: JSON.stringify(body),
@@ -159,6 +166,7 @@ module.exports = {
     deleteHistory: async function (groupId, timestamp) {
         
         try {
+            //TODO modificare con nuovo userDataLayer
             let response = await fetch(`${GROUP_DL_ENDPOINT}/${groupId}`).then(apiUtility.checkStatus);
             if(response.ok) {
                 let group = await response.json();
@@ -182,6 +190,7 @@ module.exports = {
                     transactions : transactions
                 };
                 try {
+                    //TODO modificare con nuovo userDataLayer
                     const res = await fetch(`${GROUP_DL_ENDPOINT}/${groupId}`, {
                         method: 'PUT',
                         body: JSON.stringify(body),

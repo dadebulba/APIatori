@@ -96,8 +96,28 @@ module.exports = {
             next(err);
         }
     },
-    isObjectIdValid: function (id){
+    isObjectIdValid: function (id) {
         return id != undefined && ObjectId.isValid(id) && String(new ObjectId(id) === id);
+    },
+    getAuthHeader: async function (email, password, tokenUrl) {
+        const options = {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                "action" : "createToken"
+            },
+            body: JSON.stringify({ email : email, password : password })
+        }
+        try {
+            console.log("bearer", await fetch(tokenUrl, options))
+            return {
+                'Authorization': `Bearer ${await fetch(tokenUrl, options)}`
+            };
+        }
+        catch (err) {
+            throw err;
+        }
     },
     levels: levels
 }

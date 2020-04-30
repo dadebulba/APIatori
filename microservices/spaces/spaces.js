@@ -9,7 +9,7 @@ if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../confi
 const config = require('config');
 
 const PORT = config.get('spacesPort');
-const basePath = config.get("basePath");
+const basePath = config.get("baseURL");
 const LEVELS = apiUtility.levels;
 const app = express();
 app.use(bodyParser.json());
@@ -75,7 +75,7 @@ app.get('/spaces/:spaceId', async function (req, res, next) {
 
 });
 
-app.post('/spaces', function (req, res, next) {
+app.post('/spaces', async function (req, res, next) {
     const name = req.body.name;
 
     if (apiUtility.validateParamsUndefined(name))
@@ -179,7 +179,7 @@ app.get('/spaces/:spaceId/bookings', async function (req, res, next) {
     }
 });
 
-app.post('/spaces/:spaceId/bookings/:bookingId', function (req, res) {
+app.post('/spaces/:spaceId/bookings/:bookingId', async function (req, res) {
     const spaceId = req.params.id;
     const gid = req.body.gid;
     const from = Date.parse(req.body.from);
@@ -200,7 +200,7 @@ app.post('/spaces/:spaceId/bookings/:bookingId', function (req, res) {
         if (!(await spaceImpl.validateSpaceId(spaceId) && (await apiUtility.validateGroupId(gid))))
             return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
-        if (!(apiUtility.validateAuth(req, LEVELS.EDUCATOR) || apiUtility.validateAuth(req, LEVELS.ADMIN)))
+        if (!(apiUtility.validateAuth(req, LEVELS.EDUCATOR, gid) || apiUtility.validateAuth(req, LEVELS.ADMIN)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
         const newBooking = await spaceImpl.createNewBooking(from, to, type, gid, uid, spaceId);
