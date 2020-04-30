@@ -1,19 +1,5 @@
-const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require("../../utility.js");
+const apiUtility = (process.env.PROD) ? require("./utility.js") : require("../../utility.js");
 const Group = require("./groupSchema.js")[0];
-const fetch = require("node-fetch");
-
-
-if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
-const config = require('config');
-
-async function retrieveAllUsers(){
-    let result = await fetch(config.baseURL + ":" + config.userDataLayerPort + config.userDLPath);
-    result = await result.json();
-
-    let userArray = [];
-    result.forEach(item => {userArray.push(item.uid)});
-    return userArray;
-}
 
 async function isGroupValid(group){
     if (apiUtility.validateParamsUndefined(group.name, group.educators, group.guys) || group.educators.length == 0)
@@ -25,19 +11,18 @@ async function isGroupValid(group){
         group.collaborators = [];
 
     //Check uid validity
-    let users = await retrieveAllUsers();
     let allValid = true;
 
     for (var i=0; i<group.educators.length && allValid; i++)
-        if (!users.includes(group.educators[i]))
+        if (!apiUtility.isObjectValid(group.educators[i]))
             allValid = false;
 
     for (var i=0; i<group.collaborators.length && allValid; i++)
-        if (!users.includes(group.collaborators[i]))
+        if (!apiUtility.isObjectValid(group.collaborators[i]))
             allValid = false;
 
     for (var i=0; i<group.guys.length && allValid; i++)
-        if (!users.includes(group.guys[i]))
+        if (!apiUtility.isObjectValid(group.guys[i]))
             allValid = false;
         
     return allValid;
@@ -84,6 +69,9 @@ module.exports = {
             throw new Error("Cannot save new group into database");
         
         result = JSON.parse(JSON.stringify(result));
+        result.gid = result._id;
+        delete result._id;
+        delete result.__v;
         return result;
     },
 
@@ -92,8 +80,12 @@ module.exports = {
             return undefined;
 
         let result = await Group.findById(gid);
-        if (result != undefined)
+        if (result != undefined){
             result = JSON.parse(JSON.stringify(result));
+            delete result.__v;
+            result.gid = result._id;
+            delete result._id;
+        }
 
         return result;
     },
@@ -130,8 +122,12 @@ module.exports = {
             updateObj.calendarMail = group.calendarMail;
 
         result = await Group.findByIdAndUpdate(gid, $set = updateObj);
-        if (result != undefined)
+        if (result != undefined){
             result = JSON.parse(JSON.stringify(result));
+            result.gid = result._id;
+            delete result.__v;
+            delete result._id;
+        }
 
         return result;
     }

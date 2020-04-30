@@ -1,231 +1,121 @@
-const express = require('express');
-const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const controller = require('./spaceDataLayerImpl.js');
-const errors = (process.env.PROD != undefined) ? require("./errorMsg.js") : require('../../errorMsg.js');
-const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require("../../utility.js");
+const apiUtility = (process.env.PROD) ? require("./utility.js") : require("../../utility.js");
 
 if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config'); 
 
-//Database parameters
-const DBaddress = config.mongoDB.address;
-const DBport = config.mongoDB.port;
-const DBname = config.mongoDB.collection;
-const DBurl = "mongodb://" + DBaddress + ":" + DBport + "/" + DBname;
+var inmemory_mongodb_promise;
 
-//MongoDB initialization
-const options = {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false
-};
-mongoose.connect(DBurl, options);
-mongoose.Promise = global.Promise;
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-
-//Express initialization
-const app = express();
-app.use(bodyParser.json());
-app.listen(config.spaceDataLayerPort);
-
-//Routes
-const router = express.Router();
-
-router.get("/data/spaces", async function(req, res){
-    let spacesList = await controller.retrieveAllSpaces();
-    spacesList.forEach((item, index) => {
-        item.href = config.baseURL + ":" + config.spacesPort + "/spaces/" + item._id;
-        item.sid = item._id;
-        delete item._id;
+if (process.env.TEST){
+    //Start the in-memory db for testing
+    inmemory_mongodb_promise = new Promise((resolve, reject) => {
+        mongoose.connect(global.__MONGO_URI__, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true }).then(
+            () => {
+                controller.loadMockSpaces(process.env.MOCK_SPACES).then(() => resolve());
+            }
+        );
     });
+}
+else {
+    //MongoDB initialization
+    const options = {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useFindAndModify: false
+    };
+    mongoose.connect(config.mongoURL, options);
+    mongoose.Promise = global.Promise;
+    const db = mongoose.connection;
+    db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+}
 
-    spacesList == undefined ? res.status(500).send() : res.status(200).json(spacesList);
-});
+module.exports = {
 
-router.get("/data/spaces/:sid", async function(req, res){
-    let sid = req.params.sid;
-    if (!apiUtility.isObjectIdValid(sid)){
-        res.status(400).json(errors.PARAMS_UNDEFINED);
-        return;
-    }
+    inmemory_mongodb_promise : inmemory_mongodb_promise,
 
-    let space = await controller.retrieveSingleSpace(sid);
-    if (space == undefined)
-        res.status(404).send();
-    else {
-        space.sid = space._id;
-        delete space._id;
-        delete space.__v;
-        res.status(200).json(space);
-    }
-});
+    getAllSpaces : async function(){
+        let spacesList = await controller.retrieveAllSpaces();
+        spacesList.forEach((item) => {
+            item.href = config.baseURL + ":" + config.spacesPort + "/spaces/" + item._id;
+            item.sid = item._id;
+            delete item._id;
+        });
 
-router.post("/data/spaces", async function(req, res){
-    let body = req.body;
-    if (body == undefined || body == "" || body.name == undefined || body.name == ""){
-        res.status(400).json(errors.PARAMS_UNDEFINED);
-        return;
-    }
+        return spacesList;
+    },
 
-    try {
-        let result = await controller.createSpace(body.name);
-        if (result == undefined)
-            res.status(400).json(errors.ALREADY_PRESENT);
-        else {
-            result.sid = result._id;
-            delete result._id;
-            delete result.__v;
-            res.status(201).json(result);
-        }
-    } catch (err){
-        res.status(500).json({error: err.message});
-    }
-});
+    getSpace : async function(sid){
+        if (arguments.length !== 1 || !apiUtility.isObjectIdValid(sid))
+            throw new Error("Bad parameters");
 
-router.put("/data/spaces/:sid", async function(req, res){
-    let sid = req.params.sid;
-    let body = req.body;
+        let space = await controller.retrieveSingleSpace(sid);
+        return space;
+    },
 
-    if (!apiUtility.isObjectIdValid(sid) 
-            || body === undefined || body.name === undefined || body.name == ""){
-        res.status(400).json(errors.PARAMS_UNDEFINED);
-        return;
-    }
+    createSpace : async function(name){
+        if (arguments.length !== 1 || name == undefined || typeof name !== "string")
+            throw new Error("Bad arguments");
 
-    try {
-        let result = await controller.modifySpaceName(sid, body.name);
-        if (result == undefined)
-            res.status(404).send();
-        else
-            res.status(200).json(result);
-    } catch (err){
-        res.status(400).json({error: err.message});
-    }
-    
-});
+        let result = await controller.createSpace(name);
+        return result;
+    },
 
-router.delete("/data/spaces/:sid", async function(req, res){
-    let sid = req.params.sid;
-    if (!apiUtility.isObjectIdValid(sid)){
-        res.status(400).json(errors.PARAMS_UNDEFINED);
-        return;
-    }
+    modifySpace : async function(sid, newName){
+        if (arguments.length !== 2 || newName == undefined || !apiUtility.isObjectIdValid(sid) || newName === "")
+            throw new Error("Bad arguments");
 
-    try {
+        let result = await controller.modifySpaceName(sid, newName);
+        return result;
+    },
+
+    deleteSpace : async function(sid){
+        if (arguments.length !== 1 || !apiUtility.isObjectIdValid(sid))
+            throw new Error("Bad parameters");
+
         let result = await controller.deleteSpace(sid);
-        let status = (result == undefined) ? 404 : 200;
-        res.status(status).send();
-    } catch (err){
-        res.status(404).send();
-    }
-});
+        return result;
+    },
 
-router.get("/data/spaces/:sid/bookings", async function(req, res){
-    let sid = req.params.sid;
-    if (!apiUtility.isObjectIdValid(sid)) {
-        res.status(400).json(errors.PARAMS_UNDEFINED);
-        return;
-    }
+    getAllBookingsForSpace : async function(sid){
+        if (arguments.length !== 1 || !apiUtility.isObjectIdValid(sid))
+            throw new Error("Bad parameters");
 
-    try {
         let result = await controller.getAllBookings(sid);
-        if (result == undefined)
-            res.status(404).send();
-        else 
-            res.status(200).json(result);
-    } catch (err){
-        res.status(500).send({error: err.message});
-    }
-});
+        return result;
+    },
 
-router.get("/data/spaces/:sid/bookings/:bid", async function(req, res){
-    let sid = req.params.sid;
-    let bid = req.params.bid;
+    getBookingForSpace : async function(sid, bid){
+        if (arguments.length !== 2 || !apiUtility.isObjectIdValid(sid) || !apiUtility.isObjectIdValid(bid))
+            throw new Error("Bad parameters");
 
-    if (!apiUtility.isObjectIdValid(sid) || !apiUtility.isObjectIdValid(bid)){
-        res.status(400).json(errors.PARAMS_UNDEFINED);
-        return;
-    }
-
-    try {
         let result = await controller.getBooking(sid, bid);
-        if (result == undefined)
-            res.status(404).send();
-        else 
-            res.status(200).json(result);
-    } catch (err){
-        res.status(500).json({error: err.message});
-    }
-})
+        return result;
+    },
 
-router.post("/data/spaces/:sid/bookings", async function(req, res){
-    let body = req.body;
-    let sid = req.params.sid;
+    createBookingForSpace : async function(sid, bookingData){
+        if (arguments.length !== 2 || !apiUtility.isObjectIdValid(sid) || bookingData == undefined)
+            throw new Error("Bad parameters");
 
-    if (body == undefined || !apiUtility.isObjectIdValid(sid)){
-        res.status(400).json(errors.INVALID_DATA);
-        return;
-    }
+        let result = await controller.createBooking(sid, bookingData);
+        return result;
+    },
 
-    try {
-        let result = await controller.createBooking(sid, body);
-        if (result == undefined)
-            res.status(400).json(errors.ALREADY_PRESENT);
-        else 
-            res.status(201).send();
-    } catch (err){
-        res.status(400).json({message: err.message});
-    }
-});
+    modifyBookingForSpace : async function(sid, bid, data){
+        if (arguments.length !== 3 || !apiUtility.isObjectIdValid(sid) || !apiUtility.isObjectIdValid(bid) ||
+                data == undefined)
+            throw new Error("Bad parameters");
 
-router.put("/data/spaces/:sid/bookings/:bid", async function(req, res){
-    let sid = req.params.sid;
-    let bid = req.params.bid;
-    let body = req.body;
+        let result = await controller.editBooking(sid, bid, data);
+        return result;
+    },
 
-    if (body == undefined || !apiUtility.isObjectIdValid(sid) || !apiUtility.isObjectIdValid(bid)){
-        res.status(400).json(errors.PARAMS_UNDEFINED);
-        return;
-    }
+    deleteBookingForSpace : async function(sid, bid){
+        if (arguments.length !== 2 || !apiUtility.isObjectIdValid(sid), || !apiUtility.isObjectIdValid(bid))
+            throw new Error("Bad parameters");
 
-    try {
-        let result = await controller.editBooking(sid, bid, body);
-        if (result == undefined)
-            res.status(404).send();
-        else {    
-            result.sid = result._id;
-            delete result._id;
-            delete result.__v;
-            result.bookings.forEach((item) => {
-                item.bid = item._id;
-                delete item._id;
-            });
-            res.status(200).json(result);
-        }
-    } catch (err){
-        res.status(500).json({error: err.message});
-    }
-
-});
-
-router.delete("/data/spaces/:sid/bookings/:bid", async function(req, res){
-    let sid = req.params.sid;
-    let bid = req.params.bid;
-
-    if (!apiUtility.isObjectIdValid(sid) || !apiUtility.isObjectIdValid(bid)){
-        res.status(400).json(errors.PARAMS_UNDEFINED);
-        return;
-    }
-
-    try {
         let result = await controller.deleteBooking(sid, bid);
-        let status = (result == undefined) ? 404 : 200;
-        res.status(status).send();
-    } catch (err){
-        res.status(500).json({error: err.message});
+        return result;
     }
-});
 
-app.use('/', router);
+}

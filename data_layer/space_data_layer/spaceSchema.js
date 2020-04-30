@@ -4,7 +4,7 @@ let BookingSchema = new mongoose.Schema({
     uid: {type: String, required: true},
     from: {type: Date, require: true},
     to: {type: Date, required: true},
-    gid: {type: String, required: false},
+    gid: {type: String, required: true},
     type: {type: String, required: true, default: "Altro"}
 });
 

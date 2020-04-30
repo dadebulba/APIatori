@@ -172,7 +172,7 @@ module.exports = {
                 return undefined;
 
         } catch (err) {
-            next(err);
+            throw(err);
         }
     },
     editBooking: async function (spaceId, bookingId, from, to, type, gid, uid) {

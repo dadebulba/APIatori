@@ -75,7 +75,7 @@ app.get('/spaces/:spaceId', async function (req, res, next) {
 
 });
 
-app.post('/spaces', function (req, res, next) {
+app.post('/spaces', async function (req, res, next) {
     const name = req.body.name;
 
     if (apiUtility.validateParamsUndefined(name))
@@ -166,8 +166,8 @@ app.get('/spaces/:spaceId/bookings', async function (req, res, next) {
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
 
     try {
-        if (await spaceImpl.validateSpaceId(spaceId) == false)
-            return res.status(404).json(errors.ENTITY_NOT_FOUND);
+        /*if (await spaceImpl.validateSpaceId(spaceId) == false)
+            return res.status(404).json(errors.ENTITY_NOT_FOUND);*/
 
         const bookings = await spaceImpl.getBookings(spaceId);
         if (apiUtility.validateParamsUndefined(bookings))
@@ -179,7 +179,7 @@ app.get('/spaces/:spaceId/bookings', async function (req, res, next) {
     }
 });
 
-app.post('/spaces/:spaceId/bookings/:bookingId', function (req, res) {
+app.post('/spaces/:spaceId/bookings', async function (req, res, next) {
     const spaceId = req.params.id;
     const gid = req.body.gid;
     const from = Date.parse(req.body.from);
@@ -197,10 +197,10 @@ app.post('/spaces/:spaceId/bookings/:bookingId', function (req, res) {
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
 
     try {
-        if (!(await spaceImpl.validateSpaceId(spaceId) && (await apiUtility.validateGroupId(gid))))
-            return res.status(404).json(errors.ENTITY_NOT_FOUND);
+        /*if (!(await spaceImpl.validateSpaceId(spaceId) && (await apiUtility.validateGroupId(gid))))
+            return res.status(404).json(errors.ENTITY_NOT_FOUND);*/
 
-        if (!(apiUtility.validateAuth(req, LEVELS.EDUCATOR) || apiUtility.validateAuth(req, LEVELS.ADMIN)))
+        if (!(apiUtility.validateAuth(req, LEVELS.EDUCATOR, gid) || apiUtility.validateAuth(req, LEVELS.ADMIN)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
         const newBooking = await spaceImpl.createNewBooking(from, to, type, gid, uid, spaceId);

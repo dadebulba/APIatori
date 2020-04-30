@@ -1,95 +1,82 @@
-const express = require('express');
-const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const controller = require('./userDataLayerImpl.js');
-const errors = (process.env.PROD != undefined) ? require("./errorMsg.js") : require('../../errorMsg.js');
+const apiUtility = (process.env.PROD) ? require("./utility.js") : require("../../utility.js");
 
 if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config'); 
 
-//Database parameters
-const DBaddress = config.mongoDB.address;
-const DBport = config.mongoDB.port;
-const DBname = config.mongoDB.collection;
-const DBurl = "mongodb://" + DBaddress + ":" + DBport + "/" + DBname;
+var inmemory_mongodb_promise;
 
-//MongoDB initialization
-const options = {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false
-};
-mongoose.connect(DBurl, options);
-mongoose.Promise = global.Promise;
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+if (process.env.TEST){
+    //Start the in-memory db for testing
+    inmemory_mongodb_promise = new Promise((resolve, reject) => {
+        mongoose.connect(global.__MONGO_URI__, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true }).then(
+            () => {
+                controller.loadMockUsers(process.env.MOCK_USERS).then(() => resolve());
+            }
+        );
+    });
+}
+else {
+    //MongoDB initialization
+    const options = {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useFindAndModify: false
+    };
+    mongoose.connect(config.mongoURL, options);
+    mongoose.Promise = global.Promise;
+    const db = mongoose.connection;
+    db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+}
 
-//Express initialization
-const app = express();
-app.use(bodyParser.json());
-app.listen(config.userDataLayerPort);
+module.exports = {
 
-//Routes
-const router = express.Router();
+    inmemory_mongodb_promise : inmemory_mongodb_promise,
 
-router.post("/data/users", async function(req, res){
-    let body = req.body;
-    if (body == undefined){
-        res.status(400).json(errors.PARAMS_UNDEFINED);
-        return;
-    }
-
-    try {
-        let result = await controller.createUser(body);
-        if (result == undefined){
-            res.status(400).json({message: "User already present"});
-            return;
+    createUser : async function(userInfo){
+        if (userInfo == undefined || arguments.length !== 1){
+            throw new Error("Bad parameters");
         }
 
+        let result = await controller.createUser(userInfo);
+        if (result == undefined)
+            return undefined;
+    
         result.uid = result._id;
         delete result._id;
         delete result.__v;
+    
+        return result;
+    },
 
-        res.status(201).json(result);
-        
-    } catch (err){
-        res.status(500).json({error: err.message});
-    }
-});
+    getAllUsers : async function(){
+        let usersList = await controller.retrieveAllUsers();
 
-router.get("/data/users", async function(req, res){
-    let usersList = await controller.retrieveAllUsers();
+        usersList.forEach((item) => {
+            item.uid = item._id;
+            delete item._id;
 
-    usersList.forEach((item, index) => {
-        item.uid = item._id;
-        delete item._id;
+            item.href = config.baseURL + ":" + config.userDataLayerPort + "/data/users/" + item.uid;
+        });
 
-        item.href = config.baseURL + ":" + config.userDataLayerPort + "/data/users/" + item.uid;
-    });
+        return usersList;
+    },
 
-    res.status(200).json(usersList);
-});
+    getUser : async function(uid){
+        if (arguments.length !== 1 || !apiUtility.isObjectIdValid(uid))
+            throw new Error("Bad parameters");
 
-router.get("/data/users/:uid", async function(req, res){
-
-    if (req.params.uid == undefined){
-        res.status(400).json(errors.PARAMS_UNDEFINED);
-        return;
-    }
-    try {
-        let result = await controller.getUser(req.params.uid);
+        let result = await controller.getUser(uid);
         if (result == undefined)
-            res.status(404).send();
+            return undefined;
         else {
             delete result.__v;
             result.uid = result._id;
             delete result._id;
-
-            res.status(200).json(result);
-        }
-    } catch (e){
-        res.status(404).send();
+    
+            return result;
+        }    
     }
-})
 
-app.use('/', router);
+}

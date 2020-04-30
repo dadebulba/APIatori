@@ -1,126 +1,76 @@
-const express = require('express');
-const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const controller = require('./groupDataLayerImpl.js');
-const errors = (process.env.PROD != undefined) ? require("./errorMsg.js") : require('../../errorMsg.js');
+const apiUtility = (process.env.PROD) ? require("./utility.js") : require("../../utility.js");
 
 if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config');
 
-//Database parameters
-const DBaddress = config.mongoDB.address;
-const DBport = config.mongoDB.port;
-const DBname = config.mongoDB.collection;
-const DBurl = "mongodb://" + DBaddress + ":" + DBport + "/" + DBname;
+var inmemory_mongodb_promise;
 
-//MongoDB initialization
-const options = {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false
-};
-mongoose.connect(DBurl, options);
-mongoose.Promise = global.Promise;
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+if (process.env.TEST){
+    //Start the in-memory db for testing
+    inmemory_mongodb_promise = new Promise((resolve, reject) => {
+        mongoose.connect(global.__MONGO_URI__, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true }).then(
+            () => {
+                controller.loadMockUsers(process.env.MOCK_USERS).then(() => resolve());
+            }
+        );
+    });
+}
+else {
+    //MongoDB initialization
+    const options = {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useFindAndModify: false
+    };
+    mongoose.connect(config.mongoURL, options);
+    mongoose.Promise = global.Promise;
+    const db = mongoose.connection;
+    db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+}
 
-//Express initialization
-const app = express();
-app.use(bodyParser.json());
-app.listen(config.groupDataLayerPort);
+module.exports = {
 
-//Routes
-const router = express.Router();
+    inmemory_mongodb_promise : inmemory_mongodb_promise,
 
-router.get("/data/groups", async function(req, res){
-    let groups = await controller.retrieveAllGroups();
-    res.status(200).json(groups);
-});
+    getAllGroups : async function(){
+        let groups = await controller.retrieveAllGroups();
+        groups.forEach((item) => {
+            item.href = config.basePath + ":" + config.groupsPort + config.groupsPath + "/" + item.gid;
+        });
+        return groups;
+    },
 
-router.post("/data/groups", async function(req, res){
-    let body = req.body;
-    if (body == undefined || body == ""){
-        res.status(400).json(errors.PARAMS_UNDEFINED);
-        return;
-    }
+    getGroup : async function(gid){
+        if (arguments.length !== 1 || !apiUtility.isObjectValid(gid))
+            throw new Error("Bad parameters");
 
-    try {
-        let result = await controller.createGroup(body);
-        if (result == undefined)
-            res.status(400).json(errors.PARAMS_WRONG_TYPE);
-        else {
-            result.gid = result._id;
-            delete result._id;
-            delete result.__v;
-
-            res.status(201).json(result);
-        }
-    } catch (err){
-        res.status(500).json({error: err.message});
-    }
-}); 
-
-router.get("/data/groups/:gid", async function(req, res){
-    let gid = req.params.gid;
-    if (gid == undefined){
-        res.status(400).json(errors.PARAMS_UNDEFINED);
-        return;
-    }
-
-    try {
         let result = await controller.getGroup(gid);
-        if (result == undefined)
-            res.status(404).send();
-        else {
-            delete result.__v;
-            result.gid = result._id;
-            delete result._id;
+        return result;
+    },
 
-            res.status(200).json(result);
-        }
-    } catch (err) {
-        res.status(404).send();
-    }
-});
+    createGroup : async function(groupData){
+        if (arguments.length !== 1 || groupData == undefined)
+            throw new Error("Bad parameters");
 
-router.put("/data/groups/:gid", async function(req, res){
-    let gid = req.params.gid;
-    let body = req.body;
-    if (gid == undefined || body == undefined){
-        res.status(400).json(errors.PARAMS_UNDEFINED);
-        return;
-    }
+        let result = await controller.createGroup(groupData);
+        return result;
+    },
 
-    try {
-        let result = await controller.modifyGroup(gid, body);
-        if (result == undefined)
-            res.status(404).send();
-        else {
-            result.gid = result._id;
-            delete result.__v;
-            delete result._id;
+    modifyGroup : async function(gid, data){
+        if (arguments.length !== 2 || !apiUtility.isObjectValid(gid) || data == undefined)
+            throw new Error("Bad parameters");
 
-            res.status(200).json(result);
-        }
-    } catch (err){
-        res.status(400).json({error: err.message});
-    }
-});
+        let result = await controller.modifyGroup(gid, data);
+        return result;
+    },
 
-router.delete("/data/groups/:gid", async function(req, res){
-    let gid = req.params.gid;
-    if (gid == undefined){
-        res.status(400).json(errors.PARAMS_UNDEFINED);
-        return;
-    }
+    deleteGroup : async function(gid){
+        if (arguments.length !== 1 || !apiUtility.isObjectValid(gid))
+            throw new Error("Bad arguments");
 
-    try {
         let result = await controller.deleteGroup(gid);
-        let status = (result == undefined) ? 404 : 200;
-        res.status(status).send();
-    } catch (err){
-        res.status(500).json({error: err.message});
+        return result;
     }
-});
-
-app.use('/', router);
+}
