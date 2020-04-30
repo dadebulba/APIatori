@@ -111,7 +111,7 @@ module.exports = {
     },
 
     deleteBookingForSpace : async function(sid, bid){
-        if (arguments.length !== 2 || !apiUtility.isObjectIdValid(sid), || !apiUtility.isObjectIdValid(bid))
+        if (arguments.length !== 2 || !apiUtility.isObjectIdValid(sid) || !apiUtility.isObjectIdValid(bid))
             throw new Error("Bad parameters");
 
         let result = await controller.deleteBooking(sid, bid);

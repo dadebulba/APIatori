@@ -30,6 +30,10 @@ async function isGroupValid(group){
 
 module.exports = {
 
+    loadMockGroups : async function(groups){
+        throw new Error("Function not implemented yet");
+    },
+
     retrieveAllGroups : async function(){
         const excludedFields = {
             __v: 0,

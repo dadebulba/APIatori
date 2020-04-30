@@ -12,7 +12,7 @@ if (process.env.TEST){
     inmemory_mongodb_promise = new Promise((resolve, reject) => {
         mongoose.connect(global.__MONGO_URI__, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true }).then(
             () => {
-                controller.loadMockUsers(process.env.MOCK_USERS).then(() => resolve());
+                controller.loadMockGroups(process.env.MOCK_GROUPS).then(() => resolve());
             }
         );
     });
