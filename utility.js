@@ -72,7 +72,7 @@ module.exports = {
         process.env["NODE_CONFIG_DIR"] = "./config/";
         const config = require('config');
 
-        const groupURL = config.baseURL + ":" + config.groupDataLayerPort + config.groupDLPath + "/" + gid;
+        const groupURL = config.baseURL + ":" + config.groupsPort + config.groupsPath + "/" + gid;
         try {
             let response = await fetch(groupURL).then(this.checkStatus);
             return response.status == 200;
@@ -86,7 +86,7 @@ module.exports = {
         process.env["NODE_CONFIG_DIR"] = "./config/";
         const config = require('config');
 
-        const userURL = config.baseURL + ":" + config.userDataLayerPort + config.userDLPath + "/" + uid;
+        const userURL = config.baseURL + ":" + config.usersPort + config.usersPath + "/" + uid;
         console.log("Checking uid " + uid + " @ " + userURL);
         try {
             let response = await fetch(userURL).then(this.checkStatus);

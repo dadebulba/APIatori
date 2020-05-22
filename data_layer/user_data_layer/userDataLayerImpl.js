@@ -39,17 +39,12 @@ module.exports = {
 
     loadMockUsers: async function(mockUser){
 
-        //mockUser = JSON.parse(JSON.stringify(mockUser));
         mockUser = JSON.parse(mockUser);
 
         for (var i=0; i<mockUser.length; i++){
-            console.log(mockUser[i]);
             const newUser = new User(mockUser[i]);
             await newUser.save();
         }
-
-        let allUsers = await User.find();
-        allUsers = JSON.parse(JSON.stringify(allUsers));
 
         return true;
     },
@@ -57,7 +52,7 @@ module.exports = {
     createUser : async function(newUser){
 
         if (newUser == undefined || !checkUserBody(newUser))
-            return undefined;
+            throw new Error("Bad parameters");
 
         //Check that there isn't already an user with the same mail
         let result = await User.findOne({mail: new RegExp('^'+newUser.mail+'$', "i")}); // "i" for case-insensitive
@@ -84,6 +79,9 @@ module.exports = {
         else {    
             result = JSON.parse(JSON.stringify(result));
             delete result.password;
+            result.uid = result._id;
+            delete result._id;
+            delete result.__v;
             return result;           
         }
     },
@@ -111,10 +109,14 @@ module.exports = {
             return undefined;
 
         let user = await User.findById(uid);
-        if (user != undefined)
+        if (user != null){
             user = JSON.parse(JSON.stringify(user));
+            delete user.__v;
+            user.uid = user._id;
+            delete user._id;
+        }
 
-        return user;
+        return (user != null) ? user : undefined;
     }
 
 }
