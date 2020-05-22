@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest --forceExit"
   },
   "author": "",
   "license": "ISC",
@@ -15,14 +15,13 @@
     "express": "^4.17.1",
     "express-bearer-token": "^2.4.0",
     "express-unless": "^0.5.0",
-    "jest": "^25.2.7",
     "jsonwebtoken": "^8.5.1",
     "luxon": "^1.21.3",
-    "mockserver": "^3.1.1",
     "mongoose": "^5.8.1",
     "node-fetch": "^2.6.0"
   },
   "devDependencies": {
+    "jest": "^25.2.7",
     "@shelf/jest-mongodb": "^1.1.5"
   }
 }

@@ -72,7 +72,7 @@ module.exports = {
         process.env["NODE_CONFIG_DIR"] = "./config/";
         const config = require('config');
 
-        const groupURL = config.baseURL + ":" + config.groupDataLayerPort + config.groupDLPath + "/" + gid;
+        const groupURL = config.baseURL + ":" + config.groupsPort + config.groupsPath + "/" + gid;
         try {
             let response = await fetch(groupURL).then(this.checkStatus);
             return response.status == 200;
@@ -86,7 +86,7 @@ module.exports = {
         process.env["NODE_CONFIG_DIR"] = "./config/";
         const config = require('config');
 
-        const userURL = config.baseURL + ":" + config.userDataLayerPort + config.userDLPath + "/" + uid;
+        const userURL = config.baseURL + ":" + config.usersPort + config.usersPath + "/" + uid;
         console.log("Checking uid " + uid + " @ " + userURL);
         try {
             let response = await fetch(userURL).then(this.checkStatus);
@@ -96,23 +96,13 @@ module.exports = {
             next(err);
         }
     },
-    isObjectIdValid: function (id) {
+    isObjectIdValid: function (id){
         return id != undefined && ObjectId.isValid(id) && String(new ObjectId(id) === id);
     },
-    getAuthHeader: async function (email, password, tokenUrl) {
-        const options = {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                "action" : "createToken"
-            },
-            body: JSON.stringify({ email : email, password : password })
-        }
+    getAuthHeader : async function(email, password) {
         try {
-            console.log("bearer", await fetch(tokenUrl, options))
             return {
-                'Authorization': `Bearer ${await fetch(tokenUrl, options)}`
+                'Authorization': `Bearer ${await getToken(email, password)}`
             };
         }
         catch (err) {

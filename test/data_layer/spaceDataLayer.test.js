@@ -1,0 +1,456 @@
+const mockSpaces = require("../data/spaces.js");
+
+process.env.TEST = true;
+process.env.MOCK_SPACES = JSON.stringify(mockSpaces);
+const spaceDL = require("../../data_layer/space_data_layer/spaceDataLayer");
+
+//Data layer APIs
+const getAllSpaces = spaceDL.getAllSpaces;
+const getSpace = spaceDL.getSpace;
+const createSpace = spaceDL.createSpace;
+const modifySpace = spaceDL.modifySpace;
+const deleteSpace = spaceDL.deleteSpace;
+const getAllBookingsForSpace = spaceDL.getAllBookingsForSpace;
+const getBookingForSpace = spaceDL.getBookingForSpace;
+const createBookingForSpace = spaceDL.createBookingForSpace;
+const modifyBookingForSpace = spaceDL.modifyBookingForSpace;
+const deleteBookingForSpace = spaceDL.deleteBookingForSpace;
+
+beforeAll(async () => {
+    await spaceDL.inmemory_mongodb_promise;
+
+    //Retrive id of the inserted mocked data
+    let data = await getAllSpaces();
+    if (data == undefined)
+        process.exit(1);
+
+    for (var i=0; i<mockSpaces.length; i++)
+        mockSpaces[i].sid = data[i].sid;
+
+    //Insert a mock booking for the first space for testing purpose
+    const bookingData = {
+        uid: mockSpaces[0].sid, //It performs only a validation check of the id string
+        gid: mockSpaces[0].sid,
+        from: "2222-02-24T20:00:00.000Z",
+        to: "2222-02-24T23:00:00.000Z",
+        type: "attivita"
+    }
+
+    let res = await createBookingForSpace(mockSpaces[0].sid, bookingData);
+    if (res == undefined)
+        process.exit(1);
+    
+    mockSpaces[0].bookings = [];
+    mockSpaces[0].bookings.push(bookingData);
+
+    res = await getAllBookingsForSpace(mockSpaces[0].sid);
+    if (res == undefined)
+        process.exit(1);
+
+    mockSpaces[0].bookings[0].bid = res[0].bid;
+});
+
+describe("Get all spaces", () => {
+    test("01 - Retrieve all spaces - should return a list", () => {
+        getAllSpaces().then(data => {
+            expect(data).not.toBeUndefined();
+            expect(data.length).toBe(mockSpaces.length);
+        })
+    });
+});
+
+describe("Get space by id", () => {
+    test("01 - sid not specified - should throw", async () => {
+        await expect(getSpace()).rejects.toThrow(Error);
+    });
+
+    test("02 - sid is undefined - should throw", async () => {
+        const sid = undefined;
+
+        await expect(getSpace(sid)).rejects.toThrow(Error);
+    });
+
+    test("03 - sid is an array - should throw", async () => {
+        const sid = [];
+
+        await expect(getSpace(sid)).rejects.toThrow(Error);
+    });
+
+    test("04 - sid is an array - should throw", async () => {
+        const sid = [];
+
+        await expect(getSpace(sid)).rejects.toThrow(Error);
+    });
+
+    test("05 - sid not exists - should return null", async () => {
+        const sid = mockSpaces[0].sid.substring(0, mockSpaces[0].sid.length-5) + "abcde";
+        const res = await getSpace(sid);
+        expect(res).toBeUndefined();
+    });
+
+    test("06 - sid is valid - should return the space", async () => {
+        const sid = mockSpaces[0].sid;
+        const res = await getSpace(sid);
+
+        expect(res).not.toBeUndefined();
+    });
+});
+
+describe("Create new spaces", () => {
+    test("01 - name not specified - should throw", async () => {
+        await expect(createSpace()).rejects.toThrow(Error);
+    });
+
+    test("02 - name is undefined - should throw", async () => {
+        const name = undefined;
+
+        await expect(createSpace(name)).rejects.toThrow(Error);
+    });
+
+    test("03 - name is not a string - should throw", async () => {
+        const name = [];
+        
+        await expect(createSpace(name)).rejects.toThrow(Error);
+    });
+
+    test("04 - name is an empty string - should throw", async () => {
+        const name = "";
+        
+        await expect(createSpace(name)).rejects.toThrow(Error);
+    });
+
+    test("05 - already exist a space with that name - should return null", async () => {
+        const name = mockSpaces[0].name;
+        const res = await createSpace(name);
+        expect(res).toBeUndefined();
+    });
+
+    test("06 - name is valid - should create", async () => {
+        const name = "Dinamic";
+        const res = await createSpace(name);
+        expect(res).not.toBeUndefined();
+    });
+});
+
+describe("Modify an existing space", () => {
+    test("01 - sid not specified, name not specified - should throw", async () => {
+        const sid = undefined;
+        const name = "New name from test";
+
+        await expect(modifySpace()).rejects.toThrow(Error);
+    });
+
+    test("02 - sid not specified, valid name - should throw", async () => {
+        const sid = undefined;
+        const name = "New name from test";
+
+        await expect(modifySpace(name)).rejects.toThrow(Error);
+    });
+
+    test("03 - Valid sid, name not specified - should throw", async () => {
+        const sid = mockSpaces[0].sid;
+        const name = "New name from test";
+
+        await expect(modifySpace(sid)).rejects.toThrow(Error);
+    });
+
+    test("04 - sid undefined - should throw", async () => {
+        const sid = undefined;
+        const name = "New name from test";
+
+        await expect(modifySpace(sid, name)).rejects.toThrow(Error);
+    });
+
+    test("05 - name undefined - should throw", async () => {
+        const sid = mockSpaces[0].sid;
+        const name = undefined;
+
+        await expect(modifySpace(sid, name)).rejects.toThrow(Error);
+    });
+
+    test("06 - sid is an array - should throw", async () => {
+        const sid = [];
+        const name = "New name from test";
+
+        await expect(modifySpace(sid, name)).rejects.toThrow(Error);
+    });
+
+    test("07 - name is an array - should throw", async () => {
+        const sid = mockSpaces[0].sid;
+        const name = undefined;
+
+        await expect(modifySpace(sid, name)).rejects.toThrow(Error);
+    });
+
+    test("08 - name is an empty string - should throw", async () => {
+        const sid = mockSpaces[0].sid;
+        const name = "";
+
+        await expect(modifySpace(sid, name)).rejects.toThrow(Error);
+    });
+
+    test("09 - sid not exists - should return undefined", async () => {
+        const sid = mockSpaces[0].sid.substring(0, mockSpaces[0].sid.length-5) + "abcde";
+        const name = "New name from test";
+
+        const res = await modifySpace(sid, name);
+        expect(res).toBeUndefined();
+    });
+
+    test("10 - Valid sid and name - should fulfill the request", async () => {
+        const sid = mockSpaces[0].sid;
+        const name = "New name from test";
+
+        const res = await modifySpace(sid, name);
+        expect(res).not.toBeUndefined();
+    });
+});
+
+describe("Delete an existing space", () => {
+    test("01 - sid not specified - should throw", async () => {
+        let sid = undefined;
+
+        await expect(deleteSpace()).rejects.toThrow(Error);
+    });
+
+    test("02 - sid is undefined - should throw", async () => {
+        let sid = undefined;
+
+        await expect(deleteSpace(sid)).rejects.toThrow(Error);
+    });
+
+    test("03 - sid is an array - should throw", async () => {
+        let sid = [];
+
+        await expect(deleteSpace(sid)).rejects.toThrow(Error);
+    });
+
+    test("04 - sid not exists - should return undefined", async () => {
+        let sid = mockSpaces[0].sid.substring(0, mockSpaces[0].sid.length-5) + "abcde";
+        const res = await deleteSpace(sid);
+        
+        expect(res).toBeUndefined();
+    });
+
+    test("05 - sid valid - should fulfill the request", async () => {
+        let sid = mockSpaces[1].sid;
+        const res = await deleteSpace(sid);
+        
+        expect(res).not.toBeUndefined();
+    });
+});
+
+describe("Get all bookings for a space", () => {
+    test("01 - sid not specified - should throw", async () => {
+        const sid = undefined;
+
+        await expect(getAllBookingsForSpace()).rejects.toThrow(Error);
+    });
+
+    test("02 - sid is undefined - should throw", async () => {
+        const sid = undefined;
+
+        await expect(getAllBookingsForSpace(sid)).rejects.toThrow(Error);
+    });
+
+    test("03 - sid is an array - should throw", async () => {
+        const sid = [];
+
+        await expect(getAllBookingsForSpace(sid)).rejects.toThrow(Error);
+    });
+
+    test("04 - sid not exists - should return undefined", async () => {
+        const sid = mockSpaces[0].sid.substring(0, mockSpaces[0].sid.length-5) + "abcde";
+        const res = await getAllBookingsForSpace(sid);
+        expect(res).toBeUndefined();
+    });
+
+    test("05 - sid valid - should return an array of size 1", async () => {
+        const sid = mockSpaces[0].sid;
+        const res = await getAllBookingsForSpace(sid);
+        expect(res).not.toBeUndefined();
+        expect(res.length).toBe(1);
+    });
+});
+
+describe("Get a booking of a space", () => {
+    test("01 - sid not specified, bid not specified - should throw", async () => {
+        const sid = undefined;
+        const bid = undefined;
+
+        await expect(getBookingForSpace()).rejects.toThrow(Error);
+    });
+
+    test("02 - sid not specified, bid is valid - should throw", async () => {
+        const sid = undefined;
+        const bid = mockSpaces[0].bookings[0].bid;
+
+        await expect(getBookingForSpace(bid)).rejects.toThrow(Error);
+    });
+
+    test("03 - sid valid, bid not specified - should throw", async () => {
+        const sid = mockSpaces[0].sid;
+        const bid = mockSpaces[0].bookings[0].bid;
+
+        await expect(getBookingForSpace(sid)).rejects.toThrow(Error);
+    });
+
+    test("04 - sid undefined, bid undefined - should throw", async () => {
+        const sid = undefined;
+        const bid = undefined;
+
+        await expect(getBookingForSpace(sid, bid)).rejects.toThrow(Error);
+    });
+
+    test("05 - sid undefined, bid valid - should throw", async () => {
+        const sid = undefined;
+        const bid = mockSpaces[0].bookings[0].bid;
+
+        await expect(getBookingForSpace(sid, bid)).rejects.toThrow(Error);
+    });
+
+    test("06 - sid valid, bid undefined - should throw", async () => {
+        const sid = mockSpaces[0].sid;
+        const bid = undefined;
+
+        await expect(getBookingForSpace(sid, bid)).rejects.toThrow(Error);
+    });
+
+    test("07 - sid not exists, bid valid - should return undefined", async () => {
+        const sid = mockSpaces[0].sid.substring(0, mockSpaces[0].sid.length-5) + "abcde";
+        const bid = mockSpaces[0].bookings[0].bid;
+
+        const res = await getBookingForSpace(sid, bid);
+        expect(res).toBeUndefined();
+    });
+
+    test("08 - sid valid, bid not exists - should return undefined", async () => {
+        const sid = mockSpaces[0].sid;
+        const bid = mockSpaces[0].bookings[0].bid.substring(0, mockSpaces[0].bookings[0].bid.length-5) + "abcde";
+
+        const res = await getBookingForSpace(sid, bid);
+        expect(res).toBeUndefined();
+    });
+
+    test("09 - sid valid, bid valid - should return the requested booking", async () => {
+        const sid = mockSpaces[0].sid;
+        const bid = mockSpaces[0].bookings[0].bid;
+
+        const res = await getBookingForSpace(sid, bid);
+        expect(res).not.toBeUndefined();
+        expect(res.bid).toEqual(bid);
+    });
+});
+
+describe("Create a booking for a space", () => {
+    const validBookingData = {
+        uid: mockSpaces[0].sid, //It performs only a validation check of the id string
+        gid: mockSpaces[0].sid,
+        from: "2222-02-25T22:00:00.000Z",
+        to: "2222-02-25T23:00:00.000Z",
+        type: "attivita"
+    }
+
+    test("01 - sid not specified, booking data not specified - should throw", async () => {
+        let sid = undefined;
+        let bookingData = undefined;
+
+        await expect(createBookingForSpace()).rejects.toThrow(Error);
+    });
+
+    test("02 - sid not specified, valid booking data - should throw", async () => {
+        let sid = undefined;
+        let bookingData = validBookingData;
+
+        await expect(createBookingForSpace(bookingData)).rejects.toThrow(Error);
+    });
+
+    test("03 - sid is valid, booking data not specified - should throw", async () => {
+        let sid = mockSpaces[0].sid;
+        let bookingData = validBookingData;
+
+        await expect(createBookingForSpace(sid)).rejects.toThrow(Error);
+    });
+
+    test("04 - sid undefined, booking data undefined - should throw", async () => {
+        let sid = undefined;
+        let bookingData = undefined;
+
+        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(Error);
+    });
+
+    test("05 - sid undefined, booking data is valid - should throw", async () => {
+        let sid = undefined;
+        let bookingData = validBookingData;
+
+        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(Error);
+    });
+
+    test("06 - sid is valid, booking data undefined - should throw", async () => {
+        let sid = mockSpaces[0].sid;
+        let bookingData = undefined;
+
+        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(Error);
+    });
+
+    test("07 - sid is an array, valid booking data - should throw", async () => {
+        let sid = [];
+        let bookingData = validBookingData;
+
+        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(Error);
+    });
+
+    test("08 - sid not exists, valid booking data - should return undefined", async () => {
+        let sid = mockSpaces[0].sid.substring(0, mockSpaces[0].sid.length-5) + "abcde";
+        let bookingData = validBookingData;
+
+        const res = await createBookingForSpace(sid, bookingData);
+        expect(res).toBeUndefined();
+    });
+
+    test("09 - sid valid, booking data not well formed (missing uid) - should throw", async () => {
+        let sid = mockSpaces[0].sid;
+        let bookingData = validBookingData;
+        delete bookingData.uid;
+
+        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(Error);
+    });
+
+    test("10 - sid valid, booking data not well formed (missing gid) - should throw", async () => {
+        let sid = mockSpaces[0].sid;
+        let bookingData = validBookingData;
+        delete bookingData.gid;
+
+        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(Error);
+    });
+
+    test("11 - sid valid, booking data not well formed (interval overlap) - should throw", async () => {
+        let sid = mockSpaces[0].sid;
+
+        //It overlaps with the booking inserted in the beforeAll() method
+        let bookingData = {
+            uid: mockSpaces[0].sid,
+            gid: mockSpaces[0].sid,
+            from: "2222-02-24T21:00:00.000Z",
+            to: "2222-02-24T22:00:00.000Z",
+            type: "attivita"
+        };
+
+        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(Error);
+    });
+
+    test("12 - sid valid, booking data valid - should fulfill the request", async () => {
+        let sid = mockSpaces[1].sid;
+        let bookingData = {
+            uid: mockSpaces[1].sid,
+            gid: mockSpaces[1].sid,
+            from: "2222-02-24T21:00:00.000Z",
+            to: "2222-02-24T22:00:00.000Z",
+            type: "attivita"
+        };
+
+        const res = await createBookingForSpace(sid, bookingData);
+        expect(res).not.toBeUndefined();
+        expect(res.bid).not.toBeUndefined();
+    });
+});

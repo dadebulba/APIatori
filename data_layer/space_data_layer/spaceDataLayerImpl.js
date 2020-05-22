@@ -1,26 +1,24 @@
-const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require("../../utility.js");
+const apiUtility = (process.env.PROD) ? require("./utility.js") : require("../../utility.js");
 
 const Space = require("./spaceSchema.js")[0];
 const Booking = require("./spaceSchema.js")[1];
 
-async function checkBooking(booking){
+function checkBooking(booking){
+    console.log(booking);
+
     if (booking.from == undefined || booking.to == undefined || booking.type == undefined)
+        return false;
+    if (booking.uid == undefined || booking.gid == undefined)
         return false;
 
     let tsFrom = new Date(booking.from).getTime();
     let tsTo = new Date(booking.to).getTime();
+    if (tsFrom == undefined || tsTo == undefined)
+        throw new Error("Date error parsing in checkBooking()");
     if (tsTo <= tsFrom || tsFrom < Date.now())
         return false;
 
     if (!apiUtility.isObjectIdValid(booking.uid) || !apiUtility.isObjectIdValid(booking.gid))
-        return false;
-
-    let result = await apiUtility.validateUserId(booking.uid);
-    if (!result)
-        return false;
-
-    result = await apiUtility.validateGroupId(booking.gid);
-    if (!result)
         return false;
 
     return true;
@@ -41,8 +39,15 @@ function checkIntervalOverlaps(firstStart, firstEnd, secondStart, secondEnd){
 
 module.exports = {
 
-    loadMockSpaces : async function(spaces){
-        throw new Error("Function not implemented yet");
+    loadMockSpaces : async function(mockSpaces){
+        mockSpaces = JSON.parse(mockSpaces);
+
+        for (var i=0; i<mockSpaces.length; i++){
+            const newSpace = new Space(mockSpaces[i]);
+            await newSpace.save();
+        }
+
+        return true;
     },
 
     retrieveAllSpaces : async function(){
@@ -57,7 +62,7 @@ module.exports = {
             return undefined;
         
         let space = await Space.findById(sid);
-        if (space != undefined){
+        if (space != null){
             space = JSON.parse(JSON.stringify(space));
 
             if (space.bookings != undefined)
@@ -71,7 +76,7 @@ module.exports = {
             delete space.__v;
         }
 
-        return space;
+        return (space != null) ? space : undefined;
     },
 
     createSpace : async function(spaceName){
@@ -97,6 +102,8 @@ module.exports = {
             result.sid = result._id;
             delete result._id;
             delete result.__v;
+
+            return result;
         }
     },
 
@@ -106,7 +113,7 @@ module.exports = {
             return undefined;
 
         let result = await Space.findByIdAndUpdate(sid, $set = {name: newName});
-        if (result != undefined) {
+        if (result != null) {
             result = JSON.parse(JSON.stringify(result));
             result.name = newName;
 
@@ -120,7 +127,7 @@ module.exports = {
             })
         }
 
-        return result;
+        return (result != null) ? result : undefined;
     },
 
     deleteSpace : async function (sid){
@@ -128,14 +135,14 @@ module.exports = {
             return undefined;
 
         let result = await Space.findByIdAndDelete(sid);
-        return result;
+        return (result != null) ? result : undefined;
     },
 
     editBooking : async function(sid, bid, edit){
         if (sid == undefined || bid == undefined || edit == undefined || arguments.length !== 3)
             throw new Error("Error in editBooking function");
 
-        let check = await checkBooking(edit);
+        let check = checkBooking(edit);
         if (!check)
             throw new Error("Booking format not correct");
 
@@ -184,17 +191,17 @@ module.exports = {
     },
 
     createBooking : async function(sid, booking){
-        if (arguments.length != 2 || sid == undefined || booking == undefined || typeof booking !== "object")
+        if (arguments.length != 2 || typeof booking !== "object")
             throw new Error("Type error in createBooking");
 
-        let result = await checkBooking(booking);
+        let result = checkBooking(booking);
         if (!result)
             throw new Error("Booking object not well formed");
 
         //Check that there aren't bookings that overlap with the new one
         let space = await this.retrieveSingleSpace(sid);
         if (space == undefined)
-            throw new Error("Cannot find space");
+            return undefined;
 
         for (var i=0; i<space.bookings.length; i++)
             if (checkIntervalOverlaps(space.bookings[i].from, space.bookings[i].to, booking.from, booking.to))
@@ -233,6 +240,7 @@ module.exports = {
         if (result == undefined)
             return undefined;
 
+        result = JSON.parse(JSON.stringify(result));
         for (var i=0; i<result.length; i++)
             if (result[i].bid === bid)
                 return result[i];

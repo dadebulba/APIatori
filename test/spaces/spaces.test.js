@@ -1,16 +1,11 @@
 const fetch = require('node-fetch');
 const utils = require('../../utility');
 const errors = require('../../errorMsg')
-var http = require('http');
-var mockserver = require('mockserver');
 
 
 var bookings_1 = require('../data/bookings_1.json')
-process.env["NODE_CONFIG_DIR"] = "../../config";
+process.env["NODE_CONFIG_DIR"] = "config";
 const config = require('config');
-
-const SPACE_DL_PORT = config.get('spaceDataLayerPort');
-const USER_DL_PORT = config.get('userDataLayerPort');
 
 const BASE_URL = config.get('baseURL');
 const SPACE_PORT = config.get('spacesPort');
@@ -18,9 +13,6 @@ const TOKEN_PORT = config.get('tokenPort');
 
 const spacesUrl = `${BASE_URL}:${SPACE_PORT}`;
 const tokenUrl = `${BASE_URL}:${TOKEN_PORT}/token`;
-	
-http.createServer(mockserver('./mock')).listen(SPACE_DL_PORT);
-http.createServer(mockserver('../users/mock')).listen(USER_DL_PORT);
 
 let tokenHeader = null;
 
