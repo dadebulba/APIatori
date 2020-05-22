@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
 let BookingSchema = new mongoose.Schema({
-    uid:    {type: String, required: true},
-    from:   {type: Date, require: true},
-    to:     {type: Date, required: true},
-    gid:    {type: String, required: false},
-    type:   {type: String, required: true, default: "Altro"}
+    uid: {type: String, required: true},
+    from: {type: Date, require: true},
+    to: {type: Date, required: true},
+    gid: {type: String, required: true},
+    type: {type: String, required: true, default: "Altro"}
 });
 
 let SpaceSchema = new mongoose.Schema({

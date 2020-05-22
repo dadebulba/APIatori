@@ -1,14 +1,4 @@
-const apiUtility = require('../../utility.js');
-process.env["NODE_CONFIG_DIR"] = "../../config/";
-const config = require('config');
-
-//const BASE_URL = process.env.baseURL || config.get('baseURL');
-//const GROUP_DL_PATH = process.env.groupDLPath || config.get('groupDLPath');
-//const GROUP_DL_PORT = process.env.groupDataLayerPort || config.get('groupDataLayerPort');
-//
-//const GROUP_DL_ENDPOINT = `${BASE_URL}:${GROUP_DL_PORT}${GROUP_DL_PATH}`;
-
-const userDataLayer = process.env.PROD ? require("./group_data_layer/groupDataLayer") : require("../../data_layer/group_data_layer/groupDataLayer");
+const groupDataLayer = process.env.PROD ? require("./group_data_layer/groupDataLayer") : require("../../data_layer/group_data_layer/groupDataLayer");
 
 module.exports = {
     getFinances: async function (groupId, year) {
@@ -16,10 +6,8 @@ module.exports = {
         var yearTimestamp = new Date(year, 0).getTime();
 
         try {
-            //TODO modificare con nuovo userDataLayer
-            const res = await fetch(`${GROUP_DL_ENDPOINT}/${groupId}`).then(apiUtility.checkStatus);
-            if (res.ok) {
-                let group = await res.json();
+            const group = await groupDataLayer.getGroup(groupId);
+            if(group) {
                 let balance = group.balance;
                 let transactions = group.transactions;
                 let filteredTransactions = transactions.filter((t) => {
@@ -45,16 +33,14 @@ module.exports = {
             causal : causal
         }
         try {
-            //TODO modificare con nuovo userDataLayer
-            let response = await fetch(`${GROUP_DL_ENDPOINT}/${groupId}`).then(apiUtility.checkStatus);
-            if(response.ok) {
-                let group = await response.json();
+            const group = await groupDataLayer.getGroup(groupId);
+            if(group) {
                 let balance = group.balance;
                 balance += amount;
                 let transactions = group.transactions;
                 transactions.push(newTransaction);
 
-                const body = { 
+                const groupData = { 
                     name: group.name,
                     educators : group.educators,
                     collaborators : group.collaborators,
@@ -64,21 +50,14 @@ module.exports = {
                     transactions : transactions
                 };
                 try {
-                    //TODO modificare con nuovo userDataLayer
-                    const res = await fetch(`${GROUP_DL_ENDPOINT}/${groupId}`, {
-                        method: 'POST',
-                        body: JSON.stringify(body),
-                        headers: { 'Content-Type': 'application/json' }
+                    const modifiedGroup =  await groupDataLayer.modifyGroup(groupId, groupData)
 
-                    }).then(apiUtility.checkStatus);
-
-                    if (res.ok) {
+                    if (modifiedGroup) {
                         const year = new Date().getFullYear();
                         const yearTimestamp = new Date(year, 0).getTime();
 
-                        let group = await res.json();
-                        let balance = group.balance;
-                        let transactions = group.transactions;
+                        let balance = modifiedGroup.balance;
+                        let transactions = modifiedGroup.transactions;
                         let filteredTransactions = transactions.filter((t) => {
                             return t.timestamp >= yearTimestamp
                         })
@@ -111,10 +90,8 @@ module.exports = {
             causal : causal
         }
         try {
-            //TODO modificare con nuovo userDataLayer
-            let response = await fetch(`${GROUP_DL_ENDPOINT}/${groupId}`).then(apiUtility.checkStatus);
-            if(response.ok) {
-                let group = await response.json();
+            const group = await groupDataLayer.getGroup(groupId);
+            if(group) {
                 let transactions = group.transactions;
                 
                 let searchedTransaction = transactions.findIndex(t => t.timestamp === timestamp);
@@ -126,7 +103,7 @@ module.exports = {
 
                 transactions[searchedTransaction] = editedTransaction;
 
-                const body = { 
+                const groupData = { 
                     name: group.name,
                     educators : group.educators,
                     collaborators : group.collaborators,
@@ -136,15 +113,9 @@ module.exports = {
                     transactions : transactions
                 };
                 try {
-                    //TODO modificare con nuovo userDataLayer
-                    const res = await fetch(`${GROUP_DL_ENDPOINT}/${groupId}`, {
-                        method: 'PUT',
-                        body: JSON.stringify(body),
-                        headers: { 'Content-Type': 'application/json' }
+                    const modifiedGroup = await groupDataLayer.modifyGroup(groupId, groupData)
 
-                    }).then(apiUtility.checkStatus);
-
-                    if (res.ok) {
+                    if (modifiedGroup) {
                         return editedTransaction;
                     }
                     else
@@ -166,10 +137,8 @@ module.exports = {
     deleteHistory: async function (groupId, timestamp) {
         
         try {
-            //TODO modificare con nuovo userDataLayer
-            let response = await fetch(`${GROUP_DL_ENDPOINT}/${groupId}`).then(apiUtility.checkStatus);
-            if(response.ok) {
-                let group = await response.json();
+            const group = await groupDataLayer.getGroup(groupId);
+            if(group) {
                 let transactions = group.transactions;
                 
                 let searchedTransaction = transactions.findIndex(t => t.timestamp === timestamp);
@@ -180,7 +149,7 @@ module.exports = {
 
                 transactions.splice(searchedTransaction,1);
 
-                const body = { 
+                const groupData = { 
                     name: group.name,
                     educators : group.educators,
                     collaborators : group.collaborators,
@@ -190,15 +159,9 @@ module.exports = {
                     transactions : transactions
                 };
                 try {
-                    //TODO modificare con nuovo userDataLayer
-                    const res = await fetch(`${GROUP_DL_ENDPOINT}/${groupId}`, {
-                        method: 'PUT',
-                        body: JSON.stringify(body),
-                        headers: { 'Content-Type': 'application/json' }
+                    const modifiedGroup = await groupDataLayer.modifyGroup(groupId, groupData)
 
-                    }).then(apiUtility.checkStatus);
-
-                    if (res.ok) {
+                    if (modifiedGroup) {
                         return true;
                     }
                     else

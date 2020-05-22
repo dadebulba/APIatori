@@ -1,41 +1,58 @@
 const crypto = require('crypto');
 
 const User = require("./userSchema.js");
-const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require('../../utility.js');
+const apiUtility = (process.env.PROD) ? require("./utility.js") : require('../../utility.js');
 
 function checkUserBody(body){
     if (body == undefined || arguments.length !== 1)
-            return false;
-        if (apiUtility.validateParamsUndefined(body.name, body.surname, body.birthdate, body.mail, body.password))
-            return false;
-        body.mail = body.mail.toLowerCase();
-        if (!apiUtility.validateEmail(body.mail))
-            return false;
+        return false;
+    if (apiUtility.validateParamsUndefined(body.name, body.surname, body.birthdate, body.mail, body.password))
+        return false;
+    body.mail = body.mail.toLowerCase();
+    if (!apiUtility.validateEmail(body.mail))
+        return false;
             
-        if (body.phone != undefined && apiUtility.castToInt(body.phone) == undefined)
-            return false;
+    if (body.phone != undefined && apiUtility.castToInt(body.phone) == undefined)
+        return false;
 
             
-        //Check parent's fields
-        if (body.parents != undefined)
-            for (var i=0; i<body.parents.length; i++){
-                if (apiUtility.validateParamsUndefined(body.parents[i].name, body.parents[i].surname))
-                    return false;
+    //Check parent's fields
+    if (body.parents != undefined)
+        for (var i=0; i<body.parents.length; i++){
+            if (apiUtility.validateParamsUndefined(body.parents[i].name, body.parents[i].surname))
+                return false;
                 
-                if (body.parents[i].mail != undefined){
-                    body.parents[i].mail = body.parents[i].mail.toLowerCase();
-                    if (!apiUtility.validateEmail(body.parents[i].mail))
-                        return false;
-                }
-
-                if (body.parents[i].phone != undefined && apiUtility.castToInt(body.parents[i].phone) == undefined)
+            if (body.parents[i].mail != undefined){
+                body.parents[i].mail = body.parents[i].mail.toLowerCase();
+                if (!apiUtility.validateEmail(body.parents[i].mail))
                     return false;
             }
 
-        return true;
+            if (body.parents[i].phone != undefined && apiUtility.castToInt(body.parents[i].phone) == undefined)
+                return false;
+        }
+
+    return true;    
 }
 
 module.exports = {
+
+    loadMockUsers: async function(mockUser){
+
+        //mockUser = JSON.parse(JSON.stringify(mockUser));
+        mockUser = JSON.parse(mockUser);
+
+        for (var i=0; i<mockUser.length; i++){
+            console.log(mockUser[i]);
+            const newUser = new User(mockUser[i]);
+            await newUser.save();
+        }
+
+        let allUsers = await User.find();
+        allUsers = JSON.parse(JSON.stringify(allUsers));
+
+        return true;
+    },
 
     createUser : async function(newUser){
 
@@ -58,7 +75,7 @@ module.exports = {
             password: newUser.password,
             parents: (newUser.parents != undefined) ? newUser.parents : [],
             phone: newUser.phone,
-            role: "User"
+            role: "user"
         });
 
         result = await user.save();

@@ -166,8 +166,8 @@ app.get('/spaces/:spaceId/bookings', async function (req, res, next) {
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
 
     try {
-        if (await spaceImpl.validateSpaceId(spaceId) == false)
-            return res.status(404).json(errors.ENTITY_NOT_FOUND);
+        /*if (await spaceImpl.validateSpaceId(spaceId) == false)
+            return res.status(404).json(errors.ENTITY_NOT_FOUND);*/
 
         const bookings = await spaceImpl.getBookings(spaceId);
         if (apiUtility.validateParamsUndefined(bookings))
@@ -197,8 +197,8 @@ app.post('/spaces/:spaceId/bookings/:bookingId', async function (req, res) {
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
 
     try {
-        if (!(await spaceImpl.validateSpaceId(spaceId) && (await apiUtility.validateGroupId(gid))))
-            return res.status(404).json(errors.ENTITY_NOT_FOUND);
+        /*if (!(await spaceImpl.validateSpaceId(spaceId) && (await apiUtility.validateGroupId(gid))))
+            return res.status(404).json(errors.ENTITY_NOT_FOUND);*/
 
         if (!(apiUtility.validateAuth(req, LEVELS.EDUCATOR, gid) || apiUtility.validateAuth(req, LEVELS.ADMIN)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
@@ -271,7 +271,9 @@ app.delete('/spaces/:spaceId/bookings/:bookingId', async function (req, res) {
             return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
         const actualBookingGid = await spaceImpl.getBookingGid(bookingId);
-
+        if (actualBookingGid === undefined)
+            return res.status(404).json(errors.ENTITY_NOT_FOUND);
+            
         if (!(apiUtility.validateAuth(req, LEVELS.EDUCATOR, actualBookingGid) || apiUtility.validateAuth(req, LEVELS.ADMIN)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 

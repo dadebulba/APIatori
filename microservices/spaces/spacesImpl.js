@@ -1,14 +1,6 @@
 const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require('../../utility.js');
-if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
-const config = require('config');
 
-const fetch = require("node-fetch");
-
-const BASE_URL = config.get('baseURL');
-const SPACE_DL_PATH = config.get('spaceDLPath');
-const SPACE_DL_PORT = config.get('spaceDataLayerPort');
-
-const SPACE_DL_ENDPOINT = `${BASE_URL}:${SPACE_DL_PORT}${SPACE_DL_PATH}`;
+const spaceDataLayer = process.env.PROD ? require("./space_data_layer/groupDataLayer") : require("../../data_layer/group_data_layer/groupDataLayer");
 
 const bookingType = {
     ACTIVITY: "attivita",
@@ -23,11 +15,11 @@ module.exports = {
     },
     validateBookingId: async function (spaceId, bookingId) {
         try {
-            const bookings = await this.getBookings(spaceId);
-            if(bookings === undefined)
-                return false;
-
-            return bookings.some(b => b.bid === bookingId);
+            const res = await spaceDataLayer.getBookingForSpace(spaceId, bookingId)
+            if(res)
+                return true;
+            else
+                return false; 
         }
         catch (err) {
             next(err);
@@ -35,13 +27,11 @@ module.exports = {
     },
     validateSpaceId: async function (spaceId) {
         try {
-            const res = await fetch(SPACE_DL_ENDPOINT + "/" + spaceId).then(apiUtility.checkStatus);
-            if (res.ok) {
-                const space = await res.json();
-                return space;
-            }
+            const res = await spaceDataLayer.getSpace(spaceId)
+            if(res)
+                return true;
             else
-                return undefined;
+                return false; 
         }
         catch (err) {
             throw(err);
@@ -49,60 +39,34 @@ module.exports = {
     },
     getSpaces: async function (spaceId) {
         try {
-            const res = await fetch(SPACE_DL_ENDPOINT).then(apiUtility.checkStatus);
-            if (res.ok) {
-                const spaces = await res.json();
-                if(spaceId){
-                    return space.find(s.sid === spaceId)
-                }
-                else {
-                    return spaces;
-                }
+            let spaces;
+
+            if(spaceId) {
+                spaces = await spaceDataLayer.getSpace(spaceId);
             }
-            else
-                return undefined;
+            else {
+                spaces = await spaceDataLayer.getAllSpaces();
+            }
+
+            return spaces;
 
         } catch (err) {
             throw(err);
         }
     },
     editSpace: async function (spaceId, name) {
-        const body = { name: name };
         try {
-            const res = await fetch(`${SPACE_DL_ENDPOINT}/${spaceId}`, {
-                method: 'PUT',
-                body: JSON.stringify(body),
-                headers: { 'Content-Type': 'application/json' }
-
-            }).then(apiUtility.checkStatus);
-
-            if (res.ok) {
-                const space = await res.json();
-                return space;
-            }
-            else
-                return undefined;
+            const editedSpace = await spaceDataLayer.modifySpace(spaceId, name);
+            return editedSpace;
 
         } catch (err) {
             throw(err);
         }
     },
     createNewSpace: async function (name) {
-        const body = { name: name };
         try {
-            const res = await fetch(SPACE_DL_ENDPOINT, {
-                method: 'POST',
-                body: JSON.stringify(body),
-                headers: { 'Content-Type': 'application/json' }
-
-            }).then(apiUtility.checkStatus);
-
-            if (res.ok) {
-                const spaces = await res.json();
-                return spaces;
-            }
-            else
-                return undefined;
+            const newSpace = await spaceDataLayer.createSpace(name);
+            return newSpace;
 
         } catch (err) {
             throw(err);
@@ -110,14 +74,8 @@ module.exports = {
     },
     deleteSpace: async function (spaceId) {
         try {
-            const res = await fetch(`${SPACE_DL_ENDPOINT}/${spaceId}`, {
-                method: 'DELETE'
-            }).then(apiUtility.checkStatus);
-
-            if (res.status == 500)
-                throw new Error("Server failure");
-
-            return res.ok;
+            const deletedSpace = await spaceDataLayer.deleteSpace(spaceId);
+            return deletedSpace;
 
         } catch (err) {
             throw(err);
@@ -125,14 +83,8 @@ module.exports = {
     },
     getBookings: async function (spaceId) {
         try {
-            const res = await fetch(`${SPACE_DL_ENDPOINT}/${spaceId}`).then(apiUtility.checkStatus);
-            if (res.ok) {
-                const space = await res.json();
-                const bookings = space.bookings;
-                return bookings;
-            }
-            else
-                return undefined;
+            const bookings = await spaceDataLayer.getAllBookingsForSpace(spaceId);
+            return bookings;
 
         } catch (err) {
             next(err);
@@ -140,69 +92,43 @@ module.exports = {
     },
     getBookingGid: async function (spaceId, bookingId) {
         try {
-            const bookings = await this.getBookings(spaceId);
-            if (bookings === undefined)
-                return undefined;
-
-            const searchedBooking = bookings.find(b => b.bid === bookingId);
-            if(searchedBooking === undefined)
-                return undefined;
+            const bookings = await spaceDataLayer.getAllBookingsForSpace(spaceId);
+            if (bookings){
+                const searchedBooking = bookings.find(b => b.bid === bookingId);
+                if(searchedBooking)
+                    return searchedBooking.gid;
+            }
             
-            return searchedBooking.gid;
+            return undefined;
         }
         catch (err) {
             next(err);
         }
     },
     createNewBooking : async function (from, to, type, gid, uid, spaceId) {
-        const body = { uid : uid, from : from, to : to, type : type, gid : gid };
+        const bookingData = { uid : uid, from : from, to : to, type : type, gid : gid };
         try {
-            const res = await fetch(`${SPACE_DL_ENDPOINT}/${spaceId}/bookings`, {
-                method: 'POST',
-                body: JSON.stringify(body),
-                headers: { 'Content-Type': 'application/json' }
-
-            }).then(apiUtility.checkStatus);
-
-            if (res.ok) {
-                const booking = await res.json();
-                return booking;
-            }
-            else
-                return undefined;
+            const newBooking = await spaceDataLayer.createBookingForSpace(spaceId, bookingData);
+            return newBooking;
 
         } catch (err) {
-            next(err);
+            throw(err);
         }
     },
     editBooking: async function (spaceId, bookingId, from, to, type, gid, uid) {
-        const body = { uid : uid, from : from, to : to, type : type, gid : gid };
+        const bookingData = { uid : uid, from : from, to : to, type : type, gid : gid };
         try {
-            const res = await fetch(`${SPACE_DL_ENDPOINT}/${spaceId}/bookings/${bookingId}`, {
-                method: 'PUT',
-                body: JSON.stringify(body),
-                headers: { 'Content-Type': 'application/json' }
-
-            }).then(apiUtility.checkStatus);
-
-            if (res.ok) {
-                const booking = await res.json();
-                return booking;
-            }
-            else
-                return undefined;
-
+            const editedBooking = await spaceDataLayer.modifyBookingForSpace(spaceId, bookingId, bookingData);
+            return editedBooking;
         } catch (err) {
             next(err);
         }
     },
     deleteBooking: async function (spaceId, bookingId) {
         try {
-            const res = await fetch(`${SPACE_DL_ENDPOINT}/${spaceId}/bookings/${bookingId}`, {
-                method: 'DELETE'
-            }).then(apiUtility.checkStatus);
-
-            if (res.ok) {
+            const isDeleted = await spaceDataLayer.deleteBookingForSpace(spaceId, bookingId);
+            
+            if (isDeleted) {
                 return true;
             }
             else

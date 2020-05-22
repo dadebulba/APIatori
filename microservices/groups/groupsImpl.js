@@ -1,26 +1,19 @@
-const apiUtility = require('../../utility.js');
-process.env["NODE_CONFIG_DIR"] = "../../config/";
-const config = require('config');
+const groupDataLayer = process.env.PROD ? require("./group_data_layer/groupDataLayer") : require("../../data_layer/group_data_layer/groupDataLayer");
+const userDataLayer = process.env.PROD ? require("./user_data_layer/userDataLayer") : require("../../data_layer/user_data_layer/userDataLayer");
 
-const BASE_URL = process.env.baseURL || config.get('baseURL');
-const GROUP_DL_PATH = process.env.groupDLPath || config.get('groupDLPath');
-const GROUP_DL_PORT = process.env.groupDataLayerPort || config.get('groupDataLayerPort');
-
-const GROUP_DL_ENDPOINT = `${BASE_URL}:${GROUP_DL_PORT}${GROUP_DL_PATH}`;
 
 module.exports = {
     getGroups: async function (groupId) {
         try {
-            let res;
+            let groups;
             if(groupId){
-                res = await fetch(`${GROUP_DL_ENDPOINT}/${groupId}`).then(apiUtility.checkStatus);
+                groups = await groupDataLayer.getGroup(groupId);
             }
             else{
-                res = await fetch(GROUP_DL_ENDPOINT).then(apiUtility.checkStatus);
+                groups = await groupDataLayer.getAllGroups();
             }
             
-            if (res.ok) {
-                const groups = await res.json();
+            if (groups) {
                 return groups;
             }
             else
@@ -30,8 +23,17 @@ module.exports = {
             next(err);
         }
     },
+    checkUsersValid : function(usersToCheck) {
+        try {
+            const usersOnDB = await userDataLayer.getAllUsers();
+            return usersToCheck.every(user => usersOnDB.includes(user)); 
+        }
+        catch(err){
+            next(err)
+        }
+    },
     createNewGroup: async function (name, educators, collabs, guys, calendarMail) {
-        const body = { 
+        const groupData = { 
             name: name,
             educators : educators,
             collaborators : collabs,
@@ -39,26 +41,19 @@ module.exports = {
             calendarMail : calendarMail
         };
         try {
-            const res = await fetch(GROUP_DL_ENDPOINT, {
-                method: 'POST',
-                body: JSON.stringify(body),
-                headers: { 'Content-Type': 'application/json' }
+            const newGroup = await groupDataLayer.createGroup(groupData)
 
-            }).then(apiUtility.checkStatus);
-
-            if (res.ok) {
-                const group = await res.json();
-                return group;
+            if (newGroup) {
+                return newGroup;
             }
             else
                 return undefined;
-
         } catch (err) {
             next(err);
         }
     },
-    editGroup: async function (name, educators, collabs, guys, calendarMail) {
-        const body = { 
+    editGroup: async function(groupId, name, educators, collabs, guys, calendarMail) {
+        const groupData = { 
             name: name,
             educators : educators,
             collaborators : collabs,
@@ -66,16 +61,10 @@ module.exports = {
             calendarMail : calendarMail
         };
         try {
-            const res = await fetch(GROUP_DL_ENDPOINT, {
-                method: 'PUT',
-                body: JSON.stringify(body),
-                headers: { 'Content-Type': 'application/json' }
+            const editedGroup = await groupDataLayer.modifyGroup(groupId, groupData)
 
-            }).then(apiUtility.checkStatus);
-
-            if (res.ok) {
-                const group = await res.json();
-                return group;
+            if (editedGroup) {
+                return editedGroup;
             }
             else
                 return undefined;
@@ -86,11 +75,9 @@ module.exports = {
     },
     deleteGroup: async function (groupId) {
         try {
-            const res = await fetch(`${GROUP_DL_ENDPOINT}/${groupId}`, {
-                method: 'DELETE'
-            }).then(apiUtility.checkStatus);
+            const isDeleted = await groupDataLayer.deleteGroup(groupId)
 
-            if (res.ok) {
+            if (isDeleted) {
                 return true;
             }
             else

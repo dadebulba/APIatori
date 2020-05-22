@@ -73,12 +73,13 @@ app.post('/groups', async function (req, res) {
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
     if(!apiUtility.validateEmail(calendarMail))
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
+    if(!groupsImpl.checkUsersValid([...educators, ...collabs, ...guys]))
     if (!(apiUtility.validateAuth(req, LEVELS.ADMIN)))
         return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
     try {
         const newGroup = await groupsImpl.createNewGroup(name, educators, collabs, guys, calendarMail);
-        if (newSpace === undefined)
+        if (newGroup === undefined)
             return res.status(400).json(errors.ALREADY_PRESENT);
 
         return res.status(201).json(newGroup);

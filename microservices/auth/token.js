@@ -2,7 +2,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const bearerToken = require('express-bearer-token');
 const fs = require("fs");
-const fetch = require("node-fetch");   
 const crypto = require('crypto');
 
 const tokenImpl = require('./tokenImpl.js');
@@ -36,20 +35,16 @@ app.post('/token', async function (req, res) {
             b_pwd = crypto.createHash("sha256").update(b_pwd).digest("hex");
 
         if (apiUtility.validateParamsUndefined(b_email, b_pwd)){
-            console.log("Email",b_email, "Password",b_pwd)
             res.status(400).json(errors.PARAMS_UNDEFINED);
             return;
         }
 
         try {
-            //TODO modificare con nuovo user_data_layer
-            let queryURL = config.baseURL + ":" + config.userDataLayerPort + config.userDLPath;
-            let response = await fetch(queryURL);
-            let responseBody = await response.json();
+            let userList = await userDataLayer.getAllUsers();
             
-            for (var i=0; i<responseBody.length; i++){
-                if (responseBody[i].mail === b_email && responseBody[i].password === b_pwd){
-                    let token = await tokenImpl.createToken(responseBody[i].uid, responseBody[i].role, PRIVATE_KEY);
+            for (var i=0; i<userList.length; i++){
+                if (userList[i].mail === b_email && userList[i].password === b_pwd){
+                    let token = await tokenImpl.createToken(userList[i].uid, userList[i].role, PRIVATE_KEY);
                     res.status(200).send(token);
                     return;
                 }
