@@ -4,8 +4,6 @@ const Space = require("./spaceSchema.js")[0];
 const Booking = require("./spaceSchema.js")[1];
 
 function checkBooking(booking){
-    console.log(booking);
-
     if (booking.from == undefined || booking.to == undefined || booking.type == undefined)
         return false;
     if (booking.uid == undefined || booking.gid == undefined)
@@ -13,8 +11,6 @@ function checkBooking(booking){
 
     let tsFrom = new Date(booking.from).getTime();
     let tsTo = new Date(booking.to).getTime();
-    if (tsFrom == undefined || tsTo == undefined)
-        throw new Error("Date error parsing in checkBooking()");
     if (tsTo <= tsFrom || tsFrom < Date.now())
         return false;
 
@@ -139,55 +135,48 @@ module.exports = {
     },
 
     editBooking : async function(sid, bid, edit){
-        if (sid == undefined || bid == undefined || edit == undefined || arguments.length !== 3)
-            throw new Error("Error in editBooking function");
-
-        let check = checkBooking(edit);
-        if (!check)
+        if (!checkBooking(edit))
             throw new Error("Booking format not correct");
 
-        let space = await Space.findById(sid);
+        var space = await Space.findById(sid);
         if (space == undefined) 
             return undefined;
 
         space = JSON.parse(JSON.stringify(space));
         var toUpdate = false;
+        var index = undefined;
         
         //Search for the right booking
-        for (var i=0; i<space.bookings.length; i++)
-            if (space.bookings[i]._id === bid && space.bookings[i].uid == edit.uid){
+        for (var i=0; i<space.bookings.length && !toUpdate; i++)
+            if (space.bookings[i]._id == bid && space.bookings[i].uid == edit.uid && space.bookings[i].gid == edit.gid){
 
                 //Check for possible overlaps
                 for (var j=0; j<space.bookings.length; j++)
-                    if (i!=j && checkIntervalOverlaps(space.bookings[i].from, space.bookings[i].to, space.bookings[j].from, space.bookings[j].to))
+                    if (i!=j && checkIntervalOverlaps(edit.from, edit.to, space.bookings[j].from, space.bookings[j].to))
                         throw new Error("Interval overlap detected");
 
                 space.bookings[i] = edit;
                 toUpdate = true;
+                index = i;
                 break;
             }
         
         if (!toUpdate)
             return undefined;
 
-        space = await Space.findByIdAndUpdate(sid, $set = {bookings: space.bookings});
+        space = await Space.findByIdAndUpdate(sid, $set = {bookings: space.bookings}, {new: true});
         space = JSON.parse(JSON.stringify(space));
-        space.sid = space._id;
-            delete space._id;
-            delete space.__v;
-            space.bookings.forEach((item) => {
-                item.bid = item._id;
-                delete item._id;
-            });
-        return space;
+
+        let updated = space.bookings[index];
+        updated.bid = updated._id;
+        delete updated._id;
+        return updated;
     },
 
     deleteBooking : async function(sid, bid){
-        if (sid == undefined || bid == undefined || arguments.length !== 2)
-            throw new Error("Error in deleteBooking function");
-
         let result = await Space.updateOne({_id: sid}, {$pull: {"bookings": {_id: bid}}});
-        return result;
+        result = JSON.parse(JSON.stringify(result));
+        return (result.nModified === 0) ? undefined : true;
     },
 
     createBooking : async function(sid, booking){
@@ -205,7 +194,7 @@ module.exports = {
 
         for (var i=0; i<space.bookings.length; i++)
             if (checkIntervalOverlaps(space.bookings[i].from, space.bookings[i].to, booking.from, booking.to))
-                return undefined;                                                     
+                throw new Error("Interval overlap");                                                     
 
         let newBooking = new Booking({
             uid: booking.uid,
@@ -215,9 +204,14 @@ module.exports = {
             gid: booking.gid
         });
 
-        space = await Space.updateOne({_id: sid}, {$push: {"bookings": newBooking}});
+        space = await Space.findOneAndUpdate({_id: sid}, {$push: {"bookings": newBooking}}, {new: true});
         space = JSON.parse(JSON.stringify(space));
-        return space;
+
+        let insertedBooking = space.bookings[space.bookings.length-1];
+        insertedBooking.bid = insertedBooking._id;
+        delete insertedBooking._id;
+        delete insertedBooking.__v;
+        return insertedBooking;
     },
 
     getAllBookings : async function(sid){

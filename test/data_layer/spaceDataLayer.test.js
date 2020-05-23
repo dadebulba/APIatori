@@ -27,27 +27,47 @@ beforeAll(async () => {
     for (var i=0; i<mockSpaces.length; i++)
         mockSpaces[i].sid = data[i].sid;
 
-    //Insert a mock booking for the first space for testing purpose
-    const bookingData = {
+    //Insert two mock bookings for the first space for testing purpose
+    const bookingData1 = {
         uid: mockSpaces[0].sid, //It performs only a validation check of the id string
         gid: mockSpaces[0].sid,
         from: "2222-02-24T20:00:00.000Z",
         to: "2222-02-24T23:00:00.000Z",
         type: "attivita"
     }
+    const bookingData2 = {
+        uid: mockSpaces[0].sid, //It performs only a validation check of the id string
+        gid: mockSpaces[0].sid,
+        from: "2222-06-24T20:00:00.000Z",
+        to: "2222-06-24T23:00:00.000Z",
+        type: "attivita"
+    }
+    const bookingData3 = {
+        uid: mockSpaces[0].sid, //It performs only a validation check of the id string
+        gid: mockSpaces[0].sid,
+        from: "2222-11-24T20:00:00.000Z",
+        to: "2222-11-24T23:00:00.000Z",
+        type: "attivita"
+    }
 
-    let res = await createBookingForSpace(mockSpaces[0].sid, bookingData);
+    var res = await createBookingForSpace(mockSpaces[0].sid, bookingData1);
     if (res == undefined)
         process.exit(1);
     
     mockSpaces[0].bookings = [];
-    mockSpaces[0].bookings.push(bookingData);
+    mockSpaces[0].bookings.push(res);
 
-    res = await getAllBookingsForSpace(mockSpaces[0].sid);
+    res = await createBookingForSpace(mockSpaces[0].sid, bookingData2);
     if (res == undefined)
         process.exit(1);
+    
+    mockSpaces[0].bookings.push(res);
 
-    mockSpaces[0].bookings[0].bid = res[0].bid;
+    res = await createBookingForSpace(mockSpaces[0].sid, bookingData3);
+    if (res == undefined)
+        process.exit(1);
+    
+    mockSpaces[0].bookings.push(res);
 });
 
 describe("Get all spaces", () => {
@@ -265,11 +285,11 @@ describe("Get all bookings for a space", () => {
         expect(res).toBeUndefined();
     });
 
-    test("05 - sid valid - should return an array of size 1", async () => {
+    test("05 - sid valid - should return an array of size mockSpaces[0].bookings.length", async () => {
         const sid = mockSpaces[0].sid;
         const res = await getAllBookingsForSpace(sid);
         expect(res).not.toBeUndefined();
-        expect(res.length).toBe(1);
+        expect(res.length).toBe(mockSpaces[0].bookings.length);
     });
 });
 
@@ -346,10 +366,10 @@ describe("Create a booking for a space", () => {
     const validBookingData = {
         uid: mockSpaces[0].sid, //It performs only a validation check of the id string
         gid: mockSpaces[0].sid,
-        from: "2222-02-25T22:00:00.000Z",
-        to: "2222-02-25T23:00:00.000Z",
+        from: "2222-02-24T22:00:00.000Z",
+        to: "2222-02-24T23:00:00.000Z",
         type: "attivita"
-    }
+    };
 
     test("01 - sid not specified, booking data not specified - should throw", async () => {
         let sid = undefined;
@@ -360,14 +380,26 @@ describe("Create a booking for a space", () => {
 
     test("02 - sid not specified, valid booking data - should throw", async () => {
         let sid = undefined;
-        let bookingData = validBookingData;
+        let bookingData = {
+            uid: mockSpaces[0].sid, //It performs only a validation check of the id string
+            gid: mockSpaces[0].sid,
+            from: "2222-02-24T22:00:00.000Z",
+            to: "2222-02-24T23:00:00.000Z",
+            type: "attivita"
+        };
 
         await expect(createBookingForSpace(bookingData)).rejects.toThrow(Error);
     });
 
     test("03 - sid is valid, booking data not specified - should throw", async () => {
         let sid = mockSpaces[0].sid;
-        let bookingData = validBookingData;
+        let bookingData = {
+            uid: mockSpaces[0].sid, //It performs only a validation check of the id string
+            gid: mockSpaces[0].sid,
+            from: "2222-02-24T22:00:00.000Z",
+            to: "2222-02-24T23:00:00.000Z",
+            type: "attivita"
+        };
 
         await expect(createBookingForSpace(sid)).rejects.toThrow(Error);
     });
@@ -381,7 +413,13 @@ describe("Create a booking for a space", () => {
 
     test("05 - sid undefined, booking data is valid - should throw", async () => {
         let sid = undefined;
-        let bookingData = validBookingData;
+        let bookingData = {
+            uid: mockSpaces[0].sid, //It performs only a validation check of the id string
+            gid: mockSpaces[0].sid,
+            from: "2222-02-24T22:00:00.000Z",
+            to: "2222-02-24T23:00:00.000Z",
+            type: "attivita"
+        };
 
         await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(Error);
     });
@@ -395,14 +433,27 @@ describe("Create a booking for a space", () => {
 
     test("07 - sid is an array, valid booking data - should throw", async () => {
         let sid = [];
-        let bookingData = validBookingData;
+        let bookingData = {
+            uid: mockSpaces[0].sid, //It performs only a validation check of the id string
+            gid: mockSpaces[0].sid,
+            from: "2222-02-24T22:00:00.000Z",
+            to: "2222-02-24T23:00:00.000Z",
+            type: "attivita"
+        };
 
         await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(Error);
     });
 
     test("08 - sid not exists, valid booking data - should return undefined", async () => {
         let sid = mockSpaces[0].sid.substring(0, mockSpaces[0].sid.length-5) + "abcde";
-        let bookingData = validBookingData;
+        let bookingData = {
+            uid: mockSpaces[0].sid, //It performs only a validation check of the id string
+            gid: mockSpaces[0].sid,
+            from: "2222-02-24T22:00:00.000Z",
+            to: "2222-02-24T23:00:00.000Z",
+            type: "attivita"
+        };
+        bookingData.ITTT = 123;
 
         const res = await createBookingForSpace(sid, bookingData);
         expect(res).toBeUndefined();
@@ -410,7 +461,13 @@ describe("Create a booking for a space", () => {
 
     test("09 - sid valid, booking data not well formed (missing uid) - should throw", async () => {
         let sid = mockSpaces[0].sid;
-        let bookingData = validBookingData;
+        let bookingData = {
+            uid: mockSpaces[0].sid, //It performs only a validation check of the id string
+            gid: mockSpaces[0].sid,
+            from: "2222-02-24T22:00:00.000Z",
+            to: "2222-02-24T23:00:00.000Z",
+            type: "attivita"
+        };
         delete bookingData.uid;
 
         await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(Error);
@@ -418,7 +475,13 @@ describe("Create a booking for a space", () => {
 
     test("10 - sid valid, booking data not well formed (missing gid) - should throw", async () => {
         let sid = mockSpaces[0].sid;
-        let bookingData = validBookingData;
+        let bookingData = {
+            uid: mockSpaces[0].sid, //It performs only a validation check of the id string
+            gid: mockSpaces[0].sid,
+            from: "2222-02-24T22:00:00.000Z",
+            to: "2222-02-24T23:00:00.000Z",
+            type: "attivita"
+        };
         delete bookingData.gid;
 
         await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(Error);
@@ -440,17 +503,268 @@ describe("Create a booking for a space", () => {
     });
 
     test("12 - sid valid, booking data valid - should fulfill the request", async () => {
-        let sid = mockSpaces[1].sid;
+        let sid = mockSpaces[0].sid;
         let bookingData = {
             uid: mockSpaces[1].sid,
             gid: mockSpaces[1].sid,
-            from: "2222-02-24T21:00:00.000Z",
-            to: "2222-02-24T22:00:00.000Z",
+            from: "2222-03-24T21:00:00.000Z",
+            to: "2222-03-24T22:00:00.000Z",
             type: "attivita"
         };
 
         const res = await createBookingForSpace(sid, bookingData);
         expect(res).not.toBeUndefined();
         expect(res.bid).not.toBeUndefined();
+        expect(res.uid).toEqual(bookingData.uid);
+        expect(res.gid).toEqual(bookingData.gid);
+        expect(res.from).toEqual(bookingData.from);
+        expect(res.to).toEqual(bookingData.to);
+        expect(res.type).toEqual(bookingData.type);
+    });
+});
+
+describe("Update existing bookings for a space", () => {
+    test("01 - sid, bid and booking data not specified - should throw", async () => {
+        let sid = undefined;
+        let bid = undefined;
+        let booking = undefined;
+
+        await expect(modifyBookingForSpace()).rejects.toThrow(Error);
+    });
+
+    test("02 - sid and bid not specified - should throw", async () => {
+        let sid = undefined;
+        let bid = undefined;
+        let booking = {
+            uid: mockSpaces[0].sid, //It performs only a validation check of the id string
+            gid: mockSpaces[0].sid,
+            from: "2222-04-24T20:00:00.000Z",
+            to: "2222-04-24T23:00:00.000Z",
+            type: "attivita"
+        };
+
+        await expect(modifyBookingForSpace(booking)).rejects.toThrow(Error);
+    });
+
+    test("03 - sid not specified - should throw", async () => {
+        let sid = undefined;
+        let bid = mockSpaces[0].bookings[0].bid;
+        let booking = {
+            uid: mockSpaces[0].sid, //It performs only a validation check of the id string
+            gid: mockSpaces[0].sid,
+            from: "2222-04-24T20:00:00.000Z",
+            to: "2222-04-24T23:00:00.000Z",
+            type: "attivita"
+        };
+
+        await expect(modifyBookingForSpace(bid, booking)).rejects.toThrow(Error);
+    });
+
+    test("04 - sid, bid and booking undefined - should throw", async () => {
+        let sid = undefined;
+        let bid = undefined;
+        let booking = undefined;
+
+        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(Error);
+    });
+
+    test("05 - bid and booking undefined - should throw", async () => {
+        let sid = mockSpaces[0].sid;
+        let bid = undefined;
+        let booking = undefined;
+
+        expect(sid).not.toBeUndefined();    //It should be inserted in the beforeAll()
+        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(Error);
+    });
+
+    test("06 - sid and booking undefined - should throw", async () => {
+        let sid = undefined;
+        let bid = mockSpaces[0].bookings[0].bid;
+        let booking = undefined;
+
+        expect(bid).not.toBeUndefined();    //It should be inserted in the beforeAll()
+        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(Error);
+    });
+
+    test("07 - booking undefined - should throw", async () => {
+        let sid = mockSpaces[0].sid;
+        let bid = mockSpaces[0].bookings[0].bid;
+        let booking = undefined;
+
+        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(Error);
+    });
+
+    test("08 - sid not exists - should return undefined", async () => {
+        let sid = mockSpaces[0].sid.substring(0, mockSpaces[0].sid.length-5) + "abcde";
+        let bid = mockSpaces[0].bookings[0].bid;
+        let booking = {
+            uid: mockSpaces[0].sid, //It performs only a validation check of the id string
+            gid: mockSpaces[0].sid,
+            from: "2222-04-24T20:00:00.000Z",
+            to: "2222-04-24T23:00:00.000Z",
+            type: "attivita"
+        };
+
+        let res = await modifyBookingForSpace(sid, bid, booking);
+        expect(res).toBeUndefined();
+    });
+
+    test("09 - bid not exists - should return undefined", async () => {
+        let sid = mockSpaces[0].sid;
+        let bid = mockSpaces[0].bookings[0].bid.substring(0, mockSpaces[0].bookings[0].bid.length-5) + "abcde";
+        let booking = {
+            uid: mockSpaces[0].sid, //It performs only a validation check of the id string
+            gid: mockSpaces[0].sid,
+            from: "2222-04-24T20:00:00.000Z",
+            to: "2222-04-24T23:00:00.000Z",
+            type: "attivita"
+        };
+
+        let res = await modifyBookingForSpace(sid, bid, booking);
+        expect(res).toBeUndefined();
+    });
+
+    test("09 - booking object not well formed (missing 'from' field) - should throw", async () => {
+        let sid = mockSpaces[0].sid;
+        let bid = mockSpaces[0].bookings[0].bid;
+        let booking = {
+            uid: mockSpaces[0].sid, //It performs only a validation check of the id string
+            gid: mockSpaces[0].sid,
+            to: "2222-04-24T23:00:00.000Z",
+            type: "attivita"
+        };
+
+        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(Error);
+    });
+
+    test("10 - booking object not well formed (interval overlap) - should throw", async () => {
+        let sid = mockSpaces[0].sid;
+        let bid = mockSpaces[0].bookings[0].bid;
+        let booking = {
+            uid: mockSpaces[0].sid, //It performs only a validation check of the id string
+            gid: mockSpaces[0].sid,
+            from: "2222-06-24T21:00:00.000Z",
+            to: "2222-06-24T22:00:00.000Z",
+            type: "attivita"
+        };
+
+        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(Error);
+    });
+
+    test("11 - sid is an array - should throw", async () => {
+        let sid = [];
+        let bid = mockSpaces[0].bookings[0].bid;
+        let booking = {
+            uid: mockSpaces[0].sid, //It performs only a validation check of the id string
+            gid: mockSpaces[0].sid,
+            from: "2222-07-24T21:00:00.000Z",
+            to: "2222-07-24T22:00:00.000Z",
+            type: "attivita"
+        };
+
+        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(Error);
+    });
+
+    test("12 - bid is an array - should throw", async () => {
+        let sid = mockSpaces[0].sid;
+        let bid = [];
+        let booking = {
+            uid: mockSpaces[0].sid, //It performs only a validation check of the id string
+            gid: mockSpaces[0].sid,
+            from: "2222-07-24T21:00:00.000Z",
+            to: "2222-07-24T22:00:00.000Z",
+            type: "attivita"
+        };
+
+        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(Error);
+    });
+
+    test("13 - correct fields - should fulfill the request", async () => {
+        let sid = mockSpaces[0].sid;
+        let bid = mockSpaces[0].bookings[1].bid;
+        let booking = {
+            uid: mockSpaces[0].sid, //It performs only a validation check of the id string
+            gid: mockSpaces[0].sid,
+            from: "2222-07-24T20:00:00.000Z",
+            to: "2222-07-24T23:00:00.000Z",
+            type: "attivita"
+        }
+
+        let res = await modifyBookingForSpace(sid, bid, booking);
+
+        expect(res).not.toBeUndefined();
+        expect(res.uid).toEqual(booking.uid);
+        expect(res.gid).toEqual(booking.gid);
+        expect(res.from).toEqual(booking.from);
+        expect(res.to).toEqual(booking.to);
+        expect(res.type).toEqual(booking.type);
+    });
+});
+
+describe("Delete a booking for a space", () => {
+    test("01 - sid and bid not specified - should throw", async () => {
+        let sid = mockSpaces[0].sid;
+        let bid = mockSpaces[0].bookings[0].bid;
+
+        await expect(deleteBookingForSpace()).rejects.toThrow(Error);
+    });
+
+    test("02 - sid not specified - should throw", async () => {
+        let sid = mockSpaces[0].sid;
+        let bid = mockSpaces[0].bookings[0].bid;
+
+        await expect(deleteBookingForSpace(bid)).rejects.toThrow(Error);
+    });
+
+    test("03 - sid and bid undefined - should throw", async () => {
+        let sid = undefined;
+        let bid = undefined;
+
+        await expect(deleteBookingForSpace(sid, bid)).rejects.toThrow(Error);
+    });
+
+    test("04 - sid undefined - should throw", async () => {
+        let sid = undefined;
+        let bid = mockSpaces[0].bookings[0].bid;
+
+        await expect(deleteBookingForSpace(sid, bid)).rejects.toThrow(Error);
+    });
+
+    test("05 - bid undefined - should throw", async () => {
+        let sid = mockSpaces[0].sid;
+        let bid = undefined;
+
+        await expect(deleteBookingForSpace(sid, bid)).rejects.toThrow(Error);
+    });
+
+    test("06 - sid is an array - should throw", async () => {
+        let sid = [];
+        let bid = mockSpaces[0].bookings[0].bid;
+
+        await expect(deleteBookingForSpace(sid, bid)).rejects.toThrow(Error);
+    });
+
+    test("07 - invalid sid - should return undefined", async () => {
+        let sid = mockSpaces[0].sid.substring(0, mockSpaces[0].sid.length-5) + "abcde";
+        let bid = mockSpaces[0].bookings[0].bid;
+
+        let res = await deleteBookingForSpace(sid, bid);
+        expect(res).toBeUndefined();
+    });
+
+    test("08 - invalid bid - should return undefined", async () => {
+        let sid = mockSpaces[0].sid;
+        let bid = mockSpaces[0].bookings[0].bid.substring(0, mockSpaces[0].bookings[0].bid.length-5) + "abcde";
+
+        let res = await deleteBookingForSpace(sid, bid);
+        expect(res).toBeUndefined();
+    });
+
+    test("09 - correct parameters - should fulfill the request", async () => {
+        let sid = mockSpaces[0].sid;
+        let bid = mockSpaces[0].bookings[2].bid;
+
+        let res = await deleteBookingForSpace(sid, bid);
+        expect(res).toBeTruthy();
     });
 });
