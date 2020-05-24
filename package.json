@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest --forceExit"
+    "test": "env TEST=true jest --forceExit"
   },
   "author": "",
   "license": "ISC",
@@ -14,11 +14,13 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-bearer-token": "^2.4.0",
+    "express-prom-bundle": "^6.0.0",
     "express-unless": "^0.5.0",
     "jsonwebtoken": "^8.5.1",
     "luxon": "^1.21.3",
     "mongoose": "^5.8.1",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "prom-client": "^12.0.0"
   },
   "devDependencies": {
     "jest": "^25.2.7",

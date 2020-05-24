@@ -1,9 +1,9 @@
 const express = require('express');
 const unless = require('express-unless');
 const bodyParser = require('body-parser');
-const spaceImpl = require('./spacesImpl.js');
 const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require('../../utility.js');
 const errors = (process.env.PROD != undefined) ? require("./errorMsg.js") : require('../../errorMsg.js');
+const spaceDataLayer = process.env.PROD ? require("./space_data_layer/groupDataLayer") : require("../../data_layer/group_data_layer/groupDataLayer.js");
 
 if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config');
@@ -14,7 +14,19 @@ const LEVELS = apiUtility.levels;
 const app = express();
 app.use(bodyParser.json());
 
+const BOOKING_TYPE = {
+    ACTIVITY: "attivita",
+    MEETING: "riunione",
+    WINE: "degustazione prosecco",
+    OTHER: "altro"
+}
+
+function validateBookingType(type) {
+    return BOOKING_TYPE.some(p => p === type);
+}
+
 //*** ERROR AND AUTH MIDDLEWARE ***/
+
 const mwErrorHandler = require('../../middleware/mwErrorHandler');
 app.use(mwErrorHandler);
 
@@ -37,7 +49,7 @@ app.use(mwAuth.unless({
 
 app.get('/spaces', async function (req, res, next) {
     try {
-        const spaces = await spaceImpl.getSpaces();
+        const spaces = await spaceDataLayer.getAllSpaces();
         if (spaces === undefined)
             return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
@@ -53,16 +65,11 @@ app.get('/spaces/:spaceId', async function (req, res, next) {
 
     if (apiUtility.validateParamsUndefined(spaceId))
         return res.status(400).json(errors.PARAMS_UNDEFINED);
-    if (!apiUtility.validateParamsString(spaceId))
-        return res.status(400).json(errors.PARAMS_WRONG_TYPE);
     try {
-        if (await spaceImpl.validateSpaceId(spaceId))
-            return res.status(404).json(errors.ENTITY_NOT_FOUND);
-
         if (!(apiUtility.validateAuth(req, LEVELS.ADMIN)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
-        const space = await spaceImpl.getSpaces(spaceId);
+        const space = await spaceDataLayer.getSpace(spaceId);
 
         if (space === undefined)
             return res.status(404).json(errors.ALREADY_PRESENT);
@@ -87,7 +94,7 @@ app.post('/spaces', async function (req, res, next) {
         return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
     try {
-        const newSpace = await spaceImpl.createNewSpace(name);
+        const newSpace = await spaceDataLayer.createSpace(name);
 
         if (newSpace === undefined)
             return res.status(400).json(errors.ALREADY_PRESENT);
@@ -108,13 +115,10 @@ app.put('/spaces/:id', async function (req, res, next) {
     if (!apiUtility.validateParamsString(spaceId, name))
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
     try {
-        /*if (!(await spaceImpl.validateSpaceId(spaceId)))
-            return res.status(404).json(errors.ENTITY_NOT_FOUND);*/
-
         if (!(apiUtility.validateAuth(req, LEVELS.ADMIN)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
-        const editedSpace = await spaceImpl.editSpace(spaceId, name);
+            const editedSpace = await spaceDataLayer.modifySpace(spaceId, name);
 
         if (editedSpace == undefined)
             return res.status(404).json(errors.ENTITY_NOT_FOUND);
@@ -136,15 +140,12 @@ app.delete('/spaces/:id', async function (req, res, next) {
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
 
     try {
-        /*if (!await spaceImpl.validateSpaceId(spaceId))
-            return res.status(404).json(errors.ENTITY_NOT_FOUND);*/
-
         if (!(apiUtility.validateAuth(req, LEVELS.ADMIN)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
-        const isDeleted = await spaceImpl.deleteSpace(spaceId);
+        const deletedSpace = await spaceDataLayer.deleteSpace(spaceId);
 
-        if (!isDeleted)
+        if (!deletedSpace)
             return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
         return res.status(200).end();
@@ -166,11 +167,8 @@ app.get('/spaces/:spaceId/bookings', async function (req, res, next) {
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
 
     try {
-        /*if (await spaceImpl.validateSpaceId(spaceId) == false)
-            return res.status(404).json(errors.ENTITY_NOT_FOUND);*/
-
-        const bookings = await spaceImpl.getBookings(spaceId);
-        if (apiUtility.validateParamsUndefined(bookings))
+        const bookings = await spaceDataLayer.getAllBookingsForSpace(spaceId);
+        if (!bookings)
             return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
         return res.status(200).json(bookings)
@@ -193,20 +191,18 @@ app.post('/spaces/:spaceId/bookings/:bookingId', async function (req, res) {
         return res.status(400).json(errors.DATETIME_INVALID);
     if (!apiUtility.validateParamsString(spaceId, gid))
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
-    if (!spaceImpl.validateBookingType(type))
+    if (!validateBookingType(type))
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
 
+    const bookingData = { uid : uid, from : from, to : to, type : type, gid : gid };
     try {
-        /*if (!(await spaceImpl.validateSpaceId(spaceId) && (await apiUtility.validateGroupId(gid))))
-            return res.status(404).json(errors.ENTITY_NOT_FOUND);*/
-
         if (!(apiUtility.validateAuth(req, LEVELS.EDUCATOR, gid) || apiUtility.validateAuth(req, LEVELS.ADMIN)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
-        const newBooking = await spaceImpl.createNewBooking(from, to, type, gid, uid, spaceId);
+        const newBooking = await spaceDataLayer.createBookingForSpace(spaceId, bookingData);
 
         if (newBooking === undefined)
-            return res.status(403).json(errors.ALREADY_RESERVED);
+            return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
         return res.status(201).json(newBooking);
     }
@@ -230,25 +226,19 @@ app.put('/spaces/:spaceId/bookings/:bookingId', async function (req, res) {
         return res.status(400).json(errors.DATETIME_INVALID);
     if (!apiUtility.validateParamsString(spaceId, bookingId, gid))
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
-    if (!spaceImpl.validateBookingType(type))
+    if (!validateBookingType(type))
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
+
+    const bookingData = { uid : uid, from : from, to : to, type : type, gid : gid };
+    
     try {
-        if (!(await spaceImpl.validateBookingId(bookingId) &&
-            await spaceImpl.validateSpaceId(spaceId) &&
-            await apiUtility.validateGroupId(gid)))
-            return res.status(404).json(errors.ENTITY_NOT_FOUND);
-
-        const actualBookingGid = await spaceImpl.getBookingGid(bookingId);
-        if (actualBookingGid === undefined)
-            return res.status(404).json(errors.ENTITY_NOT_FOUND);
-
         if (!(apiUtility.validateAuth(req, LEVELS.EDUCATOR, actualBookingGid) || apiUtility.validateAuth(req, LEVELS.ADMIN)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
-        const editedBooking = await spaceImpl.editBooking(spaceId, bookingId, from, to, type, gid, uid);
+        const editedBooking = await spaceDataLayer.modifyBookingForSpace(spaceId, bookingId, bookingData);
 
         if (editedBooking === undefined)
-            return res.status(403).json(errors.ALREADY_RESERVED);
+            return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
         return res.status(200).json(editedBooking);
     }
@@ -267,17 +257,11 @@ app.delete('/spaces/:spaceId/bookings/:bookingId', async function (req, res) {
     if (!apiUtility.validateParamsString(spaceId, bookingId))
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
     try {
-        if (!(await spaceImpl.validateBookingId(bookingId) && await spaceImpl.validateSpaceId(spaceId)))
-            return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
-        const actualBookingGid = await spaceImpl.getBookingGid(bookingId);
-        if (actualBookingGid === undefined)
-            return res.status(404).json(errors.ENTITY_NOT_FOUND);
-            
         if (!(apiUtility.validateAuth(req, LEVELS.EDUCATOR, actualBookingGid) || apiUtility.validateAuth(req, LEVELS.ADMIN)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
-        const isDeleted = await spaceImpl.deleteBooking(spaceId, bookingId);
+        const isDeleted = await spaceDataLayer.deleteBookingForSpace(spaceId, bookingId);
 
         if (!isDeleted)
             return res.status(404).json(errors.ENTITY_NOT_FOUND);

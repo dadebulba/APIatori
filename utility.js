@@ -67,42 +67,23 @@ module.exports = {
         const EMAIL_REGEX = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
         return (typeof email === 'string' && email.length > 5 && email.length < 61 && EMAIL_REGEX.test(email));
     },
-    validateGroupId: async function (gid) {
-
-        process.env["NODE_CONFIG_DIR"] = "./config/";
-        const config = require('config');
-
-        const groupURL = config.baseURL + ":" + config.groupsPort + config.groupsPath + "/" + gid;
-        try {
-            let response = await fetch(groupURL).then(this.checkStatus);
-            return response.status == 200;
-        }
-        catch (err) {
-            next(err);
-        }
-    },
-    validateUserId: async function (uid) {
-
-        process.env["NODE_CONFIG_DIR"] = "./config/";
-        const config = require('config');
-
-        const userURL = config.baseURL + ":" + config.usersPort + config.usersPath + "/" + uid;
-        console.log("Checking uid " + uid + " @ " + userURL);
-        try {
-            let response = await fetch(userURL).then(this.checkStatus);
-            return response.status == 200;
-        }
-        catch (err) {
-            next(err);
-        }
-    },
     isObjectIdValid: function (id){
         return id != undefined && ObjectId.isValid(id) && String(new ObjectId(id) === id);
     },
-    getAuthHeader : async function(email, password) {
+    getAuthHeader: async function (email, password, tokenUrl) {
+        const options = {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                "action" : "createToken"
+            },
+            body: JSON.stringify({ email : email, password : password })
+        }
         try {
+            console.log("bearer", await fetch(tokenUrl, options))
             return {
-                'Authorization': `Bearer ${await getToken(email, password)}`
+                'Authorization': `Bearer ${await fetch(tokenUrl, options)}`
             };
         }
         catch (err) {
