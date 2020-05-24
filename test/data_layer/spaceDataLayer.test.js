@@ -17,7 +17,7 @@ const modifyBookingForSpace = spaceDL.modifyBookingForSpace;
 const deleteBookingForSpace = spaceDL.deleteBookingForSpace;
 
 beforeAll(async () => {
-    await spaceDL.inmemory_mongodb_promise;
+    await spaceDL.init();
 
     //Retrive id of the inserted mocked data
     let data = await getAllSpaces();

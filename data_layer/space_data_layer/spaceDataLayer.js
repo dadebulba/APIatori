@@ -5,36 +5,46 @@ const apiUtility = (process.env.PROD) ? require("./utility.js") : require("../..
 if (process.env.PROD == undefined && process.env.TEST == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config'); 
 
-var inmemory_mongodb_promise;
-const mongoOptions = {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false
-};
-
-if (process.env.TEST){
-    //Start the in-memory db for testing
-    inmemory_mongodb_promise = new Promise((resolve, reject) => {
-        mongoose.connect(global.__MONGO_URI__, mongoOptions).then(
-            () => {
-                controller.loadMockSpaces(process.env.MOCK_SPACES).then(() => resolve());
-            }
-        );
-    });
-}
-else {
-    //MongoDB initialization
-    mongoose.connect(config.mongoURL, mongoOptions);
-    mongoose.Promise = global.Promise;
-    const db = mongoose.connection;
-    db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-}
+var conn;
 
 module.exports = {
 
-    inmemory_mongodb_promise : inmemory_mongodb_promise,
+    init : async function(){
+        const mongoOptions = {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            useFindAndModify: false
+        };
+        
+        if (process.env.TEST){
+            //Start the in-memory db for testing
+            let inmemory_mongodb_promise = new Promise((resolve, reject) => {
+                mongoose.connect(global.__MONGO_URI__, mongoOptions).then(
+                    (connection) => {
+                        controller.loadMockSpaces(process.env.MOCK_SPACES).then(() => resolve(connection));
+                    }
+                );
+            });
+
+            conn = await inmemory_mongodb_promise;
+        }
+        else {
+            //MongoDB initialization
+            mongoose.connect(config.mongoURL, mongoOptions);
+            mongoose.Promise = global.Promise;
+            const db = mongoose.connection;
+            db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
+            conn = db;
+        }
+
+        return conn;
+    },
 
     getAllSpaces : async function(){
+        if (conn == undefined)
+            throw new Error("SpaceDataLayer not initialized yet");
+
         let spacesList = await controller.retrieveAllSpaces();
         spacesList.forEach((item) => {
             item.href = config.baseURL + ":" + config.spacesPort + config.spacesPath + "/" + item._id;
@@ -46,6 +56,9 @@ module.exports = {
     },
 
     getSpace : async function(sid){
+        if (conn == undefined)
+            throw new Error("SpaceDataLayer not initialized yet");
+
         if (arguments.length !== 1 || !apiUtility.isObjectIdValid(sid))
             throw new Error("Bad parameters");
 
@@ -54,6 +67,9 @@ module.exports = {
     },
 
     createSpace : async function(name){
+        if (conn == undefined)
+            throw new Error("SpaceDataLayer not initialized yet");
+
         if (arguments.length !== 1 || name == undefined || typeof name !== "string")
             throw new Error("Bad arguments");
 
@@ -62,6 +78,9 @@ module.exports = {
     },
 
     modifySpace : async function(sid, newName){
+        if (conn == undefined)
+            throw new Error("SpaceDataLayer not initialized yet");
+
         if (arguments.length !== 2 || newName == undefined || !apiUtility.isObjectIdValid(sid) || newName === "")
             throw new Error("Bad arguments");
 
@@ -70,6 +89,9 @@ module.exports = {
     },
 
     deleteSpace : async function(sid){
+        if (conn == undefined)
+            throw new Error("SpaceDataLayer not initialized yet");
+
         if (arguments.length !== 1 || !apiUtility.isObjectIdValid(sid))
             throw new Error("Bad parameters");
 
@@ -78,6 +100,9 @@ module.exports = {
     },
 
     getAllBookingsForSpace : async function(sid){
+        if (conn == undefined)
+            throw new Error("SpaceDataLayer not initialized yet");
+
         if (arguments.length !== 1 || !apiUtility.isObjectIdValid(sid))
             throw new Error("Bad parameters");
 
@@ -86,6 +111,9 @@ module.exports = {
     },
 
     getBookingForSpace : async function(sid, bid){
+        if (conn == undefined)
+            throw new Error("SpaceDataLayer not initialized yet");
+
         if (arguments.length !== 2 || !apiUtility.isObjectIdValid(sid) || !apiUtility.isObjectIdValid(bid))
             throw new Error("Bad parameters");
 
@@ -94,6 +122,9 @@ module.exports = {
     },
 
     createBookingForSpace : async function(sid, bookingData){
+        if (conn == undefined)
+            throw new Error("SpaceDataLayer not initialized yet");
+
         if (arguments.length !== 2 || !apiUtility.isObjectIdValid(sid) || bookingData == undefined)
             throw new Error("Bad parameters");
 
@@ -102,6 +133,9 @@ module.exports = {
     },
 
     modifyBookingForSpace : async function(sid, bid, data){
+        if (conn == undefined)
+            throw new Error("SpaceDataLayer not initialized yet");
+
         if (arguments.length !== 3 || !apiUtility.isObjectIdValid(sid) || !apiUtility.isObjectIdValid(bid) ||
                 data == undefined)
             throw new Error("Bad parameters");
@@ -111,6 +145,9 @@ module.exports = {
     },
 
     deleteBookingForSpace : async function(sid, bid){
+        if (conn == undefined)
+            throw new Error("SpaceDataLayer not initialized yet");
+
         if (arguments.length !== 2 || !apiUtility.isObjectIdValid(sid) || !apiUtility.isObjectIdValid(bid))
             throw new Error("Bad parameters");
 
