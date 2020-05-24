@@ -1,6 +1,5 @@
 const mockSpaces = require("../data/spaces.js");
 
-process.env.TEST = true;
 process.env.MOCK_SPACES = JSON.stringify(mockSpaces);
 const spaceDL = require("../../data_layer/space_data_layer/spaceDataLayer");
 
@@ -15,6 +14,10 @@ const getBookingForSpace = spaceDL.getBookingForSpace;
 const createBookingForSpace = spaceDL.createBookingForSpace;
 const modifyBookingForSpace = spaceDL.modifyBookingForSpace;
 const deleteBookingForSpace = spaceDL.deleteBookingForSpace;
+
+//Errors
+const ParametersError = require("../../errors/parametersError");
+const IntervalOverlapError = require("../../errors/intervalOverlapError");
 
 beforeAll(async () => {
     await spaceDL.init();
@@ -81,25 +84,25 @@ describe("Get all spaces", () => {
 
 describe("Get space by id", () => {
     test("01 - sid not specified - should throw", async () => {
-        await expect(getSpace()).rejects.toThrow(Error);
+        await expect(getSpace()).rejects.toThrow(ParametersError);
     });
 
     test("02 - sid is undefined - should throw", async () => {
         const sid = undefined;
 
-        await expect(getSpace(sid)).rejects.toThrow(Error);
+        await expect(getSpace(sid)).rejects.toThrow(ParametersError);
     });
 
     test("03 - sid is an array - should throw", async () => {
         const sid = [];
 
-        await expect(getSpace(sid)).rejects.toThrow(Error);
+        await expect(getSpace(sid)).rejects.toThrow(ParametersError);
     });
 
     test("04 - sid is an array - should throw", async () => {
         const sid = [];
 
-        await expect(getSpace(sid)).rejects.toThrow(Error);
+        await expect(getSpace(sid)).rejects.toThrow(ParametersError);
     });
 
     test("05 - sid not exists - should return null", async () => {
@@ -118,25 +121,25 @@ describe("Get space by id", () => {
 
 describe("Create new spaces", () => {
     test("01 - name not specified - should throw", async () => {
-        await expect(createSpace()).rejects.toThrow(Error);
+        await expect(createSpace()).rejects.toThrow(ParametersError);
     });
 
     test("02 - name is undefined - should throw", async () => {
         const name = undefined;
 
-        await expect(createSpace(name)).rejects.toThrow(Error);
+        await expect(createSpace(name)).rejects.toThrow(ParametersError);
     });
 
     test("03 - name is not a string - should throw", async () => {
         const name = [];
         
-        await expect(createSpace(name)).rejects.toThrow(Error);
+        await expect(createSpace(name)).rejects.toThrow(ParametersError);
     });
 
     test("04 - name is an empty string - should throw", async () => {
         const name = "";
         
-        await expect(createSpace(name)).rejects.toThrow(Error);
+        await expect(createSpace(name)).rejects.toThrow(ParametersError);
     });
 
     test("05 - already exist a space with that name - should return null", async () => {
@@ -157,56 +160,56 @@ describe("Modify an existing space", () => {
         const sid = undefined;
         const name = "New name from test";
 
-        await expect(modifySpace()).rejects.toThrow(Error);
+        await expect(modifySpace()).rejects.toThrow(ParametersError);
     });
 
     test("02 - sid not specified, valid name - should throw", async () => {
         const sid = undefined;
         const name = "New name from test";
 
-        await expect(modifySpace(name)).rejects.toThrow(Error);
+        await expect(modifySpace(name)).rejects.toThrow(ParametersError);
     });
 
     test("03 - Valid sid, name not specified - should throw", async () => {
         const sid = mockSpaces[0].sid;
         const name = "New name from test";
 
-        await expect(modifySpace(sid)).rejects.toThrow(Error);
+        await expect(modifySpace(sid)).rejects.toThrow(ParametersError);
     });
 
     test("04 - sid undefined - should throw", async () => {
         const sid = undefined;
         const name = "New name from test";
 
-        await expect(modifySpace(sid, name)).rejects.toThrow(Error);
+        await expect(modifySpace(sid, name)).rejects.toThrow(ParametersError);
     });
 
     test("05 - name undefined - should throw", async () => {
         const sid = mockSpaces[0].sid;
         const name = undefined;
 
-        await expect(modifySpace(sid, name)).rejects.toThrow(Error);
+        await expect(modifySpace(sid, name)).rejects.toThrow(ParametersError);
     });
 
     test("06 - sid is an array - should throw", async () => {
         const sid = [];
         const name = "New name from test";
 
-        await expect(modifySpace(sid, name)).rejects.toThrow(Error);
+        await expect(modifySpace(sid, name)).rejects.toThrow(ParametersError);
     });
 
     test("07 - name is an array - should throw", async () => {
         const sid = mockSpaces[0].sid;
         const name = undefined;
 
-        await expect(modifySpace(sid, name)).rejects.toThrow(Error);
+        await expect(modifySpace(sid, name)).rejects.toThrow(ParametersError);
     });
 
     test("08 - name is an empty string - should throw", async () => {
         const sid = mockSpaces[0].sid;
         const name = "";
 
-        await expect(modifySpace(sid, name)).rejects.toThrow(Error);
+        await expect(modifySpace(sid, name)).rejects.toThrow(ParametersError);
     });
 
     test("09 - sid not exists - should return undefined", async () => {
@@ -230,19 +233,19 @@ describe("Delete an existing space", () => {
     test("01 - sid not specified - should throw", async () => {
         let sid = undefined;
 
-        await expect(deleteSpace()).rejects.toThrow(Error);
+        await expect(deleteSpace()).rejects.toThrow(ParametersError);
     });
 
     test("02 - sid is undefined - should throw", async () => {
         let sid = undefined;
 
-        await expect(deleteSpace(sid)).rejects.toThrow(Error);
+        await expect(deleteSpace(sid)).rejects.toThrow(ParametersError);
     });
 
     test("03 - sid is an array - should throw", async () => {
         let sid = [];
 
-        await expect(deleteSpace(sid)).rejects.toThrow(Error);
+        await expect(deleteSpace(sid)).rejects.toThrow(ParametersError);
     });
 
     test("04 - sid not exists - should return undefined", async () => {
@@ -264,19 +267,19 @@ describe("Get all bookings for a space", () => {
     test("01 - sid not specified - should throw", async () => {
         const sid = undefined;
 
-        await expect(getAllBookingsForSpace()).rejects.toThrow(Error);
+        await expect(getAllBookingsForSpace()).rejects.toThrow(ParametersError);
     });
 
     test("02 - sid is undefined - should throw", async () => {
         const sid = undefined;
 
-        await expect(getAllBookingsForSpace(sid)).rejects.toThrow(Error);
+        await expect(getAllBookingsForSpace(sid)).rejects.toThrow(ParametersError);
     });
 
     test("03 - sid is an array - should throw", async () => {
         const sid = [];
 
-        await expect(getAllBookingsForSpace(sid)).rejects.toThrow(Error);
+        await expect(getAllBookingsForSpace(sid)).rejects.toThrow(ParametersError);
     });
 
     test("04 - sid not exists - should return undefined", async () => {
@@ -298,42 +301,42 @@ describe("Get a booking of a space", () => {
         const sid = undefined;
         const bid = undefined;
 
-        await expect(getBookingForSpace()).rejects.toThrow(Error);
+        await expect(getBookingForSpace()).rejects.toThrow(ParametersError);
     });
 
     test("02 - sid not specified, bid is valid - should throw", async () => {
         const sid = undefined;
         const bid = mockSpaces[0].bookings[0].bid;
 
-        await expect(getBookingForSpace(bid)).rejects.toThrow(Error);
+        await expect(getBookingForSpace(bid)).rejects.toThrow(ParametersError);
     });
 
     test("03 - sid valid, bid not specified - should throw", async () => {
         const sid = mockSpaces[0].sid;
         const bid = mockSpaces[0].bookings[0].bid;
 
-        await expect(getBookingForSpace(sid)).rejects.toThrow(Error);
+        await expect(getBookingForSpace(sid)).rejects.toThrow(ParametersError);
     });
 
     test("04 - sid undefined, bid undefined - should throw", async () => {
         const sid = undefined;
         const bid = undefined;
 
-        await expect(getBookingForSpace(sid, bid)).rejects.toThrow(Error);
+        await expect(getBookingForSpace(sid, bid)).rejects.toThrow(ParametersError);
     });
 
     test("05 - sid undefined, bid valid - should throw", async () => {
         const sid = undefined;
         const bid = mockSpaces[0].bookings[0].bid;
 
-        await expect(getBookingForSpace(sid, bid)).rejects.toThrow(Error);
+        await expect(getBookingForSpace(sid, bid)).rejects.toThrow(ParametersError);
     });
 
     test("06 - sid valid, bid undefined - should throw", async () => {
         const sid = mockSpaces[0].sid;
         const bid = undefined;
 
-        await expect(getBookingForSpace(sid, bid)).rejects.toThrow(Error);
+        await expect(getBookingForSpace(sid, bid)).rejects.toThrow(ParametersError);
     });
 
     test("07 - sid not exists, bid valid - should return undefined", async () => {
@@ -375,7 +378,7 @@ describe("Create a booking for a space", () => {
         let sid = undefined;
         let bookingData = undefined;
 
-        await expect(createBookingForSpace()).rejects.toThrow(Error);
+        await expect(createBookingForSpace()).rejects.toThrow(ParametersError);
     });
 
     test("02 - sid not specified, valid booking data - should throw", async () => {
@@ -388,7 +391,7 @@ describe("Create a booking for a space", () => {
             type: "attivita"
         };
 
-        await expect(createBookingForSpace(bookingData)).rejects.toThrow(Error);
+        await expect(createBookingForSpace(bookingData)).rejects.toThrow(ParametersError);
     });
 
     test("03 - sid is valid, booking data not specified - should throw", async () => {
@@ -401,14 +404,14 @@ describe("Create a booking for a space", () => {
             type: "attivita"
         };
 
-        await expect(createBookingForSpace(sid)).rejects.toThrow(Error);
+        await expect(createBookingForSpace(sid)).rejects.toThrow(ParametersError);
     });
 
     test("04 - sid undefined, booking data undefined - should throw", async () => {
         let sid = undefined;
         let bookingData = undefined;
 
-        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(Error);
+        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(ParametersError);
     });
 
     test("05 - sid undefined, booking data is valid - should throw", async () => {
@@ -421,14 +424,14 @@ describe("Create a booking for a space", () => {
             type: "attivita"
         };
 
-        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(Error);
+        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(ParametersError);
     });
 
     test("06 - sid is valid, booking data undefined - should throw", async () => {
         let sid = mockSpaces[0].sid;
         let bookingData = undefined;
 
-        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(Error);
+        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(ParametersError);
     });
 
     test("07 - sid is an array, valid booking data - should throw", async () => {
@@ -441,7 +444,7 @@ describe("Create a booking for a space", () => {
             type: "attivita"
         };
 
-        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(Error);
+        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(ParametersError);
     });
 
     test("08 - sid not exists, valid booking data - should return undefined", async () => {
@@ -470,7 +473,7 @@ describe("Create a booking for a space", () => {
         };
         delete bookingData.uid;
 
-        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(Error);
+        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(ParametersError);
     });
 
     test("10 - sid valid, booking data not well formed (missing gid) - should throw", async () => {
@@ -484,7 +487,7 @@ describe("Create a booking for a space", () => {
         };
         delete bookingData.gid;
 
-        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(Error);
+        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(ParametersError);
     });
 
     test("11 - sid valid, booking data not well formed (interval overlap) - should throw", async () => {
@@ -499,7 +502,7 @@ describe("Create a booking for a space", () => {
             type: "attivita"
         };
 
-        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(Error);
+        await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(IntervalOverlapError);
     });
 
     test("12 - sid valid, booking data valid - should fulfill the request", async () => {
@@ -529,7 +532,7 @@ describe("Update existing bookings for a space", () => {
         let bid = undefined;
         let booking = undefined;
 
-        await expect(modifyBookingForSpace()).rejects.toThrow(Error);
+        await expect(modifyBookingForSpace()).rejects.toThrow(ParametersError);
     });
 
     test("02 - sid and bid not specified - should throw", async () => {
@@ -543,7 +546,7 @@ describe("Update existing bookings for a space", () => {
             type: "attivita"
         };
 
-        await expect(modifyBookingForSpace(booking)).rejects.toThrow(Error);
+        await expect(modifyBookingForSpace(booking)).rejects.toThrow(ParametersError);
     });
 
     test("03 - sid not specified - should throw", async () => {
@@ -557,7 +560,7 @@ describe("Update existing bookings for a space", () => {
             type: "attivita"
         };
 
-        await expect(modifyBookingForSpace(bid, booking)).rejects.toThrow(Error);
+        await expect(modifyBookingForSpace(bid, booking)).rejects.toThrow(ParametersError);
     });
 
     test("04 - sid, bid and booking undefined - should throw", async () => {
@@ -565,7 +568,7 @@ describe("Update existing bookings for a space", () => {
         let bid = undefined;
         let booking = undefined;
 
-        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(Error);
+        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(ParametersError);
     });
 
     test("05 - bid and booking undefined - should throw", async () => {
@@ -574,7 +577,7 @@ describe("Update existing bookings for a space", () => {
         let booking = undefined;
 
         expect(sid).not.toBeUndefined();    //It should be inserted in the beforeAll()
-        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(Error);
+        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(ParametersError);
     });
 
     test("06 - sid and booking undefined - should throw", async () => {
@@ -583,7 +586,7 @@ describe("Update existing bookings for a space", () => {
         let booking = undefined;
 
         expect(bid).not.toBeUndefined();    //It should be inserted in the beforeAll()
-        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(Error);
+        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(ParametersError);
     });
 
     test("07 - booking undefined - should throw", async () => {
@@ -591,7 +594,7 @@ describe("Update existing bookings for a space", () => {
         let bid = mockSpaces[0].bookings[0].bid;
         let booking = undefined;
 
-        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(Error);
+        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(ParametersError);
     });
 
     test("08 - sid not exists - should return undefined", async () => {
@@ -634,7 +637,7 @@ describe("Update existing bookings for a space", () => {
             type: "attivita"
         };
 
-        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(Error);
+        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(ParametersError);
     });
 
     test("10 - booking object not well formed (interval overlap) - should throw", async () => {
@@ -648,7 +651,7 @@ describe("Update existing bookings for a space", () => {
             type: "attivita"
         };
 
-        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(Error);
+        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(IntervalOverlapError);
     });
 
     test("11 - sid is an array - should throw", async () => {
@@ -662,7 +665,7 @@ describe("Update existing bookings for a space", () => {
             type: "attivita"
         };
 
-        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(Error);
+        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(ParametersError);
     });
 
     test("12 - bid is an array - should throw", async () => {
@@ -676,7 +679,7 @@ describe("Update existing bookings for a space", () => {
             type: "attivita"
         };
 
-        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(Error);
+        await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(ParametersError);
     });
 
     test("13 - correct fields - should fulfill the request", async () => {
@@ -706,42 +709,42 @@ describe("Delete a booking for a space", () => {
         let sid = mockSpaces[0].sid;
         let bid = mockSpaces[0].bookings[0].bid;
 
-        await expect(deleteBookingForSpace()).rejects.toThrow(Error);
+        await expect(deleteBookingForSpace()).rejects.toThrow(ParametersError);
     });
 
     test("02 - sid not specified - should throw", async () => {
         let sid = mockSpaces[0].sid;
         let bid = mockSpaces[0].bookings[0].bid;
 
-        await expect(deleteBookingForSpace(bid)).rejects.toThrow(Error);
+        await expect(deleteBookingForSpace(bid)).rejects.toThrow(ParametersError);
     });
 
     test("03 - sid and bid undefined - should throw", async () => {
         let sid = undefined;
         let bid = undefined;
 
-        await expect(deleteBookingForSpace(sid, bid)).rejects.toThrow(Error);
+        await expect(deleteBookingForSpace(sid, bid)).rejects.toThrow(ParametersError);
     });
 
     test("04 - sid undefined - should throw", async () => {
         let sid = undefined;
         let bid = mockSpaces[0].bookings[0].bid;
 
-        await expect(deleteBookingForSpace(sid, bid)).rejects.toThrow(Error);
+        await expect(deleteBookingForSpace(sid, bid)).rejects.toThrow(ParametersError);
     });
 
     test("05 - bid undefined - should throw", async () => {
         let sid = mockSpaces[0].sid;
         let bid = undefined;
 
-        await expect(deleteBookingForSpace(sid, bid)).rejects.toThrow(Error);
+        await expect(deleteBookingForSpace(sid, bid)).rejects.toThrow(ParametersError);
     });
 
     test("06 - sid is an array - should throw", async () => {
         let sid = [];
         let bid = mockSpaces[0].bookings[0].bid;
 
-        await expect(deleteBookingForSpace(sid, bid)).rejects.toThrow(Error);
+        await expect(deleteBookingForSpace(sid, bid)).rejects.toThrow(ParametersError);
     });
 
     test("07 - invalid sid - should return undefined", async () => {

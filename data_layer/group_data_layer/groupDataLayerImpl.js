@@ -1,6 +1,9 @@
 const apiUtility = (process.env.PROD) ? require("./utility.js") : require("../../utility.js");
 const Group = require("./groupSchema.js")[0];
 
+const ParametersError = require("../../errors/parametersError");
+const DatabaseError = require("../../errors/databaseError");
+
 async function isGroupValid(group){
     if (apiUtility.validateParamsUndefined(group.name, group.educators, group.guys) || group.educators.length == 0)
         return false;
@@ -57,7 +60,7 @@ module.exports = {
 
         let result = await isGroupValid(groupInfo);
         if (!result)
-            return undefined;
+            throw new ParametersError();
 
         let newGroup = new Group({
             name: groupInfo.name,
@@ -70,7 +73,7 @@ module.exports = {
         });
         result = await newGroup.save();
         if (result == undefined)
-            throw new Error("Cannot save new group into database");
+            throw new DatabaseError();
         
         result = JSON.parse(JSON.stringify(result));
         result.gid = result._id;
@@ -81,7 +84,7 @@ module.exports = {
 
     getGroup : async function(gid) {
         if (gid == undefined || arguments.length != 1)
-            return undefined;
+            throw new ParametersError();
 
         let result = await Group.findById(gid);
         if (result != undefined){
@@ -96,7 +99,7 @@ module.exports = {
 
     deleteGroup : async function(gid){
         if (gid == undefined || arguments.length != 1)
-            return undefined;
+            throw new ParametersError();
 
         let result = await Group.findByIdAndDelete(gid);
         return result;
@@ -104,12 +107,12 @@ module.exports = {
 
     modifyGroup : async function(gid, group){
         if (gid == undefined || group == undefined || group == "" || arguments.length != 2)
-            throw new Error("Bad arguments");
+            throw new ParametersError();
 
         let result = await isGroupValid(group);
         if (!result || group.balance == undefined)
-            throw new Error("Bad group format");
-
+            throw new ParametersError();
+            
         var updateObj = {
             name: group.name,
             educators: group.educators,
