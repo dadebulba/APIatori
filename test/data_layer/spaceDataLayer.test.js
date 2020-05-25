@@ -18,6 +18,7 @@ const deleteBookingForSpace = spaceDL.deleteBookingForSpace;
 //Errors
 const ParametersError = require("../../errors/parametersError");
 const IntervalOverlapError = require("../../errors/intervalOverlapError");
+const SpaceAlreadyExistsError = require("../../errors/spaceAlreadyExistsError");
 
 beforeAll(async () => {
     await spaceDL.init();
@@ -142,10 +143,10 @@ describe("Create new spaces", () => {
         await expect(createSpace(name)).rejects.toThrow(ParametersError);
     });
 
-    test("05 - already exist a space with that name - should return null", async () => {
+    test("05 - already exist a space with that name - should throw", async () => {
         const name = mockSpaces[0].name;
-        const res = await createSpace(name);
-        expect(res).toBeUndefined();
+
+        await expect(createSpace(name)).rejects.toThrow(SpaceAlreadyExistsError);
     });
 
     test("06 - name is valid - should create", async () => {
@@ -226,6 +227,7 @@ describe("Modify an existing space", () => {
 
         const res = await modifySpace(sid, name);
         expect(res).not.toBeUndefined();
+        expect(res.name).toEqual(name);
     });
 });
 

@@ -3,8 +3,11 @@ const Group = require("./groupSchema.js")[0];
 
 const ParametersError = require("../../errors/parametersError");
 const DatabaseError = require("../../errors/databaseError");
+const GroupAlreadyExistsError = require("../../errors/groupAlreadyExistsError");
 
 async function isGroupValid(group){
+    if (typeof group !== "object")
+        return false;
     if (apiUtility.validateParamsUndefined(group.name, group.educators, group.guys) || group.educators.length == 0)
         return false;
     if (group.calendarMail != undefined && !apiUtility.validateEmail(group.calendarMail))
@@ -17,15 +20,15 @@ async function isGroupValid(group){
     let allValid = true;
 
     for (var i=0; i<group.educators.length && allValid; i++)
-        if (!apiUtility.isObjectValid(group.educators[i]))
+        if (!apiUtility.isObjectIdValid(group.educators[i]))
             allValid = false;
 
     for (var i=0; i<group.collaborators.length && allValid; i++)
-        if (!apiUtility.isObjectValid(group.collaborators[i]))
+        if (!apiUtility.isObjectIdValid(group.collaborators[i]))
             allValid = false;
 
     for (var i=0; i<group.guys.length && allValid; i++)
-        if (!apiUtility.isObjectValid(group.guys[i]))
+        if (!apiUtility.isObjectIdValid(group.guys[i]))
             allValid = false;
         
     return allValid;
@@ -34,7 +37,14 @@ async function isGroupValid(group){
 module.exports = {
 
     loadMockGroups : async function(groups){
-        throw new Error("Function not implemented yet");
+        let mockGroups = JSON.parse(groups);
+
+        for (var i=0; i<mockGroups.length; i++){
+            let newGroup = new Group(mockGroups[i]);
+            await newGroup.save();
+        }
+
+        return true;
     },
 
     retrieveAllGroups : async function(){
@@ -58,9 +68,14 @@ module.exports = {
 
     createGroup : async function(groupInfo){
 
-        let result = await isGroupValid(groupInfo);
+        var result = await isGroupValid(groupInfo);
         if (!result)
             throw new ParametersError();
+
+        //Check that there isn't already a group with the same name
+        result = await Group.findOne({name: new RegExp('^'+groupInfo.name+'$', "i")}); // "i" for case-insensitive
+        if (result != null && result.length != 0)
+            throw new GroupAlreadyExistsError();
 
         let newGroup = new Group({
             name: groupInfo.name,
@@ -83,35 +98,42 @@ module.exports = {
     },
 
     getGroup : async function(gid) {
-        if (gid == undefined || arguments.length != 1)
+        if (arguments.length != 1 || !apiUtility.isObjectIdValid(gid))
             throw new ParametersError();
 
         let result = await Group.findById(gid);
-        if (result != undefined){
+        if (result != null){
             result = JSON.parse(JSON.stringify(result));
             delete result.__v;
             result.gid = result._id;
             delete result._id;
         }
 
-        return result;
+        return (result != null)? result : undefined;
     },
 
     deleteGroup : async function(gid){
-        if (gid == undefined || arguments.length != 1)
+        if (arguments.length != 1 || !apiUtility.isObjectIdValid(gid))
             throw new ParametersError();
 
         let result = await Group.findByIdAndDelete(gid);
-        return result;
+        if (result != null){
+            result = JSON.parse(JSON.stringify(result));
+            result.gid = result._id;
+            delete result._id;
+            delete result.__v;
+        }
+
+        return (result != null) ? result : undefined;
     },
 
     modifyGroup : async function(gid, group){
-        if (gid == undefined || group == undefined || group == "" || arguments.length != 2)
+        if (arguments.length != 2 || !apiUtility.isObjectIdValid(gid) || group == undefined)
             throw new ParametersError();
 
         let result = await isGroupValid(group);
         if (!result || group.balance == undefined)
-            throw new ParametersError();
+            throw new ParametersError("'balance' field is required");
             
         var updateObj = {
             name: group.name,
@@ -128,15 +150,15 @@ module.exports = {
         if (group.calendarMail != undefined)
             updateObj.calendarMail = group.calendarMail;
 
-        result = await Group.findByIdAndUpdate(gid, $set = updateObj);
-        if (result != undefined){
+        result = await Group.findByIdAndUpdate(gid, $set = updateObj, {new: true});
+        if (result != null){
             result = JSON.parse(JSON.stringify(result));
             result.gid = result._id;
             delete result.__v;
             delete result._id;
         }
 
-        return result;
+        return (result != null) ? result : undefined;
     }
 
 }

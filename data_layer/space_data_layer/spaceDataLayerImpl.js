@@ -6,6 +6,7 @@ const Booking = require("./spaceSchema.js")[1];
 const ParametersError = require("../../errors/parametersError");
 const IntervalOverlapError = require("../../errors/intervalOverlapError");
 const DatabaseError = require("../../errors/databaseError");
+const SpaceAlreadyExistsError = require("../../errors/spaceAlreadyExistsError");
 
 function checkBooking(booking){
     if (booking.from == undefined || booking.to == undefined || booking.type == undefined)
@@ -86,8 +87,8 @@ module.exports = {
 
         //Check that there isn't already a space with the same name
         let result = await Space.findOne({name: new RegExp('^'+spaceName+'$', "i")}); // "i" for case-insensitive
-        if (result != null)
-            return undefined;
+        if (result != null && result.length != 0)
+            throw new SpaceAlreadyExistsError();
 
         let newSpace = new Space({
             name: spaceName,
@@ -112,7 +113,11 @@ module.exports = {
         if (sid == undefined || newName == undefined || arguments.length != 2)
             return ParametersError();
 
-        let result = await Space.findByIdAndUpdate(sid, $set = {name: newName});
+        let check = await Space.findOne({name: new RegExp('^'+newName+'$', "i")}); // "i" for case-insensitive
+        if (check != null && check.length != 0)
+            throw new SpaceAlreadyExistsError();
+
+        let result = await Space.findByIdAndUpdate(sid, $set = {name: newName}, {new: true});
         if (result != null) {
             result = JSON.parse(JSON.stringify(result));
             result.name = newName;

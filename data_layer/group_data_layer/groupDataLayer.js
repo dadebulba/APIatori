@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
 const controller = require('./groupDataLayerImpl.js');
-const apiUtility = (process.env.PROD) ? require("./utility.js") : require("../../utility.js");
 
-if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
+if (process.env.PROD == undefined && process.env.TEST == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config');
 
 const DatalayerAlreadyInitializedError = require("../../errors/datalayerAlreadyInitializedError");
@@ -59,7 +58,7 @@ module.exports = {
         if (!initialized)
             throw new DatalayerNotInitializedError("GroupDataLayer");
 
-        if (arguments.length !== 1 || !apiUtility.isObjectValid(gid))
+        if (arguments.length !== 1)
             throw new ParametersError();
 
         let result = await controller.getGroup(gid);
@@ -81,7 +80,7 @@ module.exports = {
         if (!initialized)
             throw new DatalayerNotInitializedError("GroupDataLayer");
 
-        if (arguments.length !== 2 || !apiUtility.isObjectValid(gid) || data == undefined)
+        if (arguments.length !== 2 || data == undefined)
             throw new ParametersError();
 
         let result = await controller.modifyGroup(gid, data);
@@ -92,7 +91,7 @@ module.exports = {
         if (!initialized)
             throw new DatalayerNotInitializedError("GroupDataLayer");
 
-        if (arguments.length !== 1 || !apiUtility.isObjectValid(gid))
+        if (arguments.length !== 1)
             throw new ParametersError();
 
         let result = await controller.deleteGroup(gid);
