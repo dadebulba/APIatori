@@ -1,40 +1,52 @@
 const mongoose = require('mongoose');
 const controller = require('./groupDataLayerImpl.js');
-const apiUtility = (process.env.PROD) ? require("./utility.js") : require("../../utility.js");
 
-if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
+if (process.env.PROD == undefined && process.env.TEST == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config');
 
-var inmemory_mongodb_promise;
+const DatalayerAlreadyInitializedError = require("../../errors/datalayerAlreadyInitializedError");
+const DatalayerNotInitializedError = require("../../errors/datalayerNotInitializedError");
+const ParametersError = require("../../errors/parametersError");
 
-if (process.env.TEST){
-    //Start the in-memory db for testing
-    inmemory_mongodb_promise = new Promise((resolve, reject) => {
-        mongoose.connect(global.__MONGO_URI__, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true }).then(
-            () => {
-                controller.loadMockGroups(process.env.MOCK_GROUPS).then(() => resolve());
-            }
-        );
-    });
-}
-else {
-    //MongoDB initialization
-    const options = {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-        useFindAndModify: false
-    };
-    mongoose.connect(config.mongoURL, options);
-    mongoose.Promise = global.Promise;
-    const db = mongoose.connection;
-    db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-}
+var initialized = false;
 
 module.exports = {
 
-    inmemory_mongodb_promise : inmemory_mongodb_promise,
+    init : async function(){
+        if (initialized)
+            throw new DatalayerAlreadyInitializedError("GroupDataLayer");
+
+        const mongoOptions = {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            useFindAndModify: false
+        };
+        
+        if (process.env.TEST){
+            //Start the in-memory db for testing
+            let inmemory_mongodb_promise = new Promise((resolve, reject) => {
+                mongoose.connect(global.__MONGO_URI__, mongoOptions).then(
+                    () => {
+                        controller.loadMockGroups(process.env.MOCK_GROUPS).then(() => resolve());
+                    }
+                );
+            });
+
+            await inmemory_mongodb_promise;
+        }
+        else {
+            //MongoDB initialization
+            mongoose.connect(config.mongoURL, mongoOptions);
+            mongoose.Promise = global.Promise;
+        }
+
+        initialized = true;
+    },
 
     getAllGroups : async function(){
+        if (!initialized)
+            throw new DatalayerNotInitializedError("GroupDataLayer");
+
         let groups = await controller.retrieveAllGroups();
         groups.forEach((item) => {
             item.href = config.baseURL + ":" + config.groupsPort + config.groupsPath + "/" + item.gid;
@@ -43,32 +55,44 @@ module.exports = {
     },
 
     getGroup : async function(gid){
-        if (arguments.length !== 1 || !apiUtility.isObjectValid(gid))
-            throw new Error("Bad parameters");
+        if (!initialized)
+            throw new DatalayerNotInitializedError("GroupDataLayer");
+
+        if (arguments.length !== 1)
+            throw new ParametersError();
 
         let result = await controller.getGroup(gid);
         return result;
     },
 
     createGroup : async function(groupData){
+        if (!initialized)
+            throw new DatalayerNotInitializedError("GroupDataLayer");
+
         if (arguments.length !== 1 || groupData == undefined)
-            throw new Error("Bad parameters");
+            throw new ParametersError();
 
         let result = await controller.createGroup(groupData);
         return result;
     },
 
     modifyGroup : async function(gid, data){
-        if (arguments.length !== 2 || !apiUtility.isObjectValid(gid) || data == undefined)
-            throw new Error("Bad parameters");
+        if (!initialized)
+            throw new DatalayerNotInitializedError("GroupDataLayer");
+
+        if (arguments.length !== 2 || data == undefined)
+            throw new ParametersError();
 
         let result = await controller.modifyGroup(gid, data);
         return result;
     },
 
     deleteGroup : async function(gid){
-        if (arguments.length !== 1 || !apiUtility.isObjectValid(gid))
-            throw new Error("Bad arguments");
+        if (!initialized)
+            throw new DatalayerNotInitializedError("GroupDataLayer");
+
+        if (arguments.length !== 1)
+            throw new ParametersError();
 
         let result = await controller.deleteGroup(gid);
         return result;

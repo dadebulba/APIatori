@@ -3,6 +3,11 @@ const apiUtility = (process.env.PROD) ? require("./utility.js") : require("../..
 const Space = require("./spaceSchema.js")[0];
 const Booking = require("./spaceSchema.js")[1];
 
+const ParametersError = require("../../errors/parametersError");
+const IntervalOverlapError = require("../../errors/intervalOverlapError");
+const DatabaseError = require("../../errors/databaseError");
+const SpaceAlreadyExistsError = require("../../errors/spaceAlreadyExistsError");
+
 function checkBooking(booking){
     if (booking.from == undefined || booking.to == undefined || booking.type == undefined)
         return false;
@@ -55,7 +60,7 @@ module.exports = {
     retrieveSingleSpace : async function(sid){
 
         if (sid == undefined || arguments.length != 1)
-            return undefined;
+            return ParametersError();
         
         let space = await Space.findById(sid);
         if (space != null){
@@ -78,12 +83,12 @@ module.exports = {
     createSpace : async function(spaceName){
 
         if (spaceName == undefined || arguments.length != 1)
-            return undefined;
+            return ParametersError();
 
         //Check that there isn't already a space with the same name
         let result = await Space.findOne({name: new RegExp('^'+spaceName+'$', "i")}); // "i" for case-insensitive
-        if (result != null)
-            return undefined;
+        if (result != null && result.length != 0)
+            throw new SpaceAlreadyExistsError();
 
         let newSpace = new Space({
             name: spaceName,
@@ -92,7 +97,7 @@ module.exports = {
 
         result = await newSpace.save();
         if (result == undefined)
-            throw new Error("Can't save new entry on database");
+            throw new DatabaseError();
         else{    
             result = JSON.parse(JSON.stringify(result));
             result.sid = result._id;
@@ -106,9 +111,13 @@ module.exports = {
     modifySpaceName : async function(sid, newName){
 
         if (sid == undefined || newName == undefined || arguments.length != 2)
-            return undefined;
+            return ParametersError();
 
-        let result = await Space.findByIdAndUpdate(sid, $set = {name: newName});
+        let check = await Space.findOne({name: new RegExp('^'+newName+'$', "i")}); // "i" for case-insensitive
+        if (check != null && check.length != 0)
+            throw new SpaceAlreadyExistsError();
+
+        let result = await Space.findByIdAndUpdate(sid, $set = {name: newName}, {new: true});
         if (result != null) {
             result = JSON.parse(JSON.stringify(result));
             result.name = newName;
@@ -128,7 +137,7 @@ module.exports = {
 
     deleteSpace : async function (sid){
         if (sid == undefined || arguments.length != 1)
-            return undefined;
+            return ParametersError();
 
         let result = await Space.findByIdAndDelete(sid);
         return (result != null) ? result : undefined;
@@ -136,7 +145,7 @@ module.exports = {
 
     editBooking : async function(sid, bid, edit){
         if (!checkBooking(edit))
-            throw new Error("Booking format not correct");
+            throw new ParametersError();
 
         var space = await Space.findById(sid);
         if (space == undefined) 
@@ -153,7 +162,7 @@ module.exports = {
                 //Check for possible overlaps
                 for (var j=0; j<space.bookings.length; j++)
                     if (i!=j && checkIntervalOverlaps(edit.from, edit.to, space.bookings[j].from, space.bookings[j].to))
-                        throw new Error("Interval overlap detected");
+                        throw new IntervalOverlapError();
 
                 space.bookings[i] = edit;
                 toUpdate = true;
@@ -181,11 +190,11 @@ module.exports = {
 
     createBooking : async function(sid, booking){
         if (arguments.length != 2 || typeof booking !== "object")
-            throw new Error("Type error in createBooking");
+            throw new ParametersError();
 
         let result = checkBooking(booking);
         if (!result)
-            throw new Error("Booking object not well formed");
+            throw new ParametersError();
 
         //Check that there aren't bookings that overlap with the new one
         let space = await this.retrieveSingleSpace(sid);
@@ -194,7 +203,7 @@ module.exports = {
 
         for (var i=0; i<space.bookings.length; i++)
             if (checkIntervalOverlaps(space.bookings[i].from, space.bookings[i].to, booking.from, booking.to))
-                throw new Error("Interval overlap");                                                     
+                throw new IntervalOverlapError();                                                    
 
         let newBooking = new Booking({
             uid: booking.uid,

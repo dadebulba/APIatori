@@ -1,6 +1,5 @@
 const mockUsers = require("../data/users.js");
 
-process.env.TEST = true;
 process.env.MOCK_USERS = JSON.stringify(mockUsers);
 const userDL = require("../../data_layer/user_data_layer/userDataLayer");
 
@@ -9,8 +8,11 @@ const getAllUsers = userDL.getAllUsers;
 const getUser = userDL.getUser;
 const createUser = userDL.createUser;
 
+//Errors
+const ParametersError = require("../../errors/parametersError");
+
 beforeAll(async () => {
-    await userDL.inmemory_mongodb_promise;
+    await userDL.init();
 
     //Retrive id of the inserted mocked data
     let data = await getAllUsers();
@@ -32,19 +34,19 @@ describe("Get all users", () => {
 
 describe("Get user by id", () => {
     test("01 - uid not specified - should throw", async () => {
-        await expect(getUser()).rejects.toThrow(Error);
+        await expect(getUser()).rejects.toThrow(ParametersError);
     });
 
     test("02 - uid undefined - should throw", async () => {
         const uid = undefined;
 
-        await expect(getUser(uid)).rejects.toThrow(Error);
+        await expect(getUser(uid)).rejects.toThrow(ParametersError);
     });
 
     test("03 - uid is an array - should throw", async () => {
         const uid = [];
 
-        await expect(getUser(uid)).rejects.toThrow(Error);
+        await expect(getUser(uid)).rejects.toThrow(ParametersError);
     });
 
     test("04 - uid not exists - should return null", async () => {
@@ -64,17 +66,17 @@ describe("Get user by id", () => {
 
 describe("Create a new user", () => {
     test("01 - User info not specified - should throw", async () => {
-        await expect(createUser()).rejects.toThrow(Error);
+        await expect(createUser()).rejects.toThrow(ParametersError);
     });
 
     test("02 - User info undefined - should throw", async () => {
         let userInfo = undefined;
-        await expect(createUser(userInfo)).rejects.toThrow(Error);
+        await expect(createUser(userInfo)).rejects.toThrow(ParametersError);
     });
 
     test("03 - User info is not an object - should throw", async () => {
         let userInfo = [];
-        await expect(createUser(userInfo)).rejects.toThrow(Error);
+        await expect(createUser(userInfo)).rejects.toThrow(ParametersError);
     });
 
     test("04 - User info contains not well-formed fields (birthdate) - should throw", async () => {
@@ -86,7 +88,7 @@ describe("Create a new user", () => {
             password: "testPassword"
         };
 
-        await expect(createUser(userInfo)).rejects.toThrow(Error);
+        await expect(createUser(userInfo)).rejects.toThrow(ParametersError);
     });
 
     test("05 - User info contains not well-formed fields (mail) - should throw", async () => {
@@ -98,7 +100,7 @@ describe("Create a new user", () => {
             password: "testPassword"
         };
 
-        await expect(createUser(userInfo)).rejects.toThrow(Error);
+        await expect(createUser(userInfo)).rejects.toThrow(ParametersError);
     });
 
     test("06 - User info contains not well-formed fields (parents mail) - should throw", async () => {
@@ -113,7 +115,7 @@ describe("Create a new user", () => {
             ]
         };
 
-        await expect(createUser(userInfo)).rejects.toThrow(Error);
+        await expect(createUser(userInfo)).rejects.toThrow(ParametersError);
     });
 
     test("07 - Valid user data - should return the new user", async () => {

@@ -3,6 +3,9 @@ const crypto = require('crypto');
 const User = require("./userSchema.js");
 const apiUtility = (process.env.PROD) ? require("./utility.js") : require('../../utility.js');
 
+const ParametersError = require("../../errors/parametersError");
+const DatabaseError = require("../../errors/databaseError");
+
 function checkUserBody(body){
     if (body == undefined || arguments.length !== 1)
         return false;
@@ -13,6 +16,10 @@ function checkUserBody(body){
         return false;
             
     if (body.phone != undefined && apiUtility.castToInt(body.phone) == undefined)
+        return false;
+    
+    let checkBirthdate = Date.parse(body.birthdate);
+    if (isNaN(checkBirthdate) || checkBirthdate >= Date.now())
         return false;
 
             
@@ -50,9 +57,9 @@ module.exports = {
     },
 
     createUser : async function(newUser){
-
+        undefined
         if (newUser == undefined || !checkUserBody(newUser))
-            throw new Error("Bad parameters");
+            throw new ParametersError();
 
         //Check that there isn't already an user with the same mail
         let result = await User.findOne({mail: new RegExp('^'+newUser.mail+'$', "i")}); // "i" for case-insensitive
@@ -75,7 +82,7 @@ module.exports = {
 
         result = await user.save();
         if (result == undefined)
-            throw new Error("Can't save new entry on database");
+            throw new DatabaseError();
         else {    
             result = JSON.parse(JSON.stringify(result));
             delete result.password;
@@ -105,8 +112,8 @@ module.exports = {
 
     getUser : async function(uid){
 
-        if (uid == undefined)
-            return undefined;
+        if (uid == undefined || !apiUtility.isObjectIdValid(uid))
+            throw new ParametersError();
 
         let user = await User.findById(uid);
         if (user != null){
@@ -118,5 +125,4 @@ module.exports = {
 
         return (user != null) ? user : undefined;
     }
-
 }
