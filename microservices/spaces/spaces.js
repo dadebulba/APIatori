@@ -1,11 +1,15 @@
 const express = require('express');
-const unless = require('express-unless');
+const http = require('http')
+//const unless = require('express-unless');
 const bodyParser = require('body-parser');
 const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require('../../utility.js');
 const errors = (process.env.PROD != undefined) ? require("./errorMsg.js") : require('../../errorMsg.js');
-const spaceDataLayer = process.env.PROD ? require("./space_data_layer/groupDataLayer") : require("../../data_layer/group_data_layer/groupDataLayer.js");
+const spaceDataLayer = process.env.PROD ? require("./space_data_layer/spaceDataLayer.js") : require("../../data_layer/space_data_layer/spaceDataLayer.js");
 
-if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
+if (process.env.PROD == undefined && process.env.TEST == undefined) {
+    process.env["NODE_CONFIG_DIR"] = "../../config";
+}
+
 const config = require('config');
 
 const PORT = config.get('spacesPort');
@@ -31,19 +35,15 @@ const mwErrorHandler = require('../../middleware/mwErrorHandler');
 app.use(mwErrorHandler);
 
 const mwAuth = require('../../middleware/mwAuth.js');
-mwAuth.unless = unless;
-app.use(mwAuth.unless({
-    path: [
-        {
-            url: `/spaces`,
-            methods: [`GET`]
-        },
-        {
-            url: `/${basePath}/bookings/:id`,
-            methods: [`GET`]
-        },
-    ]
-}))
+
+var unless = function(middleware, ...paths) {
+    return function(req, res, next) {
+      const pathCheck = paths.some(path => path === req.path);
+      pathCheck ? next() : middleware(req, res, next);
+    };
+  };
+  
+app.use(unless(mwAuth, "/spaces", "/spaces/"));
 
 //*** SPACES PART ***//
 
@@ -61,18 +61,18 @@ app.get('/spaces', async function (req, res, next) {
 });
 
 app.get('/spaces/:spaceId', async function (req, res, next) {
-    const spaceId = req.params.id;
+    const spaceId = req.params.spaceId;
 
     if (apiUtility.validateParamsUndefined(spaceId))
         return res.status(400).json(errors.PARAMS_UNDEFINED);
     try {
-        if (!(apiUtility.validateAuth(req, LEVELS.ADMIN)))
+        if (!(apiUtility.validateAuth(req, LEVELS.EDUCATOR))&&!(apiUtility.validateAuth(req, LEVELS.COLLABORATOR)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
         const space = await spaceDataLayer.getSpace(spaceId);
 
         if (space === undefined)
-            return res.status(404).json(errors.ALREADY_PRESENT);
+            return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
         return res.status(200).json(space);
     }
@@ -273,6 +273,25 @@ app.delete('/spaces/:spaceId/bookings/:bookingId', async function (req, res) {
     }
 });
 
-app.listen(PORT, () => {
+let server = http.createServer(app);
+
+let server_starting = new Promise((resolve, reject) => {
+    server.listen(PORT, async () => {
+        if(!process.env.TEST)
+            await spaceDataLayer.init()
+        console.log("Spaces app is listening at port " + PORT);
+        resolve();
+    });
+});
+
+module.exports = {
+    server: server,
+    server_starting: server_starting
+}
+/*
+app.listen(PORT, async () => {
+    if(!process.env.TEST)
+        await spaceDataLayer.init()
     console.log(`App listening on port ${PORT}`)
 });
+*/

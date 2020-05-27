@@ -1,4 +1,4 @@
-const mockSpaces = require("../data/spaces.js");
+const mockSpaces = require("../data/spaces.json");
 
 process.env.TEST = true;
 process.env.MOCK_SPACES = JSON.stringify(mockSpaces);

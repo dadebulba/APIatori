@@ -1,9 +1,13 @@
 [
     {
-        "name" : "First room from test"
+        "sid" : "first",
+        "name" : "First room from test",
+        "bookings" : []
     },
 
     {
-        "name" : "Second room from test"
+        "sid" : "second",
+        "name" : "Second room from test",
+        "bookings" : []
     }
 ]

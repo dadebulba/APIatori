@@ -16,6 +16,7 @@ function canBeParsedInt(n) {
 module.exports = {
     //Ritorna true se c'è almeno un parametro undefined
     validateParamsUndefined: function (...params) {
+        console.log("Params: ", params);
         return params.some(p => p === undefined);
     },
     //Ritorna true se tutti i parametri sono numeri
@@ -24,6 +25,7 @@ module.exports = {
     },
     //Ritorna true se tutti i parametri sono stringhe
     validateParamsString: function (...params) {
+        console.log("Params: ", params);
         return !params.some(p => typeof (p) !== 'string');
     },
     //returns true if all the params are correct DateTime formats
@@ -40,15 +42,15 @@ module.exports = {
                 break;
             case levels.EDUCATOR:
                 if (requiredGid === undefined)
-                    return req['educatorIn'].length > 0;
+                    return req['educatorIn'].length > 0 || req['role'] === levels.ADMIN;
                 else
-                    return req['educatorIn'].some(v => v == requiredGid);
+                    return req['educatorIn'].some(v => v == requiredGid) || req['role'] === levels.ADMIN;
                 break;
             case levels.COLLABORATOR:
                 if (requiredGid === undefined)
-                    return req['collaboratorIn'].length > 0;
+                    return req['collaboratorIn'].length > 0 || req['role'] === levels.ADMIN;
                 else
-                    return req['collaboratorIn'].some(v => v == requiredGid);
+                    return req['collaboratorIn'].some(v => v == requiredGid) || req['role'] === levels.ADMIN;
             case levels.USER:
                 return req['role'] == levels.USER;
             default:
