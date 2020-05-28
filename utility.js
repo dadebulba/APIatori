@@ -90,5 +90,11 @@ module.exports = {
             throw err;
         }
     },
+    unless : function (middleware, ...excludedPaths){
+        return function(req, res, next){
+            const match = excludedPaths.some(path => path === req.path);
+            match ? next() : middleware(req, res, next);           
+        }
+    },
     levels: levels
 }

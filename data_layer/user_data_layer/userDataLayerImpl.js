@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 
 const User = require("./userSchema.js");
-const apiUtility = (process.env.PROD) ? require("./utility.js") : require('../../utility.js');
+const apiUtility = (process.env.PROD) ? require("../../utility.js") : require('../../utility.js');
 
 const ParametersError = require("../../errors/parametersError");
 const DatabaseError = require("../../errors/databaseError");
