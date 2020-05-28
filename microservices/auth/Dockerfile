@@ -14,13 +14,22 @@ COPY ./errorMsg.js .
 RUN mkdir config
 COPY ./config ./config
 
-RUN npm install
-# If you are building your code for production
-# RUN npm ci --only=production
+RUN mkdir data_layer
+RUN mkdir data_layer/user_data_layer
+COPY ./data_layer/user_data_layer ./data_layer/user_data_layer
+
+RUN mkdir errors
+COPY ./errors ./errors
 
 # Bundle app source
 COPY ./microservices/auth/token.js .
 COPY ./microservices/auth/tokenImpl.js .
+
+RUN ls -lah
+
+# If you are building your code for production
+#RUN npm ci --only=production
+RUN npm install
 
 EXPOSE 3000
 CMD [ "node", "token.js" ]

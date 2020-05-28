@@ -16,7 +16,6 @@ function canBeParsedInt(n) {
 module.exports = {
     //Ritorna true se c'è almeno un parametro undefined
     validateParamsUndefined: function (...params) {
-        console.log("Params: ", params);
         return params.some(p => p === undefined);
     },
     //Ritorna true se tutti i parametri sono numeri
@@ -90,6 +89,12 @@ module.exports = {
         }
         catch (err) {
             throw err;
+        }
+    },
+    unless : function (middleware, ...excludedPaths){
+        return function(req, res, next){
+            const match = excludedPaths.some(path => path === req.path);
+            match ? next() : middleware(req, res, next);           
         }
     },
     levels: levels

@@ -1,14 +1,14 @@
 const express = require('express');
 const http = require('http')
-//const unless = require('express-unless');
+
 const bodyParser = require('body-parser');
 const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require('../../utility.js');
 const errors = (process.env.PROD != undefined) ? require("./errorMsg.js") : require('../../errorMsg.js');
 const spaceDataLayer = process.env.PROD ? require("./space_data_layer/spaceDataLayer.js") : require("../../data_layer/space_data_layer/spaceDataLayer.js");
+const mwAuth = require('../../middleware/mwAuth.js');
 
-if (process.env.PROD == undefined && process.env.TEST == undefined) {
+if (process.env.PROD == undefined && process.env.TEST == undefined)
     process.env["NODE_CONFIG_DIR"] = "../../config";
-}
 
 const config = require('config');
 
@@ -33,17 +33,8 @@ function validateBookingType(type) {
 
 const mwErrorHandler = require('../../middleware/mwErrorHandler');
 app.use(mwErrorHandler);
-
-const mwAuth = require('../../middleware/mwAuth.js');
-
-var unless = function(middleware, ...paths) {
-    return function(req, res, next) {
-      const pathCheck = paths.some(path => path === req.path);
-      pathCheck ? next() : middleware(req, res, next);
-    };
-  };
   
-app.use(unless(mwAuth, "/spaces", "/spaces/"));
+app.use(apiUtility.unless(mwAuth, "/spaces"));
 
 //*** SPACES PART ***//
 
@@ -288,10 +279,3 @@ module.exports = {
     server: server,
     server_starting: server_starting
 }
-/*
-app.listen(PORT, async () => {
-    if(!process.env.TEST)
-        await spaceDataLayer.init()
-    console.log(`App listening on port ${PORT}`)
-});
-*/
