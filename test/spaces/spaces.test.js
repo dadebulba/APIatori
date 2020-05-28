@@ -16,8 +16,7 @@ const spacesUrl = `${BASE_URL}:${SPACE_PORT}`;
 /* -- MOCKS -- */
 const space_data_layer = require('../../data_layer/space_data_layer/spaceDataLayer')
 jest.mock("../../data_layer/space_data_layer/spaceDataLayer.js");
-
-jest.mock("../../utility")
+utils.validateAuth = jest.fn();
 jest.mock("../../middleware/mwAuth", () => jest.fn((req, res, next) => next()))
 /* ---------- */
 
@@ -91,29 +90,167 @@ describe("GET /spaces/:id", () => {
     })
 })
 
-
-
 describe("POST /spaces", () => {
-
-    test("Success -> 401 (OK)", async () => {
+    afterEach(() => {
+        jest.resetAllMocks();
+    })
+    test("Success -> 200 (OK)", async () => {
         const newSpace = "stanza"
+        expect.assertions(2);
         mockManagerFunction(utils.validateAuth, true)
+        mockManagerFunction(space_data_layer.createSpace, new Promise(resolve => resolve(newSpace)))
+        let res = await fetch(`${spacesUrl}/spaces`, {
+            method: 'post',
+            body:    JSON.stringify({name : newSpace}),
+            headers: { 'Content-Type': 'application/json' },
+        });
+        let resJson = await res.json();
+        expect(resJson).toEqual(newSpace);
+        expect(res.status).toBe(201);
+    })
+
+    test("Failure -> 401 (Unauthorized)", async () => {
+        const newSpace = "stanza"
+        expect.assertions(2);
+        mockManagerFunction(utils.validateAuth, false)
         mockManagerFunction(space_data_layer.createSpace, new Promise(resolve => resolve(newSpace)))
         let res = await fetch(`${spacesUrl}/spaces`, {
             method: 'post',
             body:    JSON.stringify({name : "stanza"}),
             headers: { 'Content-Type': 'application/json' },
         });
-
         let resJson = await res.json();
-        expect(resJson).toEqual(newSpace);
-        expect(res.status).toBe(201);
-        
+        expect(resJson).toEqual(errors.ACCESS_NOT_GRANTED);
+        expect(res.status).toBe(401);
     })
 
+    test("Failure -> 400 (Bad request, params undefined)", async () => {
+        expect.assertions(2);
+        mockManagerFunction(utils.validateAuth, true)
+        mockManagerFunction(space_data_layer.createSpace, new Promise(resolve => resolve("ciao")))
+        let res = await fetch(`${spacesUrl}/spaces`, {
+            method: 'post',
+            body:    JSON.stringify({name : undefined}),
+            headers: { 'Content-Type': 'application/json' },
+        });
+        let resJson = await res.json();
+        expect(resJson).toEqual(errors.PARAMS_UNDEFINED);
+        expect(res.status).toBe(400);
+    })
 
+    test("Failure -> 400 (Bad request, params not string)", async () => {
+        const newSpace = 123;
+        expect.assertions(2);
+        mockManagerFunction(utils.validateAuth, true)
+        mockManagerFunction(space_data_layer.createSpace, new Promise(resolve => resolve(newSpace)))
+        let res = await fetch(`${spacesUrl}/spaces`, {
+            method: 'post',
+            body:    JSON.stringify({name : newSpace}),
+            headers: { 'Content-Type': 'application/json' },
+        });
+        let resJson = await res.json();
+        expect(resJson).toEqual(errors.PARAMS_WRONG_TYPE);
+        expect(res.status).toBe(400);
+    })
+
+    test("Failure -> 400 (Bad request, already present)", async () => {
+        const newSpace = "ciao";
+        expect.assertions(2);
+        mockManagerFunction(utils.validateAuth, true)
+        mockManagerFunction(space_data_layer.createSpace, new Promise(resolve => resolve(undefined)))
+        let res = await fetch(`${spacesUrl}/spaces`, {
+            method: 'post',
+            body:    JSON.stringify({name : newSpace}),
+            headers: { 'Content-Type': 'application/json' },
+        });
+        let resJson = await res.json();
+        expect(resJson).toEqual(errors.ALREADY_PRESENT);
+        expect(res.status).toBe(400);
+    })
 })
 
+describe("PUT /spaces/:id", () => {
+    afterEach(() => {
+        jest.resetAllMocks();
+    })
+    test("Success -> 200 (OK)", async () => {
+        const editedSpace = "stanza"
+        expect.assertions(2);
+        mockManagerFunction(utils.validateAuth, true)
+        mockManagerFunction(space_data_layer.modifySpace, new Promise(resolve => {
+            console.log("called");
+            resolve(editedSpace)
+        }))
+        let res = await fetch(`${spacesUrl}/spaces`, {
+            method: 'post',
+            body:    JSON.stringify({name : editedSpace}),
+            headers: { 'Content-Type': 'application/json' },
+        });
+        let resJson = await res.json();
+        expect(resJson).toEqual(editedSpace);
+        expect(res.status).toBe(200);
+    })
+/*
+    test("Failure -> 401 (Unauthorized)", async () => {
+        const newSpace = "stanza"
+        expect.assertions(2);
+        mockManagerFunction(utils.validateAuth, false)
+        mockManagerFunction(space_data_layer.createSpace, new Promise(resolve => resolve(newSpace)))
+        let res = await fetch(`${spacesUrl}/spaces`, {
+            method: 'post',
+            body:    JSON.stringify({name : "stanza"}),
+            headers: { 'Content-Type': 'application/json' },
+        });
+        let resJson = await res.json();
+        expect(resJson).toEqual(errors.ACCESS_NOT_GRANTED);
+        expect(res.status).toBe(401);
+    })
+
+    test("Failure -> 400 (Bad request, params undefined)", async () => {
+        expect.assertions(2);
+        mockManagerFunction(utils.validateAuth, true)
+        mockManagerFunction(space_data_layer.createSpace, new Promise(resolve => resolve("ciao")))
+        let res = await fetch(`${spacesUrl}/spaces`, {
+            method: 'post',
+            body:    JSON.stringify({name : undefined}),
+            headers: { 'Content-Type': 'application/json' },
+        });
+        let resJson = await res.json();
+        expect(resJson).toEqual(errors.PARAMS_UNDEFINED);
+        expect(res.status).toBe(400);
+    })
+
+    test("Failure -> 400 (Bad request, params not string)", async () => {
+        const newSpace = 123;
+        expect.assertions(2);
+        mockManagerFunction(utils.validateAuth, true)
+        mockManagerFunction(space_data_layer.createSpace, new Promise(resolve => resolve(newSpace)))
+        let res = await fetch(`${spacesUrl}/spaces`, {
+            method: 'post',
+            body:    JSON.stringify({name : newSpace}),
+            headers: { 'Content-Type': 'application/json' },
+        });
+        let resJson = await res.json();
+        expect(resJson).toEqual(errors.PARAMS_WRONG_TYPE);
+        expect(res.status).toBe(400);
+    })
+
+    test("Failure -> 400 (Bad request, already present)", async () => {
+        const newSpace = "ciao";
+        expect.assertions(2);
+        mockManagerFunction(utils.validateAuth, true)
+        mockManagerFunction(space_data_layer.createSpace, new Promise(resolve => resolve(undefined)))
+        let res = await fetch(`${spacesUrl}/spaces`, {
+            method: 'post',
+            body:    JSON.stringify({name : newSpace}),
+            headers: { 'Content-Type': 'application/json' },
+        });
+        let resJson = await res.json();
+        expect(resJson).toEqual(errors.ALREADY_PRESENT);
+        expect(res.status).toBe(400);
+    })
+    */
+})
 /*
 describe("GET /spaces/{spaceId}/bookings", () => {
     let options;

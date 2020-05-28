@@ -16,17 +16,15 @@ function canBeParsedInt(n) {
 module.exports = {
     //Ritorna true se c'è almeno un parametro undefined
     validateParamsUndefined: function (...params) {
-        console.log("Params: ", params);
         return params.some(p => p === undefined);
     },
     //Ritorna true se tutti i parametri sono numeri
     validateParamsNumber: function (...params) {
-        return !params.some(p => typeof (p) !== 'number' || isNaN(p));
+        return params.some(p => typeof (p) !== 'number' || isNaN(p));
     },
     //Ritorna true se tutti i parametri sono stringhe
     validateParamsString: function (...params) {
-        console.log("Params: ", params);
-        return !params.some(p => typeof (p) !== 'string');
+        return params.some(p => typeof (p) !== 'string');
     },
     //returns true if all the params are correct DateTime formats
     validateParamsDate: function (...params) {

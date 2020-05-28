@@ -2,7 +2,8 @@ const express = require('express');
 const http = require('http')
 //const unless = require('express-unless');
 const bodyParser = require('body-parser');
-const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require('../../utility.js');
+//const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require('../../utility.js');
+const apiUtility = require('../../utility')
 const errors = (process.env.PROD != undefined) ? require("./errorMsg.js") : require('../../errorMsg.js');
 const spaceDataLayer = process.env.PROD ? require("./space_data_layer/spaceDataLayer.js") : require("../../data_layer/space_data_layer/spaceDataLayer.js");
 
@@ -84,12 +85,10 @@ app.get('/spaces/:spaceId', async function (req, res, next) {
 
 app.post('/spaces', async function (req, res, next) {
     const name = req.body.name;
-
     if (apiUtility.validateParamsUndefined(name))
         return res.status(400).json(errors.PARAMS_UNDEFINED);
-    if (!apiUtility.validateParamsString(name))
+    if (apiUtility.validateParamsString(name))
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
-
     if (!(apiUtility.validateAuth(req, LEVELS.ADMIN)))
         return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
