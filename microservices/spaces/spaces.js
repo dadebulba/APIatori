@@ -34,8 +34,9 @@ function validateBookingType(type) {
 
 const mwErrorHandler = require('../../middleware/mwErrorHandler');
 app.use(mwErrorHandler);
-  
-app.use(apiUtility.unless(mwAuth, "/spaces"));
+
+if(process.env.TEST == undefined)
+    app.use(apiUtility.unless(mwAuth, "/spaces"));
 
 //*** SPACES PART ***//
 
@@ -99,10 +100,10 @@ app.post('/spaces', async function (req, res, next) {
 app.put('/spaces/:id', async function (req, res, next) {
     const spaceId = req.params.id;
     const name = req.body.name;
-
+    debugger
     if (apiUtility.validateParamsUndefined(spaceId, name))
         return res.status(400).json(errors.PARAMS_UNDEFINED);
-    if (!apiUtility.validateParamsString(spaceId, name))
+    if (apiUtility.validateParamsString(spaceId, name))
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
     try {
         if (!(apiUtility.validateAuth(req, LEVELS.ADMIN)))

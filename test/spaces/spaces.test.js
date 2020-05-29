@@ -178,11 +178,10 @@ describe("PUT /spaces/:id", () => {
         expect.assertions(2);
         mockManagerFunction(utils.validateAuth, true)
         mockManagerFunction(space_data_layer.modifySpace, new Promise(resolve => {
-            console.log("called");
             resolve(editedSpace)
         }))
-        let res = await fetch(`${spacesUrl}/spaces`, {
-            method: 'post',
+        let res = await fetch(`${spacesUrl}/spaces/ciao`, {
+            method: 'put',
             body:    JSON.stringify({name : editedSpace}),
             headers: { 'Content-Type': 'application/json' },
         });
