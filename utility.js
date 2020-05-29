@@ -90,9 +90,10 @@ module.exports = {
             throw err;
         }
     },
-    unless : function (middleware, ...excludedPaths){
+    unless : function (middleware, ...excludedUrl){
         return function(req, res, next){
-            const match = excludedPaths.some(path => path === req.path);
+            console.log(req.method, req.path, excludedUrl)
+            const match = excludedUrl.some(url => (req.path.includes(url.path) && url.method == req.method));
             match ? next() : middleware(req, res, next);           
         }
     },

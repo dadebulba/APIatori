@@ -17,6 +17,7 @@ const spacesUrl = `${BASE_URL}:${SPACE_PORT}`;
 const space_data_layer = require('../../data_layer/space_data_layer/spaceDataLayer')
 jest.mock("../../data_layer/space_data_layer/spaceDataLayer.js");
 utils.validateAuth = jest.fn();
+utils.unless = jest.fn();
 jest.mock("../../middleware/mwAuth", () => jest.fn((req, res, next) => next()))
 /* ---------- */
 
@@ -36,6 +37,7 @@ function mockReturnValue(mockFun, returnValue) {
 
 beforeAll(async () => {
     await spaces.server_starting;
+    utils.unless.mockReturnValue(function(req,res,next){ next() })
     //jest.setTimeout(100000); //evito che le richieste vadano in timeout troppo presto (mi serve per debug)
 })
 
@@ -170,6 +172,7 @@ describe("POST /spaces", () => {
 })
 
 describe("PUT /spaces/:id", () => {
+    /*
     afterEach(() => {
         jest.resetAllMocks();
     })
@@ -181,8 +184,8 @@ describe("PUT /spaces/:id", () => {
             console.log("called");
             resolve(editedSpace)
         }))
-        let res = await fetch(`${spacesUrl}/spaces`, {
-            method: 'post',
+        let res = await fetch(`${spacesUrl}/spaces/123`, {
+            method: 'put',
             body:    JSON.stringify({name : editedSpace}),
             headers: { 'Content-Type': 'application/json' },
         });
@@ -190,7 +193,7 @@ describe("PUT /spaces/:id", () => {
         expect(resJson).toEqual(editedSpace);
         expect(res.status).toBe(200);
     })
-/*
+
     test("Failure -> 401 (Unauthorized)", async () => {
         const newSpace = "stanza"
         expect.assertions(2);

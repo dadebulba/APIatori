@@ -34,8 +34,9 @@ function validateBookingType(type) {
 
 const mwErrorHandler = require('../../middleware/mwErrorHandler');
 app.use(mwErrorHandler);
-  
-app.use(apiUtility.unless(mwAuth, "/spaces"));
+
+if(process.env.TEST == undefined)
+    app.use(apiUtility.unless(mwAuth, {path: "/spaces", method: "GET"}));
 
 //*** SPACES PART ***//
 
@@ -48,6 +49,7 @@ app.get('/spaces', async function (req, res, next) {
         return res.status(200).json(spaces);
     }
     catch (err) {
+        console.error(err);
         next(err);
     }
 });
@@ -69,6 +71,7 @@ app.get('/spaces/:spaceId', async function (req, res, next) {
         return res.status(200).json(space);
     }
     catch (err) {
+        console.error(err);
         next(err);
     }
 
@@ -92,6 +95,7 @@ app.post('/spaces', async function (req, res, next) {
         return res.status(201).json(newSpace);
     }
     catch (err) {
+        console.error(err);
         next(err);
     }
 });
@@ -116,6 +120,7 @@ app.put('/spaces/:id', async function (req, res, next) {
         return res.status(200).json(editedSpace);
     }
     catch (err) {
+        console.error(err);
         next(err);
     }
 
