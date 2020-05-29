@@ -33,10 +33,25 @@ function validateBookingType(type) {
 
 const mwErrorHandler = require('../../middleware/mwErrorHandler');
 app.use(mwErrorHandler);
-  
-app.use(apiUtility.unless(mwAuth, "/spaces"));
+
+if (process.env.TEST == undefined)
+    app.use(apiUtility.unless(mwAuth, "/spaces"));
 
 //*** SPACES PART ***//
+
+
+//*******************DA INTEGRARE IN /spaces/:id/bookings/:id */
+app.get("/meteo", async function(req, res, next){
+    let data = req.body.data;
+    console.log("DATA = " + data);
+    let result = await apiUtility.getWeatherInfo(data);
+    console.log("Retrieved");
+    if (result != undefined)
+        res.status(200).json(result);
+    else    
+        res.status(404).end();
+});
+//*********************************************************** */
 
 app.get('/spaces', async function (req, res, next) {
     try {

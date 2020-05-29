@@ -1,4 +1,4 @@
-const apiUtility = (process.env.PROD) ? require("./utility.js") : require("../../utility.js");
+const apiUtility = require("../../utility.js");
 
 const Space = require("./spaceSchema.js")[0];
 const Booking = require("./spaceSchema.js")[1];

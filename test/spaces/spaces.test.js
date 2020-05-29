@@ -18,7 +18,7 @@ const space_data_layer = require('../../data_layer/space_data_layer/spaceDataLay
 jest.mock("../../data_layer/space_data_layer/spaceDataLayer.js");
 
 jest.mock("../../utility")
-jest.mock("../../middleware/mwAuth", () => jest.fn((req, res, next) => next()))
+utils.validateAuth = jest.fn();
 /* ---------- */
 
 

@@ -9,6 +9,15 @@ const levels = {
     ADMIN: "admin"
 }
 
+//Weather API settings
+const WEATHER_API_SETTINGS = {
+    lang: "it",
+    zipCode: "46047,it",
+    units: "metric",
+    url: "http://api.openweathermap.org/data/2.5/forecast",
+    appID: "56c557e7517707ac796be3173d0e0a34"
+};
+
 function canBeParsedInt(n) {
     return Number(n) === parseInt(n);
 }
@@ -96,6 +105,44 @@ module.exports = {
             const match = excludedPaths.some(path => path === req.path);
             match ? next() : middleware(req, res, next);           
         }
+    },
+    getWeatherInfo: async function (date){ 
+        const url = WEATHER_API_SETTINGS.url + "?" + 
+            "zip=" + WEATHER_API_SETTINGS.zipCode + 
+            "&appid=" + WEATHER_API_SETTINGS.appID +
+            "&units=" + WEATHER_API_SETTINGS.units +
+            "&lang=" + WEATHER_API_SETTINGS.lang;
+
+        let result = await fetch(url);
+        if (result.status != 200){
+            console.log("Weather API does not fulfill the request");
+            return undefined;
+        }
+
+        let tmpJson = await result.json();
+        let forecast = tmpJson.list;
+
+        try {
+            for (var i=0; i<forecast.length; i++)
+                if (forecast[i].dt_txt.split(" ")[0] == date)
+                    return {
+                        temp: Math.round(forecast[i].main.temp, -1) + "°C",
+                        tempMax: Math.round(forecast[i].main.temp_max, -1) + "°C",
+                        tempMin: Math.round(forecast[i].main.temp_min, -1) + "°C",
+                        humidity: forecast[i].main.humidity,
+                        main: forecast[i].weather[0].main,
+                        description: forecast[i].weather[0].description.charAt(0).toUpperCase() + forecast[i].weather[0].description.slice(1),
+                        clouds: ((forecast[i].clouds) ? forecast[i].clouds.all : 0) + "%",
+                        wind: ((forecast[i].wind) ? forecast[i].wind.speed : 0) + " km/h",
+                        rain: ((forecast[i].rain) ? forecast[i].rain['3h'] : 0) + " mm",
+                        snow: ((forecast[i].snow) ? forecast[i].snow['3h'] : 0) + " mm"
+                    };
+        } catch (err) {
+            console.log("Weather API returned and object not expected");
+            return undefined;
+        }
+
+        return undefined;
     },
     levels: levels
 }
