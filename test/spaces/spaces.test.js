@@ -7,18 +7,17 @@ const SPACES = require('../data/spaces.json')
 
 const spaces = require("../../microservices/spaces/spaces");
 
-//process.env["NODE_CONFIG_DIR"] = "config";
-const config = require('config');
-const BASE_URL = config.get('baseURL');
-const SPACE_PORT = config.get('spacesPort');
-const spacesUrl = `${BASE_URL}:${SPACE_PORT}`;
+//const config = require('config');
+//const BASE_URL = config.get('baseURL');
+//const SPACE_PORT = config.get('spacesPort');
+//const spacesUrl = `${BASE_URL}:${SPACE_PORT}`;
 
 /* -- MOCKS -- */
 const space_data_layer = require('../../data_layer/space_data_layer/spaceDataLayer')
 jest.mock("../../data_layer/space_data_layer/spaceDataLayer.js");
+
+jest.mock("../../utility")
 utils.validateAuth = jest.fn();
-utils.unless = jest.fn();
-jest.mock("../../middleware/mwAuth", () => jest.fn((req, res, next) => next()))
 /* ---------- */
 
 
@@ -172,7 +171,6 @@ describe("POST /spaces", () => {
 })
 
 describe("PUT /spaces/:id", () => {
-    /*
     afterEach(() => {
         jest.resetAllMocks();
     })
@@ -193,7 +191,7 @@ describe("PUT /spaces/:id", () => {
         expect(resJson).toEqual(editedSpace);
         expect(res.status).toBe(200);
     })
-
+/*
     test("Failure -> 401 (Unauthorized)", async () => {
         const newSpace = "stanza"
         expect.assertions(2);

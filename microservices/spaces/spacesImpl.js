@@ -1,4 +1,5 @@
-const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require('../../utility.js');
+//const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require('../../utility.js');
+const fetch = require("node-fetch");
 
 const spaceDataLayer = process.env.PROD ? require("./space_data_layer/groupDataLayer") : require("../../data_layer/group_data_layer/groupDataLayer.js");
 
@@ -138,6 +139,4 @@ module.exports = {
             next(err);
         }
     }
-
-
 }

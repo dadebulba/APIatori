@@ -12,9 +12,8 @@ if (process.env.PROD == undefined && process.env.TEST == undefined)
     process.env["NODE_CONFIG_DIR"] = "../../config";
 
 const config = require('config');
-
 const PORT = config.get('spacesPort');
-const basePath = config.get("baseURL");
+
 const LEVELS = apiUtility.levels;
 const app = express();
 app.use(bodyParser.json());
@@ -39,6 +38,20 @@ if(process.env.TEST == undefined)
     app.use(apiUtility.unless(mwAuth, {path: "/spaces", method: "GET"}));
 
 //*** SPACES PART ***//
+
+
+//*******************DA INTEGRARE IN /spaces/:id/bookings/:id */
+app.get("/meteo", async function(req, res, next){
+    let data = req.body.data;
+    console.log("DATA = " + data);
+    let result = await apiUtility.getWeatherInfo(data);
+    console.log("Retrieved");
+    if (result != undefined)
+        res.status(200).json(result);
+    else    
+        res.status(404).end();
+});
+//*********************************************************** */
 
 app.get('/spaces', async function (req, res, next) {
     try {
