@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "TEST=true jest --forceExit",
+    "test": "TEST=true jest --forceExit --verbose",
     "test-debug" : "TEST=true node --inspect-brk node_modules/.bin/jest --runInBand --forceExit"
   },
   "author": "",

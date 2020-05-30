@@ -1,4 +1,4 @@
-const apiUtility = (process.env.PROD) ? require("./utility.js") : require("../../utility.js");
+const apiUtility = require("../../utility.js");
 const Group = require("./groupSchema.js")[0];
 
 const ParametersError = require("../../errors/parametersError");
