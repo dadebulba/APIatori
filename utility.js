@@ -36,8 +36,14 @@ module.exports = {
         return params.some(p => typeof (p) !== 'string');
     },
     //returns true if all the params are correct DateTime formats
-    validateParamsDate: function (...params) {
-        return !params.some(p => DateTime.fromJSDate(p).isValid === false);
+    validateParamsDate : function(...params){
+        const regex = /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/;
+        return params.some(dt => {
+            return dt.toString() === 'Invalid Date' || dt.getFullYear() < new Date().getFullYear() || dt.toISOString().match(regex) === null;
+        })
+    },
+    validateParamsDateOld: function (...params) {
+        return params.some(p => DateTime.fromJSDate(p).isValid === false);
     },
     castToInt: function (value) {
         return canBeParsedInt(value) ? parseInt(value) : undefined;

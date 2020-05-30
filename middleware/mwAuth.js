@@ -1,5 +1,5 @@
 const fetch = require("node-fetch");
-if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../config";
+if (process.env.PROD == undefined && process.env.TEST == undefined) process.env["NODE_CONFIG_DIR"] = "../config";
 const config = require('config');
 const errors = (process.env.PROD != undefined) ? require("./errorMsg.js") : require('../errorMsg.js');
 
