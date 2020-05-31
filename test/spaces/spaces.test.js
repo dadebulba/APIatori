@@ -8,10 +8,11 @@ const SPACES = require('../data/spaces.json')
 const spaces = require("../../microservices/spaces/spaces");
 
 //process.env["NODE_CONFIG_DIR"] = "config";
-const config = require('config');
-const BASE_URL = config.get('baseURL');
-const SPACE_PORT = config.get('spacesPort');
-const spacesUrl = `${BASE_URL}:${SPACE_PORT}`;
+//const config = require('config');
+//const BASE_URL = config.get('baseURL');
+//const SPACE_PORT = config.get('spacesPort');
+//const spacesUrl = `${BASE_URL}:${SPACE_PORT}`;
+const spacesUrl = "sdad";
 
 /* -- MOCKS -- */
 const space_data_layer = require('../../data_layer/space_data_layer/spaceDataLayer')

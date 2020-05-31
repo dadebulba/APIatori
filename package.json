@@ -2,9 +2,9 @@
   "name": "apiatori",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
-    "test": "TEST=true jest --forceExit"
+    "test": "TEST=true jest --forceExit --verbose",
+    "debug": "TEST=true node --inspect-brk node_modules/.bin/jest --runInBand --forceExit"
   },
   "author": "",
   "license": "ISC",
@@ -16,6 +16,7 @@
     "express-bearer-token": "^2.4.0",
     "express-prom-bundle": "^6.0.0",
     "express-unless": "^0.5.0",
+    "googleapis": "^39.2.0",
     "http": "0.0.1-security",
     "jsonwebtoken": "^8.5.1",
     "luxon": "^1.21.3",
