@@ -29,16 +29,21 @@ module.exports = {
     },
     //Ritorna true se tutti i parametri sono numeri
     validateParamsNumber: function (...params) {
-        return !params.some(p => typeof (p) !== 'number' || isNaN(p));
+        return params.some(p => typeof (p) !== 'number' || isNaN(p));
     },
     //Ritorna true se tutti i parametri sono stringhe
     validateParamsString: function (...params) {
-        console.log("Params: ", params);
-        return !params.some(p => typeof (p) !== 'string');
+        return params.some(p => typeof (p) !== 'string');
     },
     //returns true if all the params are correct DateTime formats
-    validateParamsDate: function (...params) {
-        return !params.some(p => DateTime.fromJSDate(p).isValid === false);
+    validateParamsDate : function(...params){
+        const regex = /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/;
+        return params.some(dt => {
+            return dt.toString() === 'Invalid Date' || dt.getFullYear() < new Date().getFullYear() || dt.toISOString().match(regex) === null;
+        })
+    },
+    validateParamsDateOld: function (...params) {
+        return params.some(p => DateTime.fromJSDate(p).isValid === false);
     },
     castToInt: function (value) {
         return canBeParsedInt(value) ? parseInt(value) : undefined;
@@ -100,9 +105,10 @@ module.exports = {
             throw err;
         }
     },
-    unless : function (middleware, ...excludedPaths){
+    unless : function (middleware, ...excludedUrl){
         return function(req, res, next){
-            const match = excludedPaths.some(path => path === req.path);
+            console.log(req.method, req.path, excludedUrl)
+            const match = excludedUrl.some(url => (req.path.includes(url.path) && url.method == req.method));
             match ? next() : middleware(req, res, next);           
         }
     },
