@@ -56,7 +56,10 @@ describe("GET /spaces", () => {
 })
 
 describe("GET /spaces/:id", () => {
-
+    afterEach(() => {
+        jest.resetAllMocks();
+    })
+    
     test("Success -> 200 (OK)", async () => {
         expect.assertions(2);
         utils.validateAuth.mockReturnValue(true);

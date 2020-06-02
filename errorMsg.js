@@ -31,9 +31,9 @@ module.exports = {
         code: 'E008',
         message: 'some param type is wrong or cannot be cast to the correct one'
     },
-    CANCER_EXCEPTION: {
+    WRONG_USERS: {
         code: 'E009',
-        message: 'someone attempted a carcinogenic action'
+        message: 'one or more specified userId are not valid'
     },
     DATETIME_INVALID: {
         code: 'E010',
@@ -47,4 +47,8 @@ module.exports = {
         code: 'E012',
         message: 'the entity is already present inside the DB'
     },
+    EMPTY_ARRAY : {
+        code: 'E013',
+        message: "missing or empty array in one or more properties"
+    }
 };
