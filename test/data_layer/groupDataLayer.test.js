@@ -100,7 +100,8 @@ describe("Create a new group", () => {
         let groupData = {
             name: mockGroups[0].name,
             educators: ["5e5d3df10cdd901037a15175"],
-            guys: ["5e5d3df10cdd901037a15175", "5e5d3df10cdd901037a15175"]
+            guys: ["5e5d3df10cdd901037a15175", "5e5d3df10cdd901037a15175"],
+            calendarId: "cid"
         };
 
         await expect(createGroup(groupData)).rejects.toThrow(GroupAlreadyExistsError);
@@ -110,7 +111,8 @@ describe("Create a new group", () => {
         let groupData = {
             name: "MOCK_Group3_FromTest",
             educators: ["5e5d3df10cdd901037aaaaa"],
-            guys: ["5e5d3df10cdd901037a15175", "5e5d3df10cdd901037a15175"]
+            guys: ["5e5d3df10cdd901037a15175", "5e5d3df10cdd901037a15175"],
+            calendarId: "cid"
         };
 
         await expect(createGroup(groupData)).rejects.toThrow(ParametersError);
@@ -120,7 +122,8 @@ describe("Create a new group", () => {
         let groupData = {
             name: "MOCK_Group3_FromTest",
             educators: ["5e5d3df10cdd901037a15175"],
-            guys: ["5e5d3df10cdd901037aaaaa", "5e5d3df10cdd901037a15175"]
+            guys: ["5e5d3df10cdd901037aaaaa", "5e5d3df10cdd901037a15175"],
+            calendarId: "cid"
         };
 
         await expect(createGroup(groupData)).rejects.toThrow(ParametersError);
@@ -130,7 +133,8 @@ describe("Create a new group", () => {
         let groupData = {
             name: "MOCK_Group3_FromTest",
             educators: ["5e5d3df10cdd901037a15175"],
-            guys: ["5e5d3df10cdd901037a15175", "5e5d3df10cdd901037a15175"]
+            guys: ["5e5d3df10cdd901037a15175", "5e5d3df10cdd901037a15175"],
+            calendarId: "cid"
         };
 
         let res = await createGroup(groupData);
@@ -181,7 +185,8 @@ describe("Modify an existing group", () => {
         let groupData = {
             name: mockGroups[0].name + "_Modified",
             educators: mockGroups[0].educators,
-            guys: mockGroups[0].guys
+            guys: mockGroups[0].guys,
+            calendarId: "cid"
         };
 
         await expect(modifyGroup(gid, groupData)).rejects.toThrow(ParametersError);
@@ -192,7 +197,8 @@ describe("Modify an existing group", () => {
         let groupData = {
             name: mockGroups[0].name + "_Modified",
             educators: mockGroups[0].educators,
-            guys: mockGroups[0].guys
+            guys: mockGroups[0].guys,
+            calendarId: "cid"
         };
 
         await expect(modifyGroup(gid, groupData)).rejects.toThrow(ParametersError);
@@ -211,7 +217,8 @@ describe("Modify an existing group", () => {
             name: mockGroups[0].name + "_Modified",
             educators: mockGroups[0].educators,
             guys: mockGroups[0].guys,
-            balance: 0
+            balance: 0,
+            calendarId: "cid"
         };
 
         let res = await modifyGroup(gid, groupData);
@@ -224,7 +231,8 @@ describe("Modify an existing group", () => {
             name: mockGroups[0].name + "_Modified",
             educators: mockGroups[0].educators,
             guys: mockGroups[0].guys,
-            balance: 0
+            balance: 0,
+            calendarId: "cid"
         };
 
         let res = await modifyGroup(gid, groupData);

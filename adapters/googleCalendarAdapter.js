@@ -1,14 +1,14 @@
 const fs = require('fs');
 const {google} = require('googleapis');
-const apiUtility = require("./utility");
+const apiUtility = require("../utility");
 
-const tokenPath = "./config/token.json";
-const credentialsPath = "./config/credentials.json";
+const tokenPath = __dirname + "/../config/token.json";
+const credentialsPath = __dirname + "/../config/credentials.json";
 const SCOPE = ['https://www.googleapis.com/auth/calendar'];
 
-const GoogleCalendarParameterError = require("./errors/googleCalendarParameterError");
-const GoogleCalendarAlreadyInitializedError = require("./errors/googleCalendarAlreadyInitilizedError");
-const GoogleCalendarNotInitializedError = require("./errors/googleCalendarNotInitializedError");
+const GoogleCalendarParameterError = require("../errors/googleCalendarParameterError");
+const GoogleCalendarAlreadyInitializedError = require("../errors/googleCalendarAlreadyInitilizedError");
+const GoogleCalendarNotInitializedError = require("../errors/googleCalendarNotInitializedError");
 
 var initialized = false;
 var credentials = undefined;
@@ -17,8 +17,6 @@ var auth = undefined;
 /**
  * Event object required
  * {
- *  id: string [google calendar id - not required if 'group' is specified]
- *  group: string [group name equivalent to the calendar name - not required if 'id' is specified]
  *  from: Date [format yyyy-mm-ddThh:mm:ss - REQUIRED]
  *  to: Date [format as 'from' - REQUIRED]
  *  others: [String] [NOT REQUIRED]
@@ -71,10 +69,6 @@ module.exports = {
 
     validateEventObject: function (event){
 
-        if (!event.id && !event.group) throw new GoogleCalendarParameterError("Missing 'id' or 'group' field");
-        if (event.id && typeof event.id !== "string") throw new GoogleCalendarParameterError("'id' field must be a string");
-        if (event.group && typeof event.group !== "string") throw new GoogleCalendarParameterError("'group' field must be a string");
-
         if (!event.from) throw new GoogleCalendarParameterError("Missing 'from' field");
         if (event.from && isNaN((new Date(event.from)).getTime())) throw new GoogleCalendarParameterError("'from' field is not a date");
 
@@ -100,9 +94,9 @@ module.exports = {
         return true;
     },
 
-    init : function(){
+    init : function(){Dopo
         if (initialized) throw new GoogleCalendarAlreadyInitializedError();
-
+        
         try {
             credentials = fs.readFileSync(credentialsPath, "utf8");
             credentials = JSON.parse(credentials);
@@ -123,35 +117,24 @@ module.exports = {
         auth.setCredentials(JSON.parse(token));
 
         initialized = true;
+        return true;
     },
 
-    addEvent : async function(event){
+    addEvent : async function(calendarId, event){
 
         if (!initialized) throw new GoogleCalendarNotInitializedError();
 
         this.validateEventObject(event);
 
-        if (!event.id){
-            let calendarId = await retrieveCalendarId(event.group);
-            if (calendarId == undefined)
-                return undefined;
-
-            event.id = calendarId;
-        }
-
         const gcEvent = buildGoogleCalendarEventObject(event);
         const calendar = google.calendar({version: 'v3', auth});
         try {
-            let result = await calendar.events.insert({auth: auth, calendarId: event.id,resource: gcEvent});
+            let result = await calendar.events.insert({auth: auth, calendarId: calendarId,resource: gcEvent});
 
             if (result.status != 200)
                 return undefined;
-
-            let info = {
-                calendarId: event.id,
-                eventId: result.data.id
-            }
-            return info;
+                
+            return result.data.id;
         } catch (err) {
             return undefined;
         }
@@ -173,12 +156,41 @@ module.exports = {
         const gcEvent = buildGoogleCalendarEventObject(edit);
         const calendar = google.calendar({version: 'v3', auth});
         try {
-            //let result = await calendar.events.insert({auth: auth, calendarId: event.id,resource: gcEvent});
-
             let result = await calendar.events.update({calendarId: calendarId, eventId: eventId, resource: gcEvent});
-            //return (result.status == 200) ? result.data.id : undefined;
-            return result;
+            return (result.status == 200) ? true : undefined;
         } catch (err) {
+            return undefined;
+        }
+    },
+
+    deleteEvent : async function(calendarId, eventId){
+        if (!initialized) throw new GoogleCalendarNotInitializedError();
+
+        if (calendarId == undefined || typeof calendarId !== "string")
+            return undefined;
+        if (eventId == undefined || typeof eventId !== "string")
+            return undefined;
+
+        const calendar = google.calendar({version: 'v3', auth});
+        try {
+            let result = await calendar.events.delete({calendarId: calendarId, eventId: eventId});
+            return (result.status == 204) ? true : undefined;
+        } catch (err) {
+            return undefined;
+        }
+    },
+
+    createCalendar : async function(calendarName) {
+        if (!initialized) throw new GoogleCalendarNotInitializedError();
+
+        if (calendarName == undefined || typeof calendarName !== "string")
+            return undefined;
+
+        const calendar = google.calendar({version: 'v3', auth});
+        try {
+            let result = await calendar.calendars.insert({auth: auth, resource: {summary: calendarName}});
+            return (result.status == 200) ? result.data.id : undefined;
+        } catch (err){
             return undefined;
         }
     }

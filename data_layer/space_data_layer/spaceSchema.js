@@ -5,7 +5,8 @@ let BookingSchema = new mongoose.Schema({
     from: {type: Date, require: true},
     to: {type: Date, required: true},
     gid: {type: String, required: true},
-    type: {type: String, required: true, default: "Altro"}
+    type: {type: String, required: true, default: "altro"},
+    eventId: {type: String, required: true, max: 100}
 });
 
 let SpaceSchema = new mongoose.Schema({

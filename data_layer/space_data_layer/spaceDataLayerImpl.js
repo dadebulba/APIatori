@@ -13,6 +13,8 @@ function checkBooking(booking){
         return false;
     if (booking.uid == undefined || booking.gid == undefined)
         return false;
+    if (booking.eventId == undefined || typeof booking.eventId !== "string")
+        return false;
 
     let tsFrom = new Date(booking.from).getTime();
     let tsTo = new Date(booking.to).getTime();
@@ -148,8 +150,10 @@ module.exports = {
             throw new ParametersError();
 
         var space = await Space.findById(sid);
-        if (space == undefined) 
+        if (space == undefined){
+            console.log("Not found"); 
             return undefined;
+        }
 
         space = JSON.parse(JSON.stringify(space));
         var toUpdate = false;
@@ -157,7 +161,8 @@ module.exports = {
         
         //Search for the right booking
         for (var i=0; i<space.bookings.length && !toUpdate; i++)
-            if (space.bookings[i]._id == bid && space.bookings[i].uid == edit.uid && space.bookings[i].gid == edit.gid){
+            if (space.bookings[i]._id == bid && space.bookings[i].uid == edit.uid && 
+                space.bookings[i].gid == edit.gid){
 
                 //Check for possible overlaps
                 for (var j=0; j<space.bookings.length; j++)
@@ -170,8 +175,10 @@ module.exports = {
                 break;
             }
         
-        if (!toUpdate)
+        if (!toUpdate){
+            console.log("Not to update");
             return undefined;
+        }
 
         space = await Space.findByIdAndUpdate(sid, $set = {bookings: space.bookings}, {new: true});
         space = JSON.parse(JSON.stringify(space));

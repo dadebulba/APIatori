@@ -10,7 +10,7 @@ async function isGroupValid(group){
         return false;
     if (apiUtility.validateParamsUndefined(group.name, group.educators, group.guys) || group.educators.length == 0)
         return false;
-    if (group.calendarMail != undefined && !apiUtility.validateEmail(group.calendarMail))
+    if (group.calendarId == undefined || typeof group.calendarId !== "string")
         return false;
 
     if (group.collaborators == undefined)
@@ -84,7 +84,7 @@ module.exports = {
             guys: groupInfo.guys,
             balance: 0.0,
             transactions: [],
-            calendarMail: groupInfo.calendarMail
+            calendarId: groupInfo.calendarId
         });
         result = await newGroup.save();
         if (result == undefined)
@@ -147,8 +147,8 @@ module.exports = {
             updateObj.balance = group.balance;
         if (group.transactions != undefined)
             updateObj.transactions = group.transactions;
-        if (group.calendarMail != undefined)
-            updateObj.calendarMail = group.calendarMail;
+        if (group.calendarId != undefined)
+            updateObj.calendarId = group.calendarId;
 
         result = await Group.findByIdAndUpdate(gid, $set = updateObj, {new: true});
         if (result != null){

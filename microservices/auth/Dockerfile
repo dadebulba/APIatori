@@ -25,8 +25,6 @@ COPY ./errors ./errors
 COPY ./microservices/auth/token.js .
 COPY ./microservices/auth/tokenImpl.js .
 
-RUN ls -lah
-
 # If you are building your code for production
 RUN npm ci --only=production
 #RUN npm install
