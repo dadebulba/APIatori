@@ -41,6 +41,7 @@ module.exports = {
         }
 
         initialized = true;
+        return true;
     },
 
     getAllGroups : async function(){

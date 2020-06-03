@@ -1,11 +1,13 @@
 const jwt = require('jsonwebtoken');
 
 module.exports = {
-    createToken: function(userId, role, key) {
+    createToken: function(userId, role, educatorIn, collaboratorIn, key) {
         return new Promise((resolve, reject) => {
             let payload = {
                 uid: userId,
-                role: role
+                role: role,
+                educatorIn: educatorIn,
+                collaboratorIn: collaboratorIn
             };
     
             let options = {
@@ -33,7 +35,7 @@ module.exports = {
                 if (err)
                     reject(errors.INVALID_TOKEN);
                 else
-                    resolve([decoded.uid, decoded.role]);
+                    resolve([decoded.uid, decoded.role, decoded.educatorIn, decoded.collaboratorIn]);
             });
         });
     }

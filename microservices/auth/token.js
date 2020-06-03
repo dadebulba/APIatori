@@ -45,7 +45,14 @@ app.post('/token', async function (req, res) {
             
             for (var i=0; i<userList.length; i++){
                 if (userList[i].mail === b_email && userList[i].password === b_pwd){
-                    let token = await tokenImpl.createToken(userList[i].uid, userList[i].role, PRIVATE_KEY);
+                    let token = await tokenImpl.createToken(
+                        userList[i].uid, 
+                        userList[i].role,
+                        userList[i].educatorIn,
+                        userList[i].collaboratorIn,
+                        PRIVATE_KEY
+                    );
+
                     res.status(200).send(token);
                     return;
                 }
@@ -60,7 +67,7 @@ app.post('/token', async function (req, res) {
     else if(h_action == 'verifyToken'){
         try {
             let result = await tokenImpl.verifyToken(req.token, PUBLIC_KEY);
-            res.status(200).json({uid: result[0], role: result[1]});
+            res.status(200).json({uid: result[0], role: result[1], educatorIn: result[2], collaboratorIn: result[3]});
         }
         catch (e) {
             res.status(401).json(e);

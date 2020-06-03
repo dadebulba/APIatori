@@ -42,6 +42,7 @@ module.exports = {
         }
 
         initialized = true;
+        return true;
     },
 
     getAllSpaces : async function(){

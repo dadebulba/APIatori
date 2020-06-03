@@ -218,7 +218,7 @@ app.get('/spaces/:spaceId/bookings/:bookingId', async function (req, res, next) 
     }
 });
 
-app.post('/spaces/:spaceId/bookings', async function (req, res) {
+app.post('/spaces/:spaceId/bookings', async function (req, res, next) {
     const spaceId = req.params.spaceId;
     const gid = req.body.gid;
     const from = new Date(Date.parse(req.body.from));
@@ -235,19 +235,23 @@ app.post('/spaces/:spaceId/bookings', async function (req, res) {
     if (validateBookingType(type))
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
 
-    const bookingData = { uid : uid, from : from, to : to, type : type, gid : gid };
+    let bookingData = { uid : uid, from : from, to : to, type : type, gid : gid };
     try {
         if (!(apiUtility.validateAuth(req, LEVELS.EDUCATOR, gid) || apiUtility.validateAuth(req, LEVELS.ADMIN)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
+        let newBooking = await spaceDataLayer.createBookingForSpace(spaceId, bookingData);
+
+        if (newBooking === undefined)
+            return res.status(404).json(errors.ENTITY_NOT_FOUND);
+
         //Create a new Google Calendar event if it isn't running tests
         if (!process.env.TEST){
-            const group = groupDataLayer.getGroup(gid);
-            const space = spaceDataLayer.getSpace(spaceId);
+            const group = await groupDataLayer.getGroup(gid);
+            const space = await spaceDataLayer.getSpace(spaceId);
             const users = userDataLayer.getAllUsers();
 
-            let result = Promise.all([group, space, users]);
-            if (!result[0] || !result[1] || !result[2])
+            if (!group || !space)
                 return res.status(400).json(errors.INVALID_DATA);
 
             //Build the list of the invitations to the event
@@ -269,14 +273,14 @@ app.post('/spaces/:spaceId/bookings', async function (req, res) {
                 others: others
             }
 
-            let eventId = GoogleCalendarAdapter.addEvent(group.calendarId, event);
+            let eventId = await GoogleCalendarAdapter.addEvent(group.calendarId, event);
             bookingData.eventId = eventId;
+
+            //Update the booking adding the 'eventId' field
+            newBooking = await spaceDataLayer.modifyBookingForSpace(spaceId, newBooking.bid, bookingData);
+            if (newBooking === undefined)
+                return res.status(404).json(errors.ENTITY_NOT_FOUND);
         }
-
-        const newBooking = await spaceDataLayer.createBookingForSpace(spaceId, bookingData);
-
-        if (newBooking === undefined)
-            return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
         return res.status(201).json(newBooking);
     }
@@ -285,7 +289,7 @@ app.post('/spaces/:spaceId/bookings', async function (req, res) {
     }
 })
 
-app.put('/spaces/:spaceId/bookings/:bookingId', async function (req, res) {
+app.put('/spaces/:spaceId/bookings/:bookingId', async function (req, res, next) {
     const spaceId = req.params.spaceId;
     const bookingId = req.params.bookingId;
     const gid = req.body.gid;
@@ -314,6 +318,9 @@ app.put('/spaces/:spaceId/bookings/:bookingId', async function (req, res) {
         if (!(apiUtility.validateAuth(req, LEVELS.EDUCATOR, singleBooking.gid)))
             return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
+        //Add the eventId field
+        bookingData.eventId = singleBooking.eventId;
+
         const editedBooking = await spaceDataLayer.modifyBookingForSpace(spaceId, bookingId, bookingData);
 
         if (editedBooking === undefined)
@@ -341,7 +348,7 @@ app.put('/spaces/:spaceId/bookings/:bookingId', async function (req, res) {
 
 });
 
-app.delete('/spaces/:spaceId/bookings/:bookingId', async function (req, res) {
+app.delete('/spaces/:spaceId/bookings/:bookingId', async function (req, res, next) {
     const spaceId = req.params.spaceId;
     const bookingId = req.params.bookingId;
     
@@ -364,7 +371,7 @@ app.delete('/spaces/:spaceId/bookings/:bookingId', async function (req, res) {
 
         //Delete the Google Calendar event if it isn't running tests
         if (!process.env.TEST){
-            const group = await groupDataLayer.getGroup(gid);
+            const group = await groupDataLayer.getGroup(singleBooking.gid);
 
             //Don't wait the response of the API
             GoogleCalendarAdapter.deleteEvent(group.calendarId, singleBooking.eventId);
@@ -388,9 +395,9 @@ let server_starting = new Promise((resolve, reject) => {
             let gcAdapter = GoogleCalendarAdapter.init();
 
             let result = await Promise.all([spaceInit, userInit, groupInit]);
-            console.log("RES = " + result);
+            result = result.every(item => item === true);
 
-            if (!gcAdapter)
+            if (!result || !gcAdapter)
                 reject();
         }
         resolve();

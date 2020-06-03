@@ -51,8 +51,8 @@ function buildGoogleCalendarEventObject(event){
     gcEvent.summary = event.title;
     if (event.description) gcEvent.description = event.description;
     if (event.location) gcEvent.location = event.location;
-    gcEvent.start = {dateTime: event.from + "+02:00", timeZone: "Europe/Rome"};
-    gcEvent.end = {dateTime: event.to + "+02:00", timeZone: "Europe/Rome"};
+    gcEvent.start = {dateTime: event.from/* + "+02:00"*/, timeZone: "Europe/Rome"};
+    gcEvent.end = {dateTime: event.to/* + "+02:00"*/, timeZone: "Europe/Rome"};
     gcEvent.reminders = {useDefault: false, overrides: [{method: 'popup', minutes: 60}]}
     gcEvent.visibility = "private";
     if (event.others){
@@ -94,7 +94,7 @@ module.exports = {
         return true;
     },
 
-    init : function(){Dopo
+    init : function(){
         if (initialized) throw new GoogleCalendarAlreadyInitializedError();
         
         try {
@@ -159,6 +159,7 @@ module.exports = {
             let result = await calendar.events.update({calendarId: calendarId, eventId: eventId, resource: gcEvent});
             return (result.status == 200) ? true : undefined;
         } catch (err) {
+            console.log(err);
             return undefined;
         }
     },

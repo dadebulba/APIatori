@@ -13,7 +13,7 @@ function checkBooking(booking){
         return false;
     if (booking.uid == undefined || booking.gid == undefined)
         return false;
-    if (booking.eventId == undefined || typeof booking.eventId !== "string")
+    if (booking.eventId != undefined && typeof booking.eventId !== "string")
         return false;
 
     let tsFrom = new Date(booking.from).getTime();
@@ -217,7 +217,8 @@ module.exports = {
             from: booking.from,
             to: booking.to,
             type: booking.type,
-            gid: booking.gid
+            gid: booking.gid,
+            eventId: booking.eventId
         });
 
         space = await Space.findOneAndUpdate({_id: sid}, {$push: {"bookings": newBooking}}, {new: true});
@@ -250,7 +251,6 @@ module.exports = {
         if (result == undefined)
             return undefined;
 
-        result = JSON.parse(JSON.stringify(result));
         for (var i=0; i<result.length; i++)
             if (result[i].bid === bid)
                 return result[i];

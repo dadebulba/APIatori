@@ -4,7 +4,15 @@ const apiUtility = require('../../utility.js');
 const errors = require('../../errorMsg.js');
 const groupDataLayer = process.env.PROD ? require("./group_data_layer/groupDataLayer") : require("../../data_layer/group_data_layer/groupDataLayer");
 const userDataLayer = process.env.PROD ? require("./user_data_layer/userDataLayer") : require("../../data_layer/user_data_layer/userDataLayer");
-const http = require('http')
+const http = require('http');
+
+if (!process.env.TEST){
+    var GoogleCalendarAdapter;
+    if (process.env.PROD != undefined)
+        GoogleCalendarAdapter = require("./adapters/googleCalendarAdapter");
+    else
+        GoogleCalendarAdapter = require("../../adapters/googleCalendarAdapter");
+}
 
 if (process.env.PROD == undefined && process.env.TEST == undefined)
     process.env["NODE_CONFIG_DIR"] = "../../config";
@@ -69,7 +77,7 @@ app.get('/groups/:id', async function (req, res, next) {
 
 
 app.post('/groups', async function (req, res, next) {
-    const name = req.body.name;
+    var name = req.body.name;
     const educators = req.body.educators;
     const collabs = req.body.collabs;
     const guys = req.body.guys;
@@ -83,6 +91,9 @@ app.post('/groups', async function (req, res, next) {
     if (!(apiUtility.validateAuth(req, LEVELS.ADMIN)))
         return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
+    //First letter must be uppercase
+    name = name.charAt(0).toUpperCase() + name.slice(1);
+
     const groupData = {
         name: name,
         educators: educators,
@@ -93,6 +104,13 @@ app.post('/groups', async function (req, res, next) {
     try {
         if (!(await apiUtility.validateUsers([...educators, ...collabs, ...guys])))
             return res.status(400).json(errors.WRONG_USERS)
+
+        //Create the Google Calendar if it isn't running tests
+        if (!process.env.TEST){
+            let calendarId = await GoogleCalendarAdapter.createCalendar(name);
+            if (calendarId != undefined)
+                groupData.calendarId = calendarId;
+        }
 
         const newGroup = await groupDataLayer.createGroup(groupData)
         if (newGroup === undefined)
@@ -175,6 +193,10 @@ let server_starting = new Promise((resolve, reject) => {
         if (!process.env.TEST) {
             await groupDataLayer.init();
             await userDataLayer.init();
+            let gcAdapter = GoogleCalendarAdapter.init();
+
+            if (!gcAdapter)
+                reject();
         }
         resolve();
     });

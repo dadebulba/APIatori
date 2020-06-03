@@ -100,9 +100,7 @@ module.exports = {
             nickname: 0,
             parents: 0,
             birthdate: 0,
-            phone: 0,
-            educatorIn: 0,
-            collaboratorIn: 0
+            phone: 0
         }
 
         let result = await User.find({}, excludedFields);

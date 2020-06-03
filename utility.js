@@ -68,7 +68,15 @@ module.exports = {
     },
     validateUsers: async function(usersToCheck) {
         const usersOnDB = await userDataLayer.getAllUsers();
-        return usersToCheck.every(user => usersOnDB.includes(user))
+
+        for (user in usersToCheck){
+            let result = 
+            usersOnDB.some(dlUser => {dlUser.uid == user})
+            if (!result)
+                return false;
+        }
+
+        return true;
     },
     checkStatus: function (res) {
         if (res.status != 500) {

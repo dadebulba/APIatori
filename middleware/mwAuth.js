@@ -24,6 +24,8 @@ module.exports = async function (req, res, next) {
 
             req['uid'] = body.uid;
             req['role'] = body.role;
+            req['educatorIn'] = body.educatorIn;
+            req['collaboratorIn'] = body.collaboratorIn;
             return next();
         }
         else {
