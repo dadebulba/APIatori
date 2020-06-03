@@ -1,4 +1,4 @@
-const mockGroups = require("../data/groups.js");
+const mockGroups = require("../data/groups.json");
 
 process.env.MOCK_GROUPS = JSON.stringify(mockGroups);
 const groupDL = require("../../data_layer/group_data_layer/groupDataLayer");

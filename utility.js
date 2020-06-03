@@ -1,7 +1,7 @@
 const { DateTime } = require("luxon");
 const fetch = require("node-fetch");
 const ObjectId = require("mongoose").Types.ObjectId;
-
+const userDataLayer = require("./data_layer/user_data_layer/userDataLayer")
 const levels = {
     EDUCATOR: "educator",
     COLLABORATOR: "collaborator",
@@ -18,11 +18,15 @@ module.exports = {
     validateParamsUndefined: function (...params) {
         return params.some(p => p === undefined);
     },
+    //returns true if all params are non empty array
+    validateParamsArray: function (...params) {
+        return params.every(arr => Array.isArray(arr) && Array.length > 0)
+    },
     //Ritorna true se tutti i parametri sono numeri
-    validateParamsNumber: function (...params) {
+    validateParamsNumber: function (...params ) {
         return params.some(p => typeof (p) !== 'number' || isNaN(p));
     },
-    //Ritorna true se tutti i parametri sono stringhe
+    //returns true if one or more params are not strings
     validateParamsString: function (...params) {
         return params.some(p => typeof (p) !== 'string');
     },
@@ -30,7 +34,7 @@ module.exports = {
     validateParamsDate : function(...params){
         const regex = /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/;
         return params.some(dt => {
-            return dt.toString() === 'Invalid Date' || dt.getFullYear() < new Date().getFullYear() || dt.toISOString().match(regex) === null;
+            return dt.toString() === 'Invalid Date' || dt.getFullYear() < new Date().getFullYear() || regex.test(dt.toISOString()) === false;
         })
     },
     validateParamsDateOld: function (...params) {
@@ -56,11 +60,15 @@ module.exports = {
                 else
                     return req['collaboratorIn'].some(v => v == requiredGid) || req['role'] === levels.ADMIN;
             case levels.USER:
-                return req['role'] == levels.USER;
+                return req['role'] == levels.USER || req['role'] === levels.ADMIN;
             default:
                 return false;
                 break;
         }
+    },
+    validateUsers: async function(usersToCheck) {
+        const usersOnDB = await userDataLayer.getAllUsers();
+        return usersToCheck.every(user => usersOnDB.includes(user))
     },
     checkStatus: function (res) {
         if (res.status != 500) {
@@ -69,6 +77,7 @@ module.exports = {
             throw new Error(JSON.stringify({ code: 'E000', message: 'CONNECTION ERROR WITH THE DB' }));
         }
     },
+    //returns true if email is valid
     validateEmail: function (email) {
         const EMAIL_REGEX = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
         return (typeof email === 'string' && email.length > 5 && email.length < 61 && EMAIL_REGEX.test(email));
