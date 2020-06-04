@@ -1,4 +1,4 @@
-const apiUtility = require("../../utility.js");
+const utility = require("../utility.js");
 
 const Space = require("./spaceSchema.js")[0];
 const Booking = require("./spaceSchema.js")[1];
@@ -21,7 +21,7 @@ function checkBooking(booking){
     if (tsTo <= tsFrom || tsFrom < Date.now())
         return false;
 
-    if (!apiUtility.isObjectIdValid(booking.uid) || !apiUtility.isObjectIdValid(booking.gid))
+    if (!utility.isObjectIdValid(booking.uid) || !utility.isObjectIdValid(booking.gid))
         return false;
 
     return true;
@@ -151,7 +151,6 @@ module.exports = {
 
         var space = await Space.findById(sid);
         if (space == undefined){
-            console.log("Not found"); 
             return undefined;
         }
 
@@ -176,7 +175,6 @@ module.exports = {
             }
         
         if (!toUpdate){
-            console.log("Not to update");
             return undefined;
         }
 

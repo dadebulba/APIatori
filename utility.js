@@ -1,6 +1,5 @@
 const { DateTime } = require("luxon");
 const fetch = require("node-fetch");
-const ObjectId = require("mongoose").Types.ObjectId;
 const userDataLayer = require("./data_layer/user_data_layer/userDataLayer")
 const levels = {
     EDUCATOR: "educator",
@@ -90,9 +89,6 @@ module.exports = {
         const EMAIL_REGEX = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
         return (typeof email === 'string' && email.length > 5 && email.length < 61 && EMAIL_REGEX.test(email));
     },
-    isObjectIdValid: function (id){
-        return id != undefined && ObjectId.isValid(id) && String(new ObjectId(id) === id);
-    },
     getAuthHeader: async function (email, password, tokenUrl) {
         const options = {
             method: 'POST',
@@ -115,7 +111,7 @@ module.exports = {
     },
     unless : function (middleware, ...excludedUrl){
         return function(req, res, next){
-            const match = excludedUrl.some(url => (req.path.includes(url.path) && url.method == req.method));
+            const match = excludedUrl.some(url => (req.path == url.path && url.method == req.method));
             match ? next() : middleware(req, res, next);           
         }
     },

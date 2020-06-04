@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const controller = require('./spaceDataLayerImpl.js');
-const apiUtility = (process.env.PROD) ? require("./utility.js") : require("../../utility.js");
+const utility = require("../utility.js");
 
 if (process.env.PROD == undefined && process.env.TEST == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config'); 
@@ -63,7 +63,7 @@ module.exports = {
         if (!initialized)
             throw new DatalayerNotInitializedError("SpaceDataLayer");
 
-        if (arguments.length !== 1 || !apiUtility.isObjectIdValid(sid))
+        if (arguments.length !== 1 || !utility.isObjectIdValid(sid))
             throw new ParametersError();
 
         let space = await controller.retrieveSingleSpace(sid);
@@ -85,7 +85,7 @@ module.exports = {
         if (!initialized)
             throw new DatalayerNotInitializedError("SpaceDataLayer");
 
-        if (arguments.length !== 2 || newName == undefined || !apiUtility.isObjectIdValid(sid) || newName === "")
+        if (arguments.length !== 2 || newName == undefined || !utility.isObjectIdValid(sid) || newName === "")
             throw new ParametersError();
 
         let result = await controller.modifySpaceName(sid, newName);
@@ -96,7 +96,7 @@ module.exports = {
         if (!initialized)
             throw new DatalayerNotInitializedError("SpaceDataLayer");
 
-        if (arguments.length !== 1 || !apiUtility.isObjectIdValid(sid))
+        if (arguments.length !== 1 || !utility.isObjectIdValid(sid))
             throw new ParametersError();
 
         let result = await controller.deleteSpace(sid);
@@ -107,7 +107,7 @@ module.exports = {
         if (!initialized)
             throw new DatalayerNotInitializedError("SpaceDataLayer");
 
-        if (arguments.length !== 1 || !apiUtility.isObjectIdValid(sid))
+        if (arguments.length !== 1 || !utility.isObjectIdValid(sid))
             throw new ParametersError();
 
         let result = await controller.getAllBookings(sid);
@@ -118,7 +118,7 @@ module.exports = {
         if (!initialized)
             throw new DatalayerNotInitializedError("SpaceDataLayer");
 
-        if (arguments.length !== 2 || !apiUtility.isObjectIdValid(sid) || !apiUtility.isObjectIdValid(bid))
+        if (arguments.length !== 2 || !utility.isObjectIdValid(sid) || !utility.isObjectIdValid(bid))
             throw new ParametersError();
 
         let result = await controller.getBooking(sid, bid);
@@ -129,7 +129,7 @@ module.exports = {
         if (!initialized)
             throw new DatalayerNotInitializedError("SpaceDataLayer");
 
-        if (arguments.length !== 2 || !apiUtility.isObjectIdValid(sid) || bookingData == undefined)
+        if (arguments.length !== 2 || !utility.isObjectIdValid(sid) || bookingData == undefined)
             throw new ParametersError();
 
         let result = await controller.createBooking(sid, bookingData);
@@ -140,7 +140,7 @@ module.exports = {
         if (!initialized)
             throw new DatalayerNotInitializedError("SpaceDataLayer");
 
-        if (arguments.length !== 3 || !apiUtility.isObjectIdValid(sid) || !apiUtility.isObjectIdValid(bid) ||
+        if (arguments.length !== 3 || !utility.isObjectIdValid(sid) || !utility.isObjectIdValid(bid) ||
                 data == undefined)
             throw new ParametersError();
 
@@ -152,7 +152,7 @@ module.exports = {
         if (!initialized)
             throw new DatalayerNotInitializedError("SpaceDataLayer");
 
-        if (arguments.length !== 2 || !apiUtility.isObjectIdValid(sid) || !apiUtility.isObjectIdValid(bid))
+        if (arguments.length !== 2 || !utility.isObjectIdValid(sid) || !utility.isObjectIdValid(bid))
             throw new ParametersError();
 
         let result = await controller.deleteBooking(sid, bid);

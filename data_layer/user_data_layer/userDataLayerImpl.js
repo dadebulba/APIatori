@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 
 const User = require("./userSchema.js");
-const apiUtility = require('../../utility.js');
+const utility = require('../utility.js');
 
 const ParametersError = require("../../errors/parametersError");
 const DatabaseError = require("../../errors/databaseError");
@@ -9,35 +9,19 @@ const DatabaseError = require("../../errors/databaseError");
 function checkUserBody(body){
     if (body == undefined || arguments.length !== 1)
         return false;
-    if (apiUtility.validateParamsUndefined(body.name, body.surname, body.birthdate, body.mail, body.password))
+    if (utility.validateParamsUndefined(body.name, body.surname, body.mail, body.password))
         return false;
+
+    let validStrings = [body.name, body.surname, body.mail, body.password].every(item => typeof item === "string" && item !== "");
+    if (!validStrings)
+        return false;
+
     body.mail = body.mail.toLowerCase();
-    if (!apiUtility.validateEmail(body.mail))
+    if (!utility.validateEmail(body.mail))
         return false;
             
-    if (body.phone != undefined && apiUtility.castToInt(body.phone) == undefined)
+    if (body.phone != undefined && utility.castToInt(body.phone) == undefined)
         return false;
-    
-    let checkBirthdate = Date.parse(body.birthdate);
-    if (isNaN(checkBirthdate) || checkBirthdate >= Date.now())
-        return false;
-
-            
-    //Check parent's fields
-    if (body.parents != undefined)
-        for (var i=0; i<body.parents.length; i++){
-            if (apiUtility.validateParamsUndefined(body.parents[i].name, body.parents[i].surname))
-                return false;
-                
-            if (body.parents[i].mail != undefined){
-                body.parents[i].mail = body.parents[i].mail.toLowerCase();
-                if (!apiUtility.validateEmail(body.parents[i].mail))
-                    return false;
-            }
-
-            if (body.parents[i].phone != undefined && apiUtility.castToInt(body.parents[i].phone) == undefined)
-                return false;
-        }
 
     return true;    
 }
@@ -49,6 +33,7 @@ module.exports = {
         mockUser = JSON.parse(mockUser);
 
         for (var i=0; i<mockUser.length; i++){
+            mockUser[i].password = crypto.createHash("sha256").update(mockUser[i].password).digest("hex");
             const newUser = new User(mockUser[i]);
             await newUser.save();
         }
@@ -57,7 +42,7 @@ module.exports = {
     },
 
     createUser : async function(newUser){
-        undefined
+        
         if (newUser == undefined || !checkUserBody(newUser))
             throw new ParametersError();
 
@@ -71,11 +56,8 @@ module.exports = {
         let user = new User({
             name: newUser.name,
             surname: newUser.surname,
-            nickname: newUser.nickname,
-            birthdate: newUser.birthdate,
             mail: newUser.mail,
             password: newUser.password,
-            parents: (newUser.parents != undefined) ? newUser.parents : [],
             phone: newUser.phone,
             role: "user"
         });
@@ -97,10 +79,8 @@ module.exports = {
 
         let excludedFields = {
             __v: 0,
-            nickname: 0,
-            parents: 0,
-            birthdate: 0,
-            phone: 0
+            phone: 0,
+            password: 0
         }
 
         let result = await User.find({}, excludedFields);
@@ -110,7 +90,7 @@ module.exports = {
 
     getUser : async function(uid){
 
-        if (uid == undefined || !apiUtility.isObjectIdValid(uid))
+        if (uid == undefined || !utility.isObjectIdValid(uid))
             throw new ParametersError();
 
         let user = await User.findById(uid);
@@ -119,8 +99,81 @@ module.exports = {
             delete user.__v;
             user.uid = user._id;
             delete user._id;
+            delete user.password;
         }
 
         return (user != null) ? user : undefined;
+    },
+
+    /* Only educatorIn and collaboratorIn fields can be modified */
+    modifyUser : async function(uid, userData){
+        if (uid == undefined || userData == undefined)
+            throw new ParametersError();
+        if (!utility.isObjectIdValid(uid) || !Array.isArray(userData.educatorIn) || !Array.isArray(userData.collaboratorIn))
+            throw new ParametersError();
+
+        var toUpdate = false;
+        var updateObj = {};
+
+        //Check educatorIn and collaboratorIn values
+        if (userData.educatorIn != undefined){
+            let check = userData.educatorIn.every(item => utility.isObjectIdValid(item));
+            if (!check)
+                throw new ParametersError();
+
+            toUpdate = true;
+            updateObj.educatorIn = userData.educatorIn;
+        }
+
+        if (userData.collaboratorIn != undefined){
+            let check = userData.collaboratorIn.every(item => utility.isObjectIdValid(item));
+            if (!check)
+                throw new ParametersError();
+
+            toUpdate = true;
+            updateObj.collaboratorIn = userData.collaboratorIn;
+        }
+
+        if (!toUpdate)
+            throw new ParametersError();
+        
+        let result = await User.findByIdAndUpdate(uid, $set = updateObj, {new: true});
+
+        if (result != null){
+            result = JSON.parse(JSON.stringify(result));
+            delete result.__v;
+            delete result.password;
+            result.uid = result._id;
+            delete result._id;
+        }
+
+        return (result != null) ? result : undefined;
+    },
+
+    userLogin : async function(mail, password){
+
+        if (arguments.length != 2 || mail == undefined || password == undefined)
+            throw new ParametersError();
+
+        let checkStrings = [mail, password].every(item => typeof item === "string" && item !== "");
+        if (!checkStrings)
+            throw new ParametersError();
+
+        if (!utility.validateEmail(mail))
+            throw new ParametersError();
+
+        let hashPassword = crypto.createHash("sha256").update(password).digest("hex");
+        let excludedFields = {
+            __v: 0,
+            phone: 0
+        }
+        let allUsers = await User.find({}, excludedFields);
+        allUsers = JSON.parse(JSON.stringify(allUsers));
+
+        for (var i=0; i<allUsers.length; i++)
+            if (allUsers[i].mail == mail && allUsers[i].password == hashPassword)
+                return {uid: allUsers[i]._id, role: allUsers[i].role, educatorIn: allUsers[i].educatorIn, collaboratorIn: allUsers[i].collaboratorIn};
+
+        return undefined;
     }
 }

@@ -1,4 +1,4 @@
-const apiUtility = require("../../utility.js");
+const utility = require("../utility.js");
 const Group = require("./groupSchema.js")[0];
 
 const ParametersError = require("../../errors/parametersError");
@@ -8,7 +8,7 @@ const GroupAlreadyExistsError = require("../../errors/groupAlreadyExistsError");
 async function isGroupValid(group){
     if (typeof group !== "object")
         return false;
-    if (apiUtility.validateParamsUndefined(group.name, group.educators, group.guys) || group.educators.length == 0)
+    if (utility.validateParamsUndefined(group.name, group.educators, group.guys) || group.educators.length == 0)
         return false;
     if (group.calendarId == undefined || typeof group.calendarId !== "string")
         return false;
@@ -20,15 +20,15 @@ async function isGroupValid(group){
     let allValid = true;
 
     for (var i=0; i<group.educators.length && allValid; i++)
-        if (!apiUtility.isObjectIdValid(group.educators[i]))
+        if (!utility.isObjectIdValid(group.educators[i]))
             allValid = false;
 
     for (var i=0; i<group.collaborators.length && allValid; i++)
-        if (!apiUtility.isObjectIdValid(group.collaborators[i]))
+        if (!utility.isObjectIdValid(group.collaborators[i]))
             allValid = false;
 
     for (var i=0; i<group.guys.length && allValid; i++)
-        if (!apiUtility.isObjectIdValid(group.guys[i]))
+        if (!utility.isObjectIdValid(group.guys[i]))
             allValid = false;
         
     return allValid;
@@ -98,7 +98,7 @@ module.exports = {
     },
 
     getGroup : async function(gid) {
-        if (arguments.length != 1 || !apiUtility.isObjectIdValid(gid))
+        if (arguments.length != 1 || !utility.isObjectIdValid(gid))
             throw new ParametersError();
 
         let result = await Group.findById(gid);
@@ -113,7 +113,7 @@ module.exports = {
     },
 
     deleteGroup : async function(gid){
-        if (arguments.length != 1 || !apiUtility.isObjectIdValid(gid))
+        if (arguments.length != 1 || !utility.isObjectIdValid(gid))
             throw new ParametersError();
 
         let result = await Group.findByIdAndDelete(gid);
@@ -128,7 +128,7 @@ module.exports = {
     },
 
     modifyGroup : async function(gid, group){
-        if (arguments.length != 2 || !apiUtility.isObjectIdValid(gid) || group == undefined)
+        if (arguments.length != 2 || !utility.isObjectIdValid(gid) || group == undefined)
             throw new ParametersError();
 
         let result = await isGroupValid(group);
