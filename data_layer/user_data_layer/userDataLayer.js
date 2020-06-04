@@ -14,7 +14,7 @@ module.exports = {
 
     init : async function(){
         if (initialized)
-            throw new DatalayerAlreadyInitializedError("SpaceDataLayer");
+            throw new DatalayerAlreadyInitializedError("UserDataLayer");
 
         const mongoOptions = {
             useNewUrlParser: true,
@@ -41,6 +41,7 @@ module.exports = {
         }
 
         initialized = true;
+        return true;
     },
 
     createUser : async function(userInfo){
@@ -78,6 +79,28 @@ module.exports = {
             throw new ParametersError();
 
         let result = await controller.getUser(uid);
+        return result;
+    },
+
+    login : async function(mail, password){
+        if (!initialized)
+            throw new DatalayerNotInitializedError("UserDataLayer");
+
+        if (arguments.length !== 2)
+            throw new ParametersError();
+
+        let result = await controller.userLogin(mail, password);
+        return result;
+    },
+
+    modifyUser : async function(uid, userData){
+        if (!initialized)
+            throw new DatalayerNotInitializedError("UserDataLayer");
+
+        if (arguments.length !== 2)
+            throw new ParametersError();
+
+        let result = await controller.modifyUser(uid, userData);
         return result;
     }
 

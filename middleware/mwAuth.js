@@ -9,6 +9,8 @@ module.exports = async function (req, res, next) {
 
     if (req.headers.authorization != undefined)
         req.token = req.headers.authorization.substr(7);
+    else 
+        return res.status(401).json(errors.INVALID_TOKEN);
 
     let options = {
         method: 'POST',
@@ -24,6 +26,8 @@ module.exports = async function (req, res, next) {
 
             req['uid'] = body.uid;
             req['role'] = body.role;
+            req['educatorIn'] = body.educatorIn;
+            req['collaboratorIn'] = body.collaboratorIn;
             return next();
         }
         else {

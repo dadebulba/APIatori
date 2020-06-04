@@ -11,7 +11,7 @@ let GroupSchema = new mongoose.Schema({
     educators: {type: [mongoose.Schema.Types.ObjectId], required: true},
     collaborators: {type: [mongoose.Schema.Types.ObjectId], required: true, default: []},
     guys: {type: [mongoose.Schema.Types.ObjectId], required: true},
-    calendarMail: {type: String, required: false, max: 50},
+    calendarId: {type: String, required: false, max: 50},
     balance: {type: Number, required: true, default: 0.0},
     transactions: {type: [TransactionSchema], required: true, default: []}
 });

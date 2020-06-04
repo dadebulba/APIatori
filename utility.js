@@ -1,6 +1,5 @@
 const { DateTime } = require("luxon");
 const fetch = require("node-fetch");
-const ObjectId = require("mongoose").Types.ObjectId;
 const userDataLayer = require("./data_layer/user_data_layer/userDataLayer")
 const levels = {
     EDUCATOR: "educator",
@@ -8,15 +7,6 @@ const levels = {
     USER: "user",
     ADMIN: "admin"
 }
-
-//Weather API settings
-const WEATHER_API_SETTINGS = {
-    lang: "it",
-    zipCode: "46047,it",
-    units: "metric",
-    url: "http://api.openweathermap.org/data/2.5/forecast",
-    appID: "56c557e7517707ac796be3173d0e0a34"
-};
 
 function canBeParsedInt(n) {
     return Number(n) === parseInt(n);
@@ -77,7 +67,15 @@ module.exports = {
     },
     validateUsers: async function(usersToCheck) {
         const usersOnDB = await userDataLayer.getAllUsers();
-        return usersToCheck.every(user => usersOnDB.includes(user))
+
+        for (user in usersToCheck){
+            let result = 
+            usersOnDB.some(dlUser => {dlUser.uid == user})
+            if (!result)
+                return false;
+        }
+
+        return true;
     },
     checkStatus: function (res) {
         if (res.status != 500) {
@@ -90,9 +88,6 @@ module.exports = {
     validateEmail: function (email) {
         const EMAIL_REGEX = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
         return (typeof email === 'string' && email.length > 5 && email.length < 61 && EMAIL_REGEX.test(email));
-    },
-    isObjectIdValid: function (id){
-        return id != undefined && ObjectId.isValid(id) && String(new ObjectId(id) === id);
     },
     getAuthHeader: async function (email, password, tokenUrl) {
         const options = {
@@ -116,48 +111,9 @@ module.exports = {
     },
     unless : function (middleware, ...excludedUrl){
         return function(req, res, next){
-            console.log(req.method, req.path, excludedUrl)
-            const match = excludedUrl.some(url => (req.path.includes(url.path) && url.method == req.method));
+            const match = excludedUrl.some(url => (req.path == url.path && url.method == req.method));
             match ? next() : middleware(req, res, next);           
         }
-    },
-    getWeatherInfo: async function (date){ 
-        const url = WEATHER_API_SETTINGS.url + "?" + 
-            "zip=" + WEATHER_API_SETTINGS.zipCode + 
-            "&appid=" + WEATHER_API_SETTINGS.appID +
-            "&units=" + WEATHER_API_SETTINGS.units +
-            "&lang=" + WEATHER_API_SETTINGS.lang;
-
-        let result = await fetch(url);
-        if (result.status != 200){
-            console.log("Weather API does not fulfill the request");
-            return undefined;
-        }
-
-        let tmpJson = await result.json();
-        let forecast = tmpJson.list;
-
-        try {
-            for (var i=0; i<forecast.length; i++)
-                if (forecast[i].dt_txt.split(" ")[0] == date)
-                    return {
-                        temp: Math.round(forecast[i].main.temp, -1) + "°C",
-                        tempMax: Math.round(forecast[i].main.temp_max, -1) + "°C",
-                        tempMin: Math.round(forecast[i].main.temp_min, -1) + "°C",
-                        humidity: forecast[i].main.humidity,
-                        main: forecast[i].weather[0].main,
-                        description: forecast[i].weather[0].description.charAt(0).toUpperCase() + forecast[i].weather[0].description.slice(1),
-                        clouds: ((forecast[i].clouds) ? forecast[i].clouds.all : 0) + "%",
-                        wind: ((forecast[i].wind) ? forecast[i].wind.speed : 0) + " km/h",
-                        rain: ((forecast[i].rain) ? forecast[i].rain['3h'] : 0) + " mm",
-                        snow: ((forecast[i].snow) ? forecast[i].snow['3h'] : 0) + " mm"
-                    };
-        } catch (err) {
-            console.log("Weather API returned and object not expected");
-            return undefined;
-        }
-
-        return undefined;
     },
     levels: levels
 }

@@ -37,21 +37,24 @@ beforeAll(async () => {
         gid: mockSpaces[0].sid,
         from: "2222-02-24T20:00:00.000Z",
         to: "2222-02-24T23:00:00.000Z",
-        type: "attivita"
+        type: "attivita",
+        eventId: "eventID"
     }
     const bookingData2 = {
         uid: mockSpaces[0].sid, //It performs only a validation check of the id string
         gid: mockSpaces[0].sid,
         from: "2222-06-24T20:00:00.000Z",
         to: "2222-06-24T23:00:00.000Z",
-        type: "attivita"
+        type: "attivita",
+        eventId: "eventID"
     }
     const bookingData3 = {
         uid: mockSpaces[0].sid, //It performs only a validation check of the id string
         gid: mockSpaces[0].sid,
         from: "2222-11-24T20:00:00.000Z",
         to: "2222-11-24T23:00:00.000Z",
-        type: "attivita"
+        type: "attivita",
+        eventId: "eventID"
     }
 
     var res = await createBookingForSpace(mockSpaces[0].sid, bookingData1);
@@ -100,19 +103,13 @@ describe("Get space by id", () => {
         await expect(getSpace(sid)).rejects.toThrow(ParametersError);
     });
 
-    test("04 - sid is an array - should throw", async () => {
-        const sid = [];
-
-        await expect(getSpace(sid)).rejects.toThrow(ParametersError);
-    });
-
-    test("05 - sid not exists - should return null", async () => {
+    test("04 - sid not exists - should return null", async () => {
         const sid = mockSpaces[0].sid.substring(0, mockSpaces[0].sid.length-5) + "abcde";
         const res = await getSpace(sid);
         expect(res).toBeUndefined();
     });
 
-    test("06 - sid is valid - should return the space", async () => {
+    test("05 - sid is valid - should return the space", async () => {
         const sid = mockSpaces[0].sid;
         const res = await getSpace(sid);
 
@@ -373,7 +370,8 @@ describe("Create a booking for a space", () => {
         gid: mockSpaces[0].sid,
         from: "2222-02-24T22:00:00.000Z",
         to: "2222-02-24T23:00:00.000Z",
-        type: "attivita"
+        type: "attivita",
+        eventId: "eventID"
     };
 
     test("01 - sid not specified, booking data not specified - should throw", async () => {
@@ -390,7 +388,8 @@ describe("Create a booking for a space", () => {
             gid: mockSpaces[0].sid,
             from: "2222-02-24T22:00:00.000Z",
             to: "2222-02-24T23:00:00.000Z",
-            type: "attivita"
+            type: "attivita",
+            eventId: "eventID"
         };
 
         await expect(createBookingForSpace(bookingData)).rejects.toThrow(ParametersError);
@@ -403,7 +402,8 @@ describe("Create a booking for a space", () => {
             gid: mockSpaces[0].sid,
             from: "2222-02-24T22:00:00.000Z",
             to: "2222-02-24T23:00:00.000Z",
-            type: "attivita"
+            type: "attivita",
+            eventId: "eventID"
         };
 
         await expect(createBookingForSpace(sid)).rejects.toThrow(ParametersError);
@@ -423,7 +423,8 @@ describe("Create a booking for a space", () => {
             gid: mockSpaces[0].sid,
             from: "2222-02-24T22:00:00.000Z",
             to: "2222-02-24T23:00:00.000Z",
-            type: "attivita"
+            type: "attivita",
+            eventId: "eventID"
         };
 
         await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(ParametersError);
@@ -443,7 +444,8 @@ describe("Create a booking for a space", () => {
             gid: mockSpaces[0].sid,
             from: "2222-02-24T22:00:00.000Z",
             to: "2222-02-24T23:00:00.000Z",
-            type: "attivita"
+            type: "attivita",
+            eventId: "eventID"
         };
 
         await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(ParametersError);
@@ -456,7 +458,8 @@ describe("Create a booking for a space", () => {
             gid: mockSpaces[0].sid,
             from: "2222-02-24T22:00:00.000Z",
             to: "2222-02-24T23:00:00.000Z",
-            type: "attivita"
+            type: "attivita",
+            eventId: "eventID"
         };
         bookingData.ITTT = 123;
 
@@ -471,7 +474,8 @@ describe("Create a booking for a space", () => {
             gid: mockSpaces[0].sid,
             from: "2222-02-24T22:00:00.000Z",
             to: "2222-02-24T23:00:00.000Z",
-            type: "attivita"
+            type: "attivita",
+            eventId: "eventID"
         };
         delete bookingData.uid;
 
@@ -485,7 +489,8 @@ describe("Create a booking for a space", () => {
             gid: mockSpaces[0].sid,
             from: "2222-02-24T22:00:00.000Z",
             to: "2222-02-24T23:00:00.000Z",
-            type: "attivita"
+            type: "attivita",
+            eventId: "eventID"
         };
         delete bookingData.gid;
 
@@ -501,7 +506,8 @@ describe("Create a booking for a space", () => {
             gid: mockSpaces[0].sid,
             from: "2222-02-24T21:00:00.000Z",
             to: "2222-02-24T22:00:00.000Z",
-            type: "attivita"
+            type: "attivita",
+            eventId: "eventID"
         };
 
         await expect(createBookingForSpace(sid, bookingData)).rejects.toThrow(IntervalOverlapError);
@@ -514,7 +520,8 @@ describe("Create a booking for a space", () => {
             gid: mockSpaces[1].sid,
             from: "2222-03-24T21:00:00.000Z",
             to: "2222-03-24T22:00:00.000Z",
-            type: "attivita"
+            type: "attivita",
+            eventId: "eventID"
         };
 
         const res = await createBookingForSpace(sid, bookingData);
@@ -545,7 +552,8 @@ describe("Update existing bookings for a space", () => {
             gid: mockSpaces[0].sid,
             from: "2222-04-24T20:00:00.000Z",
             to: "2222-04-24T23:00:00.000Z",
-            type: "attivita"
+            type: "attivita",
+            eventId: "eventID"
         };
 
         await expect(modifyBookingForSpace(booking)).rejects.toThrow(ParametersError);
@@ -559,7 +567,8 @@ describe("Update existing bookings for a space", () => {
             gid: mockSpaces[0].sid,
             from: "2222-04-24T20:00:00.000Z",
             to: "2222-04-24T23:00:00.000Z",
-            type: "attivita"
+            type: "attivita",
+            eventId: "eventID"
         };
 
         await expect(modifyBookingForSpace(bid, booking)).rejects.toThrow(ParametersError);
@@ -607,7 +616,8 @@ describe("Update existing bookings for a space", () => {
             gid: mockSpaces[0].sid,
             from: "2222-04-24T20:00:00.000Z",
             to: "2222-04-24T23:00:00.000Z",
-            type: "attivita"
+            type: "attivita",
+            eventId: "eventID"
         };
 
         let res = await modifyBookingForSpace(sid, bid, booking);
@@ -622,7 +632,8 @@ describe("Update existing bookings for a space", () => {
             gid: mockSpaces[0].sid,
             from: "2222-04-24T20:00:00.000Z",
             to: "2222-04-24T23:00:00.000Z",
-            type: "attivita"
+            type: "attivita",
+            eventId: "eventID"
         };
 
         let res = await modifyBookingForSpace(sid, bid, booking);
@@ -636,7 +647,8 @@ describe("Update existing bookings for a space", () => {
             uid: mockSpaces[0].sid, //It performs only a validation check of the id string
             gid: mockSpaces[0].sid,
             to: "2222-04-24T23:00:00.000Z",
-            type: "attivita"
+            type: "attivita",
+            eventId: "eventID"
         };
 
         await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(ParametersError);
@@ -650,7 +662,8 @@ describe("Update existing bookings for a space", () => {
             gid: mockSpaces[0].sid,
             from: "2222-06-24T21:00:00.000Z",
             to: "2222-06-24T22:00:00.000Z",
-            type: "attivita"
+            type: "attivita",
+            eventId: "eventID"
         };
 
         await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(IntervalOverlapError);
@@ -664,7 +677,8 @@ describe("Update existing bookings for a space", () => {
             gid: mockSpaces[0].sid,
             from: "2222-07-24T21:00:00.000Z",
             to: "2222-07-24T22:00:00.000Z",
-            type: "attivita"
+            type: "attivita",
+            eventId: "eventID"
         };
 
         await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(ParametersError);
@@ -678,7 +692,8 @@ describe("Update existing bookings for a space", () => {
             gid: mockSpaces[0].sid,
             from: "2222-07-24T21:00:00.000Z",
             to: "2222-07-24T22:00:00.000Z",
-            type: "attivita"
+            type: "attivita",
+            eventId: "eventID"
         };
 
         await expect(modifyBookingForSpace(sid, bid, booking)).rejects.toThrow(ParametersError);
@@ -692,7 +707,8 @@ describe("Update existing bookings for a space", () => {
             gid: mockSpaces[0].sid,
             from: "2222-07-24T20:00:00.000Z",
             to: "2222-07-24T23:00:00.000Z",
-            type: "attivita"
+            type: "attivita",
+            eventId: "eventID"
         }
 
         let res = await modifyBookingForSpace(sid, bid, booking);
