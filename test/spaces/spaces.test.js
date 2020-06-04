@@ -5,7 +5,6 @@ const errors = require('../../errorMsg')
 const BOOKINGS_1 = require('../data/bookings_1.json')
 const SPACES = require('../data/spaces.json')
 
-const spaces = require("../../microservices/spaces/spaces");
 
 const config = require('config');
 const BASE_URL = config.get('baseURL');
@@ -16,9 +15,16 @@ const spacesUrl = `${BASE_URL}:${SPACE_PORT}`;
 const space_data_layer = require('../../data_layer/space_data_layer/spaceDataLayer')
 jest.mock("../../data_layer/space_data_layer/spaceDataLayer.js");
 utils.validateAuth = jest.fn();
+utils.unless = jest.fn();
+utils.unless.mockImplementation((middleware, ...excludedUrl) => {
+    return function(req, res, next){
+        next();       
+    }
+})
+const spaces = require("../../microservices/spaces/spaces");
+
 jest.mock("../../middleware/mwAuth", () => jest.fn((req, res, next) =>  next()))
 /* ---------- */
-
 
 function mockManagerFunction(mockFun, behaviour) {
     return mockFun.mockImplementationOnce(() => {
@@ -93,6 +99,7 @@ describe("GET /spaces/:id", () => {
 })
 
 describe("POST /spaces", () => {
+
     afterEach(() => {
         jest.resetAllMocks();
     })
@@ -239,6 +246,7 @@ describe("PUT /spaces/:id", () => {
 })
 
 describe("DELETE /spaces/:id", () => {
+
     afterEach(() => {
         jest.resetAllMocks();
     })
@@ -284,6 +292,7 @@ describe("DELETE /spaces/:id", () => {
 describe("GET /spaces/:spaceId/bookings", () => {
     afterEach(() => {
         jest.resetAllMocks();
+
     })
     test("Success -> 200 (OK)", async () => {
         const spaceId = "space1"
@@ -310,6 +319,7 @@ describe("GET /spaces/:spaceId/bookings", () => {
 })
 
 describe("GET /spaces/:spaceId/bookings/:bookingId", () => {
+
     afterEach(() => {
         jest.resetAllMocks();
     })
@@ -340,6 +350,7 @@ describe("GET /spaces/:spaceId/bookings/:bookingId", () => {
 })
 
 describe("POST /spaces/:spaceId/bookings", () => {
+
     afterEach(() => {
         jest.resetAllMocks();
     })
@@ -622,7 +633,7 @@ describe("PUT /spaces/:spaceId/bookings/:bookingId", () => {
 describe("DELETE /spaces/:spaceId/bookings/:bookingId", () => {
     beforeEach(() => {
         mockManagerFunction(space_data_layer.getBookingForSpace,
-            new Promise(resolve => resolve(BOOKINGS_1[0])))
+            new Promise(resolve => resolve(BOOKINGS_1[0])));
     })
 
     afterEach(() => {

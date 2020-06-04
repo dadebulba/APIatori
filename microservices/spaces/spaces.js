@@ -6,7 +6,6 @@ const bodyParser = require('body-parser');
 const apiUtility = require('../../utility')
 const errors = (process.env.PROD != undefined) ? require("./errorMsg.js") : require('../../errorMsg.js');
 const spaceDataLayer = process.env.PROD ? require("./space_data_layer/spaceDataLayer.js") : require("../../data_layer/space_data_layer/spaceDataLayer.js");
-const mwAuth = require('../../middleware/mwAuth.js');
 
 if (process.env.PROD == undefined && process.env.TEST == undefined)
     process.env["NODE_CONFIG_DIR"] = "../../config";
@@ -37,10 +36,6 @@ function validateBookingType(type) {
 
 const mwErrorHandler = require('../../middleware/mwErrorHandler');
 app.use(mwErrorHandler);
-
-if(process.env.TEST == undefined)
-    app.use(apiUtility.unless(mwAuth, {path: "/spaces", method: "GET"}));
-
 //*** SPACES PART ***//
 
 

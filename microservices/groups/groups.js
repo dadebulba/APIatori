@@ -20,8 +20,6 @@ app.use(bodyParser.json());
 const mwErrorHandler = require('../../middleware/mwErrorHandler');
 app.use(mwErrorHandler);
 
-const mwAuth = require('../../middleware/mwAuth.js');
-app.use(mwAuth);
 
 //*** UTILS ***/
 async function validateUsers(usersToCheck) {
@@ -31,7 +29,6 @@ async function validateUsers(usersToCheck) {
 //*** GROUPS ENDPOINTS ***//
 
 app.get('/groups', async function (req, res, next) {
-
     if (!(apiUtility.validateAuth(req, LEVELS.USER)))
         return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
@@ -172,6 +169,7 @@ let server = http.createServer(app);
 
 let server_starting = new Promise((resolve, reject) => {
     server.listen(PORT, async () => {
+        console.log(`Server listening on port ${PORT}`)
         if (!process.env.TEST) {
             await groupDataLayer.init();
             await userDataLayer.init();
