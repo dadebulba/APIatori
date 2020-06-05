@@ -34,6 +34,83 @@ async function validateUsers(usersToCheck) {
     const usersOnDB = await userDataLayer.getAllUsers();
     return usersToCheck.every(user => usersOnDB.includes(user))
 }
+
+async function addGroupToUsers(gid, educators, collaborators){
+    
+    //if (process.env.TEST) return true;
+
+    console.log("ENTRO ADD");
+
+    let promises = [];
+
+    for (uid in educators){
+        let educator = await userDataLayer.getUser(uid);
+        let check = educator.educatorIn.every(item => item != gid);
+
+        //If check==false, the gid is already present in that educatorIn array
+        if (check){
+            educator.educatorIn.push(gid);
+            promises.push(userDataLayer.modifyUser(uid, {educatorIn: educator.educatorIn}));
+        }
+    };
+
+    for (uid in collaborators) {
+        let collaborator = await userDataLayer.getUser(uid);
+        let check = collaborator.collaboratorIn.every(item => item != gid);
+
+        //If check==false, the gid is already present in that collaboratorIn array
+        if (check){
+            collaborator.collaboratorIn.push(gid);
+            promises.push(userDataLayer.modifyUser(uid, {collaboratorIn: collaborator.collaboratorIn}));
+        }
+    };
+
+    if (promises.length != 0)
+        await promises.all(promises);
+
+    return true;
+}
+
+async function deleteGroupToUsers(gid, educators, collaborators){
+    //if (process.env.TEST) return true;
+
+    console.log("ENTRO DELETE")
+
+    let promises = [];
+
+    for (uid in educators) {
+        let educator = await userDataLayer.getUser(uid);
+        toUpdate = false;
+
+        for (var i=0; i<educator.educatorIn.length && !toUpdate; i++)
+            if (educator.educatorIn[i] == gid){
+                educator.educatorIn.splice(i,1);
+                toUpdate = true;
+            }
+
+        if (toUpdate)
+            promises.push(userDataLayer.modifyUser(uid, {educatorIn: educator.educatorIn}));
+    }
+
+    for (uid in collaborators) {
+        let collaborator = await userDataLayer.getUser(uid);
+        toUpdate = false;
+
+        for (var i=0; i<collaborator.collaboratorIn.length && !toUpdate; i++)
+            if (collaborator.collaboratorIn[i] == gid){
+                collaborator.collaboratorIn.splice(i,1);
+                toUpdate = true;
+            }
+
+        if (toUpdate)
+            promises.push(userDataLayer.modifyUser(uid, {collaboratorIn: collaborator.collaboratorIn}));
+    }
+
+    if (promises.length != 0)
+        await Promise.all(promises);
+
+    return true;
+}
 //*** GROUPS ENDPOINTS ***//
 
 app.get('/groups', async function (req, res, next) {
@@ -113,6 +190,9 @@ app.post('/groups', async function (req, res, next) {
         if (newGroup === undefined)
             return res.status(400).json(errors.ALREADY_PRESENT);
 
+        //Update educatorIn and collaboratorIn fields of all these users
+        await addGroupToUsers(newGroup.gid, newGroup.educators, newGroup.collaborators);
+
         return res.status(201).json(newGroup);
     }
     catch (err) {
@@ -151,6 +231,9 @@ app.put('/groups/:id', async function (req, res, next) {
         if (editedGroup === undefined)
             return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
+        //Update educatorIn and collaboratorIn fields of all these users
+        await addGroupToUsers(editedGroup.gid, editedGroup.educators, editedGroup.collaborators);
+
         return res.status(200).json(editedGroup);
     }
     catch (err) {
@@ -170,14 +253,17 @@ app.delete('/groups/:id', async function (req, res, next) {
     if (!(apiUtility.validateAuth(req, LEVELS.ADMIN)))
         return res.status(401).json(errors.ACCESS_NOT_GRANTED);
     try {
-        const isDeleted = await groupDataLayer.deleteGroup(gid)
+        const deleted = await groupDataLayer.deleteGroup(gid)
 
-        if (!isDeleted)
+        if (!deleted)
             return res.status(404).json(errors.ENTITY_NOT_FOUND);
+
+        await deleteGroupToUsers(gid, deleted.educators, deleted.collaborators);
 
         return res.status(200).end();
     }
     catch (err) {
+        console.log(err);
         next(err);
     }
 
@@ -203,5 +289,7 @@ let server_starting = new Promise((resolve, reject) => {
 module.exports = {
     server: server,
     server_starting: server_starting,
-    validateUsers : validateUsers
+    validateUsers : validateUsers,
+    addGroupToUsers: addGroupToUsers,
+    deleteGroupToUsers: deleteGroupToUsers
 }

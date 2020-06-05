@@ -40,15 +40,32 @@ function mockReturn(mockFun, returnValue) {
 }
 
 beforeAll(async () => {
+
+    const mock1 = jest.spyOn(groups, 'addGroupToUsers');  // spy on otherFn
+    mock1.mockReturnValue(new Promise(resolve => resolve(true)));  // mock the return value
+
+    const mock2 = jest.spyOn(groups, 'deleteGroupToUsers');  // spy on otherFn
+    mock2.mockReturnValue(new Promise(resolve => resolve(true)));  // mock the return value
+
+
+    //groups.addGroupToUsers = jest.fn();
+    //groups.addGroupToUsers.mockImplementation(async () => {return true;});
+    //mockManagerFunction(groups.addGroupToUsers, true);
+
+    //groups.deleteGroupForUsers = jest.fn();
+    //groups.deleteGroupForUsers.mockImplementation(async () => {return true;});
+    //mockManagerFunction(groups.deleteGroupForUsers, true);
+
     await groups.server_starting;
     //jest.setTimeout(100000); //evito che le richieste vadano in timeout troppo presto (mi serve per debug)
+
+    //Mock addGroupToUsers() and deleteGroupToUsers() of groups
+    
 })
 
 afterAll(() => {
     groups.server.close();
 });
-
-
 
 describe("GET /groups", () => {
     test("Success -> 200 (OK)", async () => {
