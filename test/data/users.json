@@ -1,11 +1,21 @@
 
 [
     {
-        "mail" : "ciccio@pasticcio.it",
-        "password" : "688787d8ff144c502c7f5cffaafe2cc588d86079f9de88304c26b0cb99ce91c6"
+        "name" : "John",
+        "surname" : "Doe",
+        "mail" : "john@doe.it",
+        "phone" : "1234567890",
+        "role" : "user",
+        "educatorIn" : ["group1"],
+        "collaboratorIn" : []
     },
     {
-        "mail" : "gino@pino.it",
-        "password" : "688787d8ff144c502c7f5cffaafe2cc588d86079f9de88304c26b0cb99ce91c6"
+        "name" : "Jack",
+        "surname" : "Brown",
+        "mail" : "jack@brown.it",
+        "phone" : "0987654321",
+        "role" : "admin",
+        "educatorIn" : [],
+        "collaboratorIn" : ["group2"]
     }
 ]

@@ -5,7 +5,8 @@ const levels = {
     EDUCATOR: "educator",
     COLLABORATOR: "collaborator",
     USER: "user",
-    ADMIN: "admin"
+    ADMIN: "admin",
+    SELF: "self"
 }
 
 function canBeParsedInt(n) {
@@ -42,24 +43,26 @@ module.exports = {
     castToInt: function (value) {
         return canBeParsedInt(value) ? parseInt(value) : undefined;
     },
-    validateAuth: function (req, requiredLevel, requiredGid) {
+    validateAuth: function (req, requiredLevel, requiredId) {
         switch (requiredLevel) {
             case levels.ADMIN:
                 return req['role'] === levels.ADMIN;
                 break;
             case levels.EDUCATOR:
-                if (requiredGid === undefined)
+                if (requiredId === undefined)
                     return req['educatorIn'].length > 0 || req['role'] === levels.ADMIN;
                 else
-                    return req['educatorIn'].some(v => v == requiredGid) || req['role'] === levels.ADMIN;
+                    return req['educatorIn'].some(v => v == requiredId) || req['role'] === levels.ADMIN;
                 break;
             case levels.COLLABORATOR:
-                if (requiredGid === undefined)
+                if (requiredId === undefined)
                     return req['collaboratorIn'].length > 0 || req['role'] === levels.ADMIN;
                 else
-                    return req['collaboratorIn'].some(v => v == requiredGid) || req['role'] === levels.ADMIN;
+                    return req['collaboratorIn'].some(v => v == requiredId) || req['role'] === levels.ADMIN;
             case levels.USER:
                 return req['role'] == levels.USER || req['role'] === levels.ADMIN;
+            case levels.SELF:
+                return req['uid'] == requiredId || req['role'] === levels.ADMIN;
             default:
                 return false;
                 break;
