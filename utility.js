@@ -1,6 +1,5 @@
 const { DateTime } = require("luxon");
 const fetch = require("node-fetch");
-const userDataLayer = require("./data_layer/user_data_layer/userDataLayer")
 const levels = {
     EDUCATOR: "educator",
     COLLABORATOR: "collaborator",
@@ -67,18 +66,6 @@ module.exports = {
                 return false;
                 break;
         }
-    },
-    validateUsers: async function(usersToCheck) {
-        const usersOnDB = await userDataLayer.getAllUsers();
-
-        for (user in usersToCheck){
-            let result = 
-            usersOnDB.some(dlUser => {dlUser.uid == user})
-            if (!result)
-                return false;
-        }
-
-        return true;
     },
     checkStatus: function (res) {
         if (res.status != 500) {

@@ -32,7 +32,14 @@ app.use(mwErrorHandler);
 //*** UTILS ***/
 async function validateUsers(usersToCheck) {
     const usersOnDB = await userDataLayer.getAllUsers();
-    return usersToCheck.every(user => usersOnDB.includes(user))
+    console.log("Original validate users");
+    for (user in usersToCheck){
+        let result = usersOnDB.some(dlUser => {dlUser.uid == user})
+        if (!result)
+            return false;
+    }
+
+    return true;
 }
 
 async function addGroupToUsers(gid, educators, collaborators){
@@ -176,7 +183,7 @@ app.post('/groups', async function (req, res, next) {
     }
 
     try {
-        if (!(await apiUtility.validateUsers([...educators, ...collabs, ...guys])))
+        if (!(await exportFunctions.validateUsers([...educators, ...collabs, ...guys])))
             return res.status(400).json(errors.WRONG_USERS)
 
         //Create the Google Calendar if it isn't running tests
@@ -191,7 +198,7 @@ app.post('/groups', async function (req, res, next) {
             return res.status(400).json(errors.ALREADY_PRESENT);
 
         //Update educatorIn and collaboratorIn fields of all these users
-        await addGroupToUsers(newGroup.gid, newGroup.educators, newGroup.collaborators);
+        await exportFunctions.addGroupToUsers(newGroup.gid, newGroup.educators, newGroup.collaborators);
 
         return res.status(201).json(newGroup);
     }
@@ -223,7 +230,7 @@ app.put('/groups/:id', async function (req, res, next) {
         guys: guys
     };
     try {
-        if (!await apiUtility.validateUsers([...educators, ...collabs, ...guys]))
+        if (!(await exportFunctions.validateUsers([...educators, ...collabs, ...guys])))
             return res.status(400).json(errors.WRONG_USERS)
 
         const editedGroup = await groupDataLayer.modifyGroup(groupId, groupData)
@@ -232,8 +239,7 @@ app.put('/groups/:id', async function (req, res, next) {
             return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
         //Update educatorIn and collaboratorIn fields of all these users
-        await addGroupToUsers(editedGroup.gid, editedGroup.educators, editedGroup.collaborators);
-
+        await exportFunctions.addGroupToUsers(editedGroup.gid, editedGroup.educators, editedGroup.collaborators);
         return res.status(200).json(editedGroup);
     }
     catch (err) {
@@ -258,7 +264,7 @@ app.delete('/groups/:id', async function (req, res, next) {
         if (!deleted)
             return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
-        await deleteGroupToUsers(gid, deleted.educators, deleted.collaborators);
+        await exportFunctions.deleteGroupToUsers(gid, deleted.educators, deleted.collaborators);
 
         return res.status(200).end();
     }
@@ -286,10 +292,12 @@ let server_starting = new Promise((resolve, reject) => {
     });
 });
 
-module.exports = {
+const exportFunctions = {
     server: server,
     server_starting: server_starting,
     validateUsers : validateUsers,
     addGroupToUsers: addGroupToUsers,
     deleteGroupToUsers: deleteGroupToUsers
 }
+
+module.exports = exportFunctions;
