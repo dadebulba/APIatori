@@ -33,7 +33,7 @@ function errorHandler(error, req, res) {
 
 /** MIDDLEWARES **/
 const mwAuth = require('./middleware/mwAuth');
-app.use(unless(mwAuth, {path: "/spaces", method: "GET"}, {path: "/users", method: "POST"}));
+app.use(unless(mwAuth, {path: "/spaces", method: "GET"}, {path: "/users", method: "POST"}, {path: "/token", method: "POST"}));
 
 /** ROUTING **/
 
