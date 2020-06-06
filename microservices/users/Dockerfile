@@ -16,21 +16,11 @@ COPY ./config ./config
 
 # Copy data layer files
 RUN mkdir data_layer
-RUN mkdir data_layer/space_data_layer
-COPY ./data_layer/space_data_layer ./data_layer/space_data_layer
 
 RUN mkdir data_layer/user_data_layer
 COPY ./data_layer/user_data_layer ./data_layer/user_data_layer
 
-RUN mkdir data_layer/group_data_layer
-COPY ./data_layer/group_data_layer ./data_layer/group_data_layer
-
 COPY ./data_layer/utility.js ./data_layer
-
-# Copy weather and Google Calendar data layer and adapters
-RUN mkdir adapters
-COPY ./adapters ./adapters
-COPY ./data_layer/weatherAPI.js ./data_layer
 
 RUN mkdir errors
 COPY ./errors ./errors
@@ -39,11 +29,11 @@ RUN mkdir middleware
 COPY ./middleware ./middleware
 
 # Bundle app source
-COPY ./microservices/spaces/spaces.js .
+COPY ./microservices/users/users.js .
 
 # If you are building your code for production
 RUN npm ci --only=production
 #RUN npm install
 
-EXPOSE 3002
-CMD [ "node", "spaces.js" ]
+EXPOSE 3004
+CMD [ "node", "users.js" ]

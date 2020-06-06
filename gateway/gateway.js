@@ -1,6 +1,9 @@
 var express = require('express');
 const axios = require('axios');
+
+if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../config";
 const config = require('config');
+
 const app = express();
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
@@ -8,10 +11,12 @@ const BASE_URL = config.get('baseURL');
 const SPACES_PORT = config.get('spacesPort');
 const GROUPS_PORT = config.get('groupsPort');
 const USERS_PORT = config.get('usersPort');
+const TOKEN_PORT = config.get('tokenPort');
 const PORT = config.get('gatewayPort');
 const SPACES_ENDPOINT = `${BASE_URL}:${SPACES_PORT}`;
 const GROUPS_ENDPOINT = `${BASE_URL}:${GROUPS_PORT}`;
 const USERS_ENDPOINT = `${BASE_URL}:${USERS_PORT}`;
+const TOKEN_ENDPOINT = `${BASE_URL}:${TOKEN_PORT}`;
 
 /*** UTILS ***/ 
 function unless(middleware, ...excludedUrl){
@@ -22,15 +27,16 @@ function unless(middleware, ...excludedUrl){
 }
 
 function errorHandler(error, req, res) {
+  console.log("ERROR = " + error)
   if(error.response)
     res.status(error.response.status).json(error.response.data)
   else
-    res.status(500).send(`<html><body><h2>Sorry, we encuntered an error with your request to ${req.path}, our staff will fix it soon</h2><img src='https://cdn.dribbble.com/users/15084/screenshots/1368807/suchgif.gif'>`)
+    res.status(500).send(`<html><body><h2>Sorry, we encuntered an error with your request to ${req.path}, our staff will fix it soon</h2><img src='https://cdn.dribbble.com/users/15084/screenshots/1368807/suchgif.gif'></body></html>`)
 }
 
 /** MIDDLEWARES **/
-const mwAuth = require('./middleware/mwAuth');
-app.use(unless(mwAuth, {path: "/spaces", method: "GET"}, {path: "/users", method: "POST"}));
+const mwAuth = (!process.env.PROD) ? require('../middleware/mwAuth') : require('./middleware/mwAuth.js');
+app.use(unless(mwAuth, {path: "/spaces", method: "GET"}, {path: "/users", method: "POST"}, {path: "/token", method: "POST"}));
 
 /** ROUTING **/
 
@@ -179,7 +185,13 @@ app.delete('/spaces/:spaceId/bookings/:bookingId', (req, res) => {
   }, error => errorHandler(error, req, res))
 })
 
-app.listen(PORT, () => {
-  console.log(`App listening on ${config.baseURL}:${PORT}`)
+//TOKEN
+app.post('/token', (req, res) => {
+  axios.defaults.baseURL = TOKEN_ENDPOINT;
+  axios.post(req.path, req.body, {headers: req.headers}).then(resp => {
+    res.send(resp.data)
+  }, error => errorHandler(error, req, res))
 });
 
+
+app.listen(PORT);

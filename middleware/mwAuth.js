@@ -1,7 +1,7 @@
 const fetch = require("node-fetch");
 if (process.env.PROD == undefined && process.env.TEST == undefined) process.env["NODE_CONFIG_DIR"] = "../config";
 const config = require('config');
-const errors = (process.env.PROD != undefined) ? require("./errorMsg.js") : require('../errorMsg.js');
+const errors = require('../errorMsg.js');
 
 const IdP_URL = config.baseURL + ":" + config.tokenPort + config.tokenPath;
 

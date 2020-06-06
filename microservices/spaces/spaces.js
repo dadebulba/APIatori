@@ -2,11 +2,11 @@ const express = require('express');
 const http = require('http')
 
 const bodyParser = require('body-parser');
-const apiUtility = require('../../utility')
+const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require('../../utility.js');
 const errors = (process.env.PROD != undefined) ? require("./errorMsg.js") : require('../../errorMsg.js');
-const spaceDataLayer = process.env.PROD ? require("./space_data_layer/spaceDataLayer.js") : require("../../data_layer/space_data_layer/spaceDataLayer.js");
-const groupDataLayer = process.env.PROD ? require("./group_data_layer/groupDataLayer.js") : require("../../data_layer/group_data_layer/groupDataLayer.js");
-const userDataLayer = process.env.PROD ? require("./user_data_layer/userDataLayer.js") : require("../../data_layer/user_data_layer/userDataLayer.js");
+const spaceDataLayer = process.env.PROD ? require("./data_layer/space_data_layer/spaceDataLayer.js") : require("../../data_layer/space_data_layer/spaceDataLayer.js");
+const groupDataLayer = process.env.PROD ? require("./data_layer/group_data_layer/groupDataLayer.js") : require("../../data_layer/group_data_layer/groupDataLayer.js");
+const userDataLayer = process.env.PROD ? require("./data_layer/user_data_layer/userDataLayer.js") : require("../../data_layer/user_data_layer/userDataLayer.js");
 
 const WeatherAdapter = (process.env.PROD != undefined) ? require("./adapters/weatherAPIAdapter") : require("../../adapters/weatherAPIAdapter");
 if (!process.env.TEST){
@@ -44,7 +44,7 @@ function validateBookingType(type) {
 
 //*** ERROR AND AUTH MIDDLEWARE ***/
 
-const mwErrorHandler = require('../../middleware/mwErrorHandler');
+const mwErrorHandler = (!process.env.PROD) ? require('../../middleware/mwErrorHandler') : require('./middleware/mwErrorHandler');
 app.use(mwErrorHandler);
 //*** SPACES PART ***//
 

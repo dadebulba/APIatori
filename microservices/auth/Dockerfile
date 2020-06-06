@@ -17,6 +17,7 @@ COPY ./config ./config
 RUN mkdir data_layer
 RUN mkdir data_layer/user_data_layer
 COPY ./data_layer/user_data_layer ./data_layer/user_data_layer
+COPY ./data_layer/utility.js ./data_layer
 
 RUN mkdir errors
 COPY ./errors ./errors

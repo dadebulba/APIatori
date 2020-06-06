@@ -1,9 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const apiUtility = require('../../utility.js');
-const errors = require('../../errorMsg.js');
-const groupDataLayer = process.env.PROD ? require("./group_data_layer/groupDataLayer") : require("../../data_layer/group_data_layer/groupDataLayer");
-const userDataLayer = process.env.PROD ? require("./user_data_layer/userDataLayer") : require("../../data_layer/user_data_layer/userDataLayer");
+const apiUtility = (process.env.PROD != undefined) ? require("./utility.js") : require('../../utility.js');
+const errors = (process.env.PROD != undefined) ? require("./errorMsg.js") : require('../../errorMsg.js');
+const groupDataLayer = process.env.PROD ? require("./data_layer/group_data_layer/groupDataLayer") : require("../../data_layer/group_data_layer/groupDataLayer");
+const userDataLayer = process.env.PROD ? require("./data_layer/user_data_layer/userDataLayer") : require("../../data_layer/user_data_layer/userDataLayer");
 const http = require('http');
 
 if (!process.env.TEST){
@@ -25,7 +25,7 @@ const app = express();
 app.use(bodyParser.json());
 
 //*** ERROR AND AUTH MIDDLEWARE ***/
-const mwErrorHandler = require('../../middleware/mwErrorHandler');
+const mwErrorHandler = (!process.env.PROD) ? require('../../middleware/mwErrorHandler') : require('./middleware/mwErrorHandler');
 app.use(mwErrorHandler);
 
 
