@@ -109,7 +109,11 @@ module.exports = {
     modifyUser : async function(uid, userData){
         if (uid == undefined || userData == undefined)
             throw new ParametersError();
-        if (!utility.isObjectIdValid(uid) || !Array.isArray(userData.educatorIn) || !Array.isArray(userData.collaboratorIn))
+        if (!utility.isObjectIdValid(uid))
+            throw new ParametersError();
+        if (userData.educatorIn != undefined && !Array.isArray(userData.educatorIn))
+            throw new ParametersError();
+        if (userData.collaboratorIn != undefined && !Array.isArray(userData.collaboratorIn))
             throw new ParametersError();
 
         var toUpdate = false;

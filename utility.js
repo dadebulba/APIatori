@@ -69,14 +69,6 @@ module.exports = {
                 break;
         }
     },
-    validateUsers: async function(usersToCheck) {
-        const usersOnDB = await userDataLayer.getAllUsers();
-        const uidsOnDB = [];
-        usersOnDB.forEach(user => uidsOnDB.push(user.uid));
-
-        let result = usersToCheck.every(uid => uidsOnDB.includes(uid));
-        return result;
-    },
     checkStatus: function (res) {
         if (res.status != 500) {
             return res;

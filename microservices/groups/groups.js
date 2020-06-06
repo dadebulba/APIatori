@@ -32,25 +32,21 @@ app.use(mwErrorHandler);
 //*** UTILS ***/
 async function validateUsers(usersToCheck) {
     const usersOnDB = await userDataLayer.getAllUsers();
-    console.log("Original validate users");
-    for (user in usersToCheck){
-        let result = usersOnDB.some(dlUser => {dlUser.uid == user})
-        if (!result)
-            return false;
-    }
+    const uidsOnDB = [];
+    usersOnDB.forEach(user => uidsOnDB.push(user.uid));
 
-    return true;
+    let result = usersToCheck.every(uid => uidsOnDB.includes(uid));
+    return result;
 }
 
 async function addGroupToUsers(gid, educators, collaborators){
     
     //if (process.env.TEST) return true;
 
-    console.log("ENTRO ADD");
-
     let promises = [];
 
-    for (uid in educators){
+    for (var i=0; i<educators.length; i++){
+        let uid = educators[i];
         let educator = await userDataLayer.getUser(uid);
         let check = educator.educatorIn.every(item => item != gid);
 
@@ -61,7 +57,8 @@ async function addGroupToUsers(gid, educators, collaborators){
         }
     };
 
-    for (uid in collaborators) {
+    for (var i=0; i<collaborators.length; i++){
+        let uid = collaborators[i];
         let collaborator = await userDataLayer.getUser(uid);
         let check = collaborator.collaboratorIn.every(item => item != gid);
 
@@ -73,7 +70,7 @@ async function addGroupToUsers(gid, educators, collaborators){
     };
 
     if (promises.length != 0)
-        await promises.all(promises);
+        await Promise.all(promises);
 
     return true;
 }
@@ -81,17 +78,16 @@ async function addGroupToUsers(gid, educators, collaborators){
 async function deleteGroupToUsers(gid, educators, collaborators){
     //if (process.env.TEST) return true;
 
-    console.log("ENTRO DELETE")
-
     let promises = [];
 
-    for (uid in educators) {
+    for (var i=0; i<educators.length; i++){
+        let uid = educators[i];
         let educator = await userDataLayer.getUser(uid);
         toUpdate = false;
 
-        for (var i=0; i<educator.educatorIn.length && !toUpdate; i++)
-            if (educator.educatorIn[i] == gid){
-                educator.educatorIn.splice(i,1);
+        for (var j=0; j<educator.educatorIn.length && !toUpdate; j++)
+            if (educator.educatorIn[j] == gid){
+                educator.educatorIn.splice(j,1);
                 toUpdate = true;
             }
 
@@ -99,13 +95,14 @@ async function deleteGroupToUsers(gid, educators, collaborators){
             promises.push(userDataLayer.modifyUser(uid, {educatorIn: educator.educatorIn}));
     }
 
-    for (uid in collaborators) {
+    for (var i=0; i<collaborators.length; i++){
+        let uid = collaborators[i];
         let collaborator = await userDataLayer.getUser(uid);
         toUpdate = false;
 
-        for (var i=0; i<collaborator.collaboratorIn.length && !toUpdate; i++)
-            if (collaborator.collaboratorIn[i] == gid){
-                collaborator.collaboratorIn.splice(i,1);
+        for (var j=0; j<collaborator.collaboratorIn.length && !toUpdate; j++)
+            if (collaborator.collaboratorIn[j] == gid){
+                collaborator.collaboratorIn.splice(j,1);
                 toUpdate = true;
             }
 
