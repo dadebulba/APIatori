@@ -40,8 +40,6 @@ async function validateUsers(usersToCheck) {
 }
 
 async function addGroupToUsers(gid, educators, collaborators){
-    
-    //if (process.env.TEST) return true;
 
     let promises = [];
 
@@ -75,10 +73,79 @@ async function addGroupToUsers(gid, educators, collaborators){
     return true;
 }
 
-async function deleteGroupToUsers(gid, educators, collaborators){
-    //if (process.env.TEST) return true;
+async function updateGroupToUsers(oldGroup, newEducators, newCollaborators){
 
     let promises = [];
+    const gid = oldGroup.gid;
+    const oldEducators = oldGroup.educators;
+    const oldCollaborators = oldGroup.collaborators;
+
+    //Delete the old educators
+    for (var i=0; i<oldEducators.length; i++){
+        let check = newEducators.includes(oldEducators[i]);
+
+        //If it is been deleted from the new educators list...
+        if (!check){
+            let user = await userDataLayer.getUser(oldEducators[i]);
+            
+            for (var j=0; j<user.educatorIn.length; j++)
+                if (user.educatorIn[j] == gid)
+                    user.educatorIn.splice(j,1);
+
+            promises.push(userDataLayer.modifyUser(user.uid, {educatorIn: user.educatorIn}));
+        }
+    }
+
+    //Add the new educators
+    for (var i=0; i<newEducators.length; i++){
+        let check = oldEducators.includes(newEducators[i]);
+
+        if (!check){
+            let user = await userDataLayer.getUser(newEducators[i]);
+            user.educatorIn.push(gid);
+
+            promises.push(userDataLayer.modifyUser(user.uid, {educatorIn: user.educatorIn}));
+        }
+    }
+
+    //Delete the old collaborators
+    for (var i=0; i<oldCollaborators.length; i++){
+        let check = newCollaborators.includes(oldCollaborators[i]);
+
+        //If it is been deleted from the new collaborators list...
+        if (!check){
+            let user = await userDataLayer.getUser(oldCollaborators[i]);
+
+            for (var j=0; j<user.collaboratorIn.length; j++)
+                if (user.collaboratorIn[j] == gid)
+                    user.collaboratorIn.splice(j,1);
+
+            promises.push(userDataLayer.modifyUser(user.uid, {collaboratorIn: user.collaboratorIn}));
+        }
+    }
+
+    //Add the new collaborators
+    for (var i=0; i<newCollaborators.length; i++){
+        let check = oldCollaborators.includes(newCollaborators[i]);
+
+        if (!check){
+            let user = await userDataLayer.getUser(newCollaborators[i]);
+            user.collaboratorIn.push(gid);
+
+            promises.push(userDataLayer.modifyUser(user.uid, {collaboratorIn: user.collaboratorIn}));
+        }
+    }
+
+    if (promises.length != 0)
+        await Promise.all(promises);
+
+    return true;
+}
+
+async function deleteGroupToUsers(gid, educators, collaborators){
+
+    let promises = [];
+    var toUpdate;
 
     for (var i=0; i<educators.length; i++){
         let uid = educators[i];
@@ -214,6 +281,7 @@ app.put('/groups/:id', async function (req, res, next) {
     const educators = req.body.educators;
     const collabs = req.body.collabs;
     const guys = req.body.guys;
+    const balance = req.body.balance;
 
     if (apiUtility.validateParamsUndefined(groupId, name, educators, collabs, guys))
         return res.status(400).json(errors.PARAMS_UNDEFINED);
@@ -227,19 +295,21 @@ app.put('/groups/:id', async function (req, res, next) {
         name: name,
         educators: educators,
         collaborators: collabs,
-        guys: guys
+        guys: guys,
+        balance: balance
     };
     try {
         if (!(await exportFunctions.validateUsers([...educators, ...collabs, ...guys])))
             return res.status(400).json(errors.WRONG_USERS)
 
+        const oldGroup = await groupDataLayer.getGroup(groupId)
         const editedGroup = await groupDataLayer.modifyGroup(groupId, groupData)
 
         if (editedGroup === undefined)
             return res.status(404).json(errors.ENTITY_NOT_FOUND);
 
         //Update educatorIn and collaboratorIn fields of all these users
-        await exportFunctions.addGroupToUsers(editedGroup.gid, editedGroup.educators, editedGroup.collaborators);
+        await exportFunctions.updateGroupToUsers(oldGroup, editedGroup.educators, editedGroup.collaborators);
         return res.status(200).json(editedGroup);
     }
     catch (err) {
@@ -296,7 +366,8 @@ const exportFunctions = {
     server_starting: server_starting,
     validateUsers : validateUsers,
     addGroupToUsers: addGroupToUsers,
-    deleteGroupToUsers: deleteGroupToUsers
+    deleteGroupToUsers: deleteGroupToUsers,
+    updateGroupToUsers: updateGroupToUsers
 }
 
 module.exports = exportFunctions;
