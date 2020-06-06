@@ -1,11 +1,11 @@
 const { DateTime } = require("luxon");
 const fetch = require("node-fetch");
-const userDataLayer = require("./data_layer/user_data_layer/userDataLayer")
 const levels = {
     EDUCATOR: "educator",
     COLLABORATOR: "collaborator",
     USER: "user",
-    ADMIN: "admin"
+    ADMIN: "admin",
+    SELF: "self"
 }
 
 function canBeParsedInt(n) {
@@ -42,26 +42,28 @@ module.exports = {
     castToInt: function (value) {
         return canBeParsedInt(value) ? parseInt(value) : undefined;
     },
-    validateAuth: function (req, requiredLevel, requiredGid) {
+    validateAuth: function (req, requiredLevel, requiredId) {
         switch (requiredLevel) {
             case levels.ADMIN:
                 return req.headers.role === levels.ADMIN;
                 break;
             case levels.EDUCATOR:
                 let educatorIn = JSON.parse(req.headers.educatorin);
-                if (requiredGid === undefined)
+                if (requiredId === undefined)
                     return educatorIn.length > 0 || req.headers.role === levels.ADMIN;
                 else
-                    return educatorIn.some(v => v == requiredGid) || req.headers.role === levels.ADMIN;
+                    return educatorIn.some(v => v == requiredId) || req.headers.role === levels.ADMIN;
                 break;
             case levels.COLLABORATOR:
                 let collaboratorIn = JSON.parse(req.headers.collaboratorin);
-                if (requiredGid === undefined)
+                if (requiredId === undefined)
                     return collaboratorIn.length > 0 || req.headers.role === levels.ADMIN;
                 else
-                    return collaboratorIn.some(v => v == requiredGid) || req.headers.role === levels.ADMIN;
+                    return collaboratorIn.some(v => v == requiredId) || req.headers.role === levels.ADMIN;
             case levels.USER:
                 return req.headers.role == levels.USER || req.headers.role === levels.ADMIN;
+            case levels.SELF:
+                return req['uid'] == requiredId || req['role'] === levels.ADMIN;
             default:
                 return false;
                 break;

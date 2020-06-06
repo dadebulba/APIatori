@@ -4,7 +4,7 @@ const errors = require('../../errorMsg')
 
 const GROUPS = require('../data/groups.json')
 
-const groups = require("../../microservices/groups/groups");
+let groups = require("../../microservices/groups/groups");
 
 const config = require('config');
 const BASE_URL = config.get('baseURL');
@@ -15,13 +15,7 @@ const groupsEndpoint = `${BASE_URL}:${GROUP_PORT}`;
 const group_data_layer = require('../../data_layer/group_data_layer/groupDataLayer')
 jest.mock('../../data_layer/group_data_layer/groupDataLayer');
 
-const user_data_layer = require('../../data_layer/user_data_layer/userDataLayer')
-jest.mock('../../data_layer/user_data_layer/userDataLayer');
-
-groups.validateUsers = jest.fn();
-
 utils.validateAuth = jest.fn();
-utils.validateUsers = jest.fn();
 jest.mock("../../middleware/mwAuth", () => jest.fn((req, res, next) => next()))
 /* ---------- */
 
@@ -40,29 +34,13 @@ function mockReturn(mockFun, returnValue) {
 }
 
 beforeAll(async () => {
-
-    const mock1 = jest.spyOn(groups, 'addGroupToUsers');  // spy on otherFn
-    mock1.mockReturnValue(new Promise(resolve => resolve(true)));  // mock the return value
-
-    const mock2 = jest.spyOn(groups, 'deleteGroupToUsers');  // spy on otherFn
-    mock2.mockReturnValue(new Promise(resolve => resolve(true)));  // mock the return value
-
-
-    //groups.addGroupToUsers = jest.fn();
-    //groups.addGroupToUsers.mockImplementation(async () => {return true;});
-    //mockManagerFunction(groups.addGroupToUsers, true);
-
-    //groups.deleteGroupForUsers = jest.fn();
-    //groups.deleteGroupForUsers.mockImplementation(async () => {return true;});
-    //mockManagerFunction(groups.deleteGroupForUsers, true);
-
+    groups.addGroupToUsers = jest.fn().mockReturnValue(new Promise(resolve => resolve(true)));
+    groups.deleteGroupToUsers = jest.fn().mockReturnValue(new Promise(resolve => resolve(true)));
+    groups.validateUsers = jest.fn();
     await groups.server_starting;
     //jest.setTimeout(100000); //evito che le richieste vadano in timeout troppo presto (mi serve per debug)
-
-    //Mock addGroupToUsers() and deleteGroupToUsers() of groups
     
 })
-
 afterAll(() => {
     groups.server.close();
 });
@@ -125,7 +103,9 @@ describe("GET /groups/:id", () => {
 })
 
 describe("POST /groups", () => {
-
+    beforeEach(() => {
+        jest.resetAllMocks();
+    })
     test("Success -> 201 (Created)", async () => {
         const name = "Groups1";
         const educators = ["John", "Mary"];
@@ -141,7 +121,7 @@ describe("POST /groups", () => {
 
         expect.assertions(2);
         mockManagerFunction(utils.validateAuth, true);
-        mockManagerFunction(utils.validateUsers, new Promise(resolve => resolve(true)));
+        mockManagerFunction(groups.validateUsers, new Promise(resolve => resolve(true)));
         mockManagerFunction(group_data_layer.createGroup, new Promise(resolve => resolve(newGroupData)));
         let res = await fetch(`${groupsEndpoint}/groups`, {
             method: 'post',
@@ -166,7 +146,7 @@ describe("POST /groups", () => {
             guys: guys
         }
         expect.assertions(2);
-        mockManagerFunction(groups.validateUsers, true)
+        groups.validateUsers.mockReturnValue(new Promise(resolve => resolve(true)))
         mockManagerFunction(utils.validateAuth, false)
         let res = await fetch(`${groupsEndpoint}/groups`, {
             method: 'post',
@@ -269,7 +249,8 @@ describe("POST /groups", () => {
 
         expect.assertions(2);
         utils.validateAuth.mockReturnValue(true);
-        mockManagerFunction(utils.validateUsers, new Promise(resolve => resolve(false)))
+        groups.validateUsers.mockReturnValue(new Promise(resolve => resolve(false)))
+        //mockManagerFunction(groups.validateUsers, new Promise(resolve => resolve(false)))
         let res = await fetch(`${groupsEndpoint}/groups`, {
             method: 'post',
             body: JSON.stringify(newGroupData),
@@ -295,8 +276,8 @@ describe("POST /groups", () => {
 
         expect.assertions(2);
         mockManagerFunction(utils.validateAuth, true);
-        mockManagerFunction(utils.validateUsers, new Promise(resolve => resolve(true)));
-        mockManagerFunction(group_data_layer.createGroup, new Promise(resolve => resolve(undefined)));
+        groups.validateUsers.mockReturnValue(new Promise(resolve => resolve(true)))
+        group_data_layer.createGroup.mockReturnValue(new Promise(resolve => resolve(undefined)));
         let res = await fetch(`${groupsEndpoint}/groups`, {
             method: 'post',
             body: JSON.stringify(newGroupData),
@@ -326,7 +307,7 @@ describe("PUT /groups/:id", () => {
 
         expect.assertions(2);
         mockManagerFunction(utils.validateAuth, true);
-        mockManagerFunction(utils.validateUsers, new Promise(resolve => resolve(true)));
+        groups.validateUsers.mockReturnValue(new Promise(resolve => resolve(true)))
         mockManagerFunction(group_data_layer.modifyGroup, new Promise(resolve => resolve(modifiedGroupData)));
         let res = await fetch(`${groupsEndpoint}/groups/${id}`, {
             method: 'put',
@@ -352,7 +333,7 @@ describe("PUT /groups/:id", () => {
             guys: guys
         }
         expect.assertions(2);
-        mockManagerFunction(groups.validateUsers, true)
+        groups.validateUsers.mockReturnValue(new Promise(resolve => resolve(true)))
         mockManagerFunction(utils.validateAuth, false)
         let res = await fetch(`${groupsEndpoint}/groups/${id}`, {
             method: 'put',
@@ -460,7 +441,7 @@ describe("PUT /groups/:id", () => {
 
         expect.assertions(2);
         utils.validateAuth.mockReturnValue(true);
-        mockManagerFunction(utils.validateUsers, new Promise(resolve => resolve(false)))
+        groups.validateUsers.mockReturnValue(new Promise(resolve => resolve(false)))
         let res = await fetch(`${groupsEndpoint}/groups/${id}`, {
             method: 'put',
             body: JSON.stringify(modifiedGroupData),
@@ -487,7 +468,7 @@ describe("PUT /groups/:id", () => {
 
         expect.assertions(2);
         mockManagerFunction(utils.validateAuth, true);
-        mockManagerFunction(utils.validateUsers, new Promise(resolve => resolve(true)));
+        groups.validateUsers.mockReturnValue(new Promise(resolve => resolve(true)))
         mockManagerFunction(group_data_layer.modifyGroup, new Promise(resolve => resolve(undefined)));
         let res = await fetch(`${groupsEndpoint}/groups/${id}`, {
             method: 'put',

@@ -71,3 +71,5 @@ config/
 .idea/
 
 .DS_Store
+
+queriesbyhand.mongodb

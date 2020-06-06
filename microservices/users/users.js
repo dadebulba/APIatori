@@ -28,7 +28,6 @@ app.get('/users', async function (req, res, next) {
 
     try {
         const users = await userDataLayer.getAllUsers();
-
         return res.status(200).json(users);
     }
     catch (err) {
@@ -44,7 +43,7 @@ app.get('/users/:id', async function (req, res, next) {
         return res.status(400).json(errors.PARAMS_UNDEFINED);
     if (apiUtility.validateParamsString(uid))
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
-    if (!apiUtility.validateAuth(req, LEVELS.EDUCATOR))
+    if (!(apiUtility.validateAuth(req, LEVELS.EDUCATOR)||apiUtility.validateAuth(req, LEVELS.SELF, uid)))
         return res.status(401).json(errors.ACCESS_NOT_GRANTED);
 
     try {
@@ -69,6 +68,8 @@ app.post('/users', async function (req, res, next) {
     if (apiUtility.validateParamsUndefined(name, surname, mail, password, phone))
         return res.status(400).json(errors.PARAMS_UNDEFINED);
     if (apiUtility.validateParamsString(name, surname))
+        return res.status(400).json(errors.PARAMS_WRONG_TYPE);
+    if(!apiUtility.validateEmail(mail))
         return res.status(400).json(errors.PARAMS_WRONG_TYPE);
 
     const userInfo = {
@@ -104,6 +105,5 @@ let server_starting = new Promise((resolve, reject) => {
 
 module.exports = {
     server: server,
-    server_starting: server_starting,
-    validateUsers : validateUsers
+    server_starting: server_starting
 }

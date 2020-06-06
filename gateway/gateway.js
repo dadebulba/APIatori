@@ -7,6 +7,9 @@ const config = require('config');
 const app = express();
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
+const makeApiMiddleware = require("api-express-exporter");
+app.use(makeApiMiddleware({port: 8081}));
+
 const BASE_URL = config.get('baseURL');
 const SPACES_PORT = config.get('spacesPort');
 const GROUPS_PORT = config.get('groupsPort');
