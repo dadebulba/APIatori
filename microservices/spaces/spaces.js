@@ -219,7 +219,7 @@ app.post('/spaces/:spaceId/bookings', async function (req, res, next) {
     const from = new Date(Date.parse(req.body.from));
     const to = new Date(Date.parse(req.body.to));
     const type = req.body.type;
-    const uid = req.uid;
+    const uid = req.headers.uid;
 
     if (apiUtility.validateParamsUndefined(spaceId, gid, from, to, type))
         return res.status(400).json(errors.PARAMS_UNDEFINED);
@@ -291,7 +291,7 @@ app.put('/spaces/:spaceId/bookings/:bookingId', async function (req, res, next) 
     const from = new Date(Date.parse(req.body.from));
     const to = new Date(Date.parse(req.body.to));
     const type = req.body.type;
-    const uid = req.uid;
+    const uid = req.headers.uid;
     
     if (apiUtility.validateParamsUndefined(spaceId, bookingId, gid, from, to, type))
         return res.status(400).json(errors.PARAMS_UNDEFINED);

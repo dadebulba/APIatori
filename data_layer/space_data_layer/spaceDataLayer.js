@@ -51,7 +51,7 @@ module.exports = {
 
         let spacesList = await controller.retrieveAllSpaces();
         spacesList.forEach((item) => {
-            item.href = config.baseURL + ":" + config.spacesPort + config.spacesPath + "/" + item._id;
+            item.href = config.baseURL + ":" + config.gatewayPort + config.spacesPath + "/" + item._id;
             item.sid = item._id;
             delete item._id;
         });

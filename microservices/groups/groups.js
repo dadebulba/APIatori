@@ -179,16 +179,20 @@ app.post('/groups', async function (req, res, next) {
         if (!(await apiUtility.validateUsers([...educators, ...collabs, ...guys])))
             return res.status(400).json(errors.WRONG_USERS)
 
-        //Create the Google Calendar if it isn't running tests
-        if (!process.env.TEST){
-            let calendarId = await GoogleCalendarAdapter.createCalendar(name);
-            if (calendarId != undefined)
-                groupData.calendarId = calendarId;
-        }
-
-        const newGroup = await groupDataLayer.createGroup(groupData)
+        var newGroup = await groupDataLayer.createGroup(groupData)
         if (newGroup === undefined)
             return res.status(400).json(errors.ALREADY_PRESENT);
+
+        //Create the Google Calendar if it isn't running tests and add the id to the data layer
+        if (!process.env.TEST){
+            let calendarId = await GoogleCalendarAdapter.createCalendar(name);
+            if (calendarId != undefined){
+                groupData.calendarId = calendarId;
+
+                groupData.balance = newGroup.balance;
+                newGroup = await groupDataLayer.modifyGroup(newGroup.gid, groupData);
+            }
+        }
 
         //Update educatorIn and collaboratorIn fields of all these users
         await addGroupToUsers(newGroup.gid, newGroup.educators, newGroup.collaborators);
@@ -196,7 +200,6 @@ app.post('/groups', async function (req, res, next) {
         return res.status(201).json(newGroup);
     }
     catch (err) {
-        console.log(err)
         next(err);
     }
 });
@@ -273,7 +276,6 @@ let server = http.createServer(app);
 
 let server_starting = new Promise((resolve, reject) => {
     server.listen(PORT, async () => {
-        console.log(`Server listening on port ${PORT}`)
         if (!process.env.TEST) {
             await groupDataLayer.init();
             await userDataLayer.init();

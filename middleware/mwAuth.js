@@ -24,10 +24,11 @@ module.exports = async function (req, res, next) {
         if (idpResponse.status == 200) {
             let body = await idpResponse.json();
 
-            req['uid'] = body.uid;
-            req['role'] = body.role;
-            req['educatorIn'] = body.educatorIn;
-            req['collaboratorIn'] = body.collaboratorIn;
+            //Headers MUST be lowercase
+            req.headers.uid = body.uid;
+            req.headers.role = body.role;
+            req.headers.educatorin = JSON.stringify(body.educatorIn);
+            req.headers.collaboratorin = JSON.stringify(body.collaboratorIn);
             return next();
         }
         else {

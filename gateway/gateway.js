@@ -27,7 +27,6 @@ function unless(middleware, ...excludedUrl){
 }
 
 function errorHandler(error, req, res) {
-  console.log("ERROR = " + error)
   if(error.response)
     res.status(error.response.status).json(error.response.data)
   else
@@ -43,35 +42,35 @@ app.use(unless(mwAuth, {path: "/spaces", method: "GET"}, {path: "/users", method
 //GROUPS
 app.get('/groups', (req, res) => {
   axios.defaults.baseURL = GROUPS_ENDPOINT;
-  axios.get(req.path).then(resp => {
+  axios.get(req.path, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
 })
 
 app.get('/groups/:id', (req, res) => {
   axios.defaults.baseURL = GROUPS_ENDPOINT;
-  axios.get(req.path).then(resp => {
+  axios.get(req.path, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
 })
 
 app.post('/groups', (req, res) => {
   axios.defaults.baseURL = GROUPS_ENDPOINT;
-  axios.post(req.path, req.body).then(resp => {
+  axios.post(req.path, req.body, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
 })
 
 app.put('/groups/:id', (req, res) => {
   axios.defaults.baseURL = GROUPS_ENDPOINT;
-  axios.put(req.path, req.body).then(resp => {
+  axios.put(req.path, req.body, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
 })
 
 app.delete('/groups/:id', (req, res) => {
   axios.defaults.baseURL = GROUPS_ENDPOINT;
-  axios.delete(req.path).then(resp => {
+  axios.delete(req.path, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
 })
@@ -79,35 +78,35 @@ app.delete('/groups/:id', (req, res) => {
 //USERS
 app.get('/users', (req, res) => {
   axios.defaults.baseURL = USERS_ENDPOINT;
-  axios.get(req.path).then(resp => {
+  axios.get(req.path, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
 })
 
 app.get('/users/:id', (req, res) => {
   axios.defaults.baseURL = USERS_ENDPOINT;
-  axios.get(req.path).then(resp => {
+  axios.get(req.path, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
 })
 
 app.post('/users', (req, res) => {
   axios.defaults.baseURL = USERS_ENDPOINT;
-  axios.post(req.path, req.body).then(resp => {
+  axios.post(req.path, req.body, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
 })
 
 app.put('/users/:id', (req, res) => {
   axios.defaults.baseURL = USERS_ENDPOINT;
-  axios.put(req.path, req.body).then(resp => {
+  axios.put(req.path, req.body, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
 })
 
 app.delete('/users/:id', (req, res) => {
   axios.defaults.baseURL = USERS_ENDPOINT;
-  axios.delete(req.path).then(resp => {
+  axios.delete(req.path, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
 })
@@ -115,72 +114,70 @@ app.delete('/users/:id', (req, res) => {
 //SPACES
 app.get('/spaces', (req, res) => {
   axios.defaults.baseURL = SPACES_ENDPOINT;
-  axios.get(req.path).then(resp => {
+  axios.get(req.path, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
 })
 
 app.get('/spaces/:id', (req, res) => {
   axios.defaults.baseURL = SPACES_ENDPOINT;
-  console.log(req.path)
-  axios.get(req.path).then(resp => {
+  axios.get(req.path, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
 })
 
 app.post('/spaces', (req, res) => {
   axios.defaults.baseURL = SPACES_ENDPOINT;
-  axios.post(req.path, req.body).then(resp => {
+  axios.post(req.path, req.body, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
 })
 
 app.put('/spaces/:id', (req, res) => {
   axios.defaults.baseURL = SPACES_ENDPOINT;
-  axios.put(req.path, req.body).then(resp => {
+  axios.put(req.path, req.body, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
 })
 
 app.delete('/spaces/:id', (req, res) => {
   axios.defaults.baseURL = SPACES_ENDPOINT;
-  axios.delete(req.path).then(resp => {
+  axios.delete(req.path, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
 })
 
 app.get('/spaces/:spaceId/bookings', (req, res) => {
   axios.defaults.baseURL = SPACES_ENDPOINT;
-  axios.get(req.path).then(resp => {
+  axios.get(req.path, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
 })
 
 app.get('/spaces/:spaceId/bookings/:bookingId', (req, res) => {
   axios.defaults.baseURL = SPACES_ENDPOINT;
-  console.log(req.path)
-  axios.get(req.path).then(resp => {
+  axios.get(req.path, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
 })
 
 app.post('/spaces/:spaceId/bookings', (req, res) => {
   axios.defaults.baseURL = SPACES_ENDPOINT;
-  axios.post(req.path, req.body).then(resp => {
+  axios.post(req.path, req.body, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
 })
 
 app.put('/spaces/:spaceId/bookings/:bookingId', (req, res) => {
   axios.defaults.baseURL = SPACES_ENDPOINT;
-  axios.put(req.path, req.body).then(resp => {
+  axios.put(req.path, req.body, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
 })
 
 app.delete('/spaces/:spaceId/bookings/:bookingId', (req, res) => {
   axios.defaults.baseURL = SPACES_ENDPOINT;
-  axios.delete(req.path).then(resp => {
+  axios.delete(req.path, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
 })

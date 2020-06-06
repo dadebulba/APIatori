@@ -45,21 +45,23 @@ module.exports = {
     validateAuth: function (req, requiredLevel, requiredGid) {
         switch (requiredLevel) {
             case levels.ADMIN:
-                return req['role'] === levels.ADMIN;
+                return req.headers.role === levels.ADMIN;
                 break;
             case levels.EDUCATOR:
+                let educatorIn = JSON.parse(req.headers.educatorin);
                 if (requiredGid === undefined)
-                    return req['educatorIn'].length > 0 || req['role'] === levels.ADMIN;
+                    return educatorIn.length > 0 || req.headers.role === levels.ADMIN;
                 else
-                    return req['educatorIn'].some(v => v == requiredGid) || req['role'] === levels.ADMIN;
+                    return educatorIn.some(v => v == requiredGid) || req.headers.role === levels.ADMIN;
                 break;
             case levels.COLLABORATOR:
+                let collaboratorIn = JSON.parse(req.headers.collaboratorin);
                 if (requiredGid === undefined)
-                    return req['collaboratorIn'].length > 0 || req['role'] === levels.ADMIN;
+                    return collaboratorIn.length > 0 || req.headers.role === levels.ADMIN;
                 else
-                    return req['collaboratorIn'].some(v => v == requiredGid) || req['role'] === levels.ADMIN;
+                    return collaboratorIn.some(v => v == requiredGid) || req.headers.role === levels.ADMIN;
             case levels.USER:
-                return req['role'] == levels.USER || req['role'] === levels.ADMIN;
+                return req.headers.role == levels.USER || req.headers.role === levels.ADMIN;
             default:
                 return false;
                 break;
@@ -67,15 +69,11 @@ module.exports = {
     },
     validateUsers: async function(usersToCheck) {
         const usersOnDB = await userDataLayer.getAllUsers();
+        const uidsOnDB = [];
+        usersOnDB.forEach(user => uidsOnDB.push(user.uid));
 
-        for (user in usersToCheck){
-            let result = 
-            usersOnDB.some(dlUser => {dlUser.uid == user})
-            if (!result)
-                return false;
-        }
-
-        return true;
+        let result = usersToCheck.every(uid => uidsOnDB.includes(uid));
+        return result;
     },
     checkStatus: function (res) {
         if (res.status != 500) {

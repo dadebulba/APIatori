@@ -10,7 +10,7 @@ async function isGroupValid(group){
         return false;
     if (utility.validateParamsUndefined(group.name, group.educators, group.guys) || group.educators.length == 0)
         return false;
-    if (group.calendarId == undefined || typeof group.calendarId !== "string")
+    if (group.calendarId != undefined && typeof group.calendarId !== "string")
         return false;
 
     if (group.collaborators == undefined)
@@ -84,7 +84,7 @@ module.exports = {
             guys: groupInfo.guys,
             balance: 0.0,
             transactions: [],
-            calendarId: groupInfo.calendarId
+            calendarId: " " 
         });
         result = await newGroup.save();
         if (result == undefined)
