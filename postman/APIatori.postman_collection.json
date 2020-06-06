@@ -1,0 +1,611 @@
+{
+	"info": {
+		"_postman_id": "eb1ca6b0-a9d2-44fd-9ecd-15d27006d1bf",
+		"name": "APIatori",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "POST create token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "92623d66-125c-4292-b52a-5ce984843098",
+								"exec": [
+									"pm.environment.set(\"token\", pm.response.text());"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "action",
+								"value": "createToken",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"davide.piva@gmail.com\",\n\t\"password\": \"abc\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}:{{gateway_port}}{{token_path}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{gateway_port}}{{token_path}}"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST verify token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "action",
+								"value": "verifyToken",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}:{{gateway_port}}{{token_path}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{gateway_port}}{{token_path}}"
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Spaces",
+			"item": [
+				{
+					"name": "Bookings",
+					"item": [
+						{
+							"name": "GET all bookings for a space",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}:{{gateway_port}}{{spaces_path}}/5ed7d45ff76bd75be6bcea3e/bookings",
+									"host": [
+										"{{base_url}}"
+									],
+									"port": "{{gateway_port}}{{spaces_path}}",
+									"path": [
+										"5ed7d45ff76bd75be6bcea3e",
+										"bookings"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "GET booking for a space by id",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}:{{spaces_port}}{{spaces_path}}/5ed7d45ff76bd75be6bcea3e/bookings/5ed80d210f90fb69745603d5",
+									"host": [
+										"{{base_url}}"
+									],
+									"port": "{{spaces_port}}{{spaces_path}}",
+									"path": [
+										"5ed7d45ff76bd75be6bcea3e",
+										"bookings",
+										"5ed80d210f90fb69745603d5"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "POST create booking for a space",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"gid\": \"5ed77a6568727f1ec287139a\",\n\t\"from\": \"2020-06-15T14:00:00\",\n\t\"to\": \"2020-06-15T15:00:00\",\n\t\"type\": \"riunione\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}:{{gateway_port}}{{spaces_path}}/5ed7d45ff76bd75be6bcea3e/bookings",
+									"host": [
+										"{{base_url}}"
+									],
+									"port": "{{gateway_port}}{{spaces_path}}",
+									"path": [
+										"5ed7d45ff76bd75be6bcea3e",
+										"bookings"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "PUT modify booking for a space",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"gid\": \"5ed77a6568727f1ec287139a\",\n\t\"from\": \"2020-06-15T14:00:00\",\n\t\"to\": \"2020-06-15T15:30:00\",\n\t\"type\": \"riunione\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}:{{gateway_port}}{{spaces_path}}/5ed7d45ff76bd75be6bcea3e/bookings/5edbaeb56e65931876ce68e5",
+									"host": [
+										"{{base_url}}"
+									],
+									"port": "{{gateway_port}}{{spaces_path}}",
+									"path": [
+										"5ed7d45ff76bd75be6bcea3e",
+										"bookings",
+										"5edbaeb56e65931876ce68e5"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "DELETE booking for a space",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}:{{gateway_port}}{{spaces_path}}/5ed7d45ff76bd75be6bcea3e/bookings/5edbb0876e171a18dd455044",
+									"host": [
+										"{{base_url}}"
+									],
+									"port": "{{gateway_port}}{{spaces_path}}",
+									"path": [
+										"5ed7d45ff76bd75be6bcea3e",
+										"bookings",
+										"5edbb0876e171a18dd455044"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "GET all spaces",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}:{{gateway_port}}{{spaces_path}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{gateway_port}}{{spaces_path}}"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET space by id",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}:{{gateway_port}}{{spaces_path}}/5ed7d45ff76bd75be6bcea3e",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{gateway_port}}{{spaces_path}}",
+							"path": [
+								"5ed7d45ff76bd75be6bcea3e"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST create space",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"First room from postman\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}:{{gateway_port}}{{spaces_path}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{gateway_port}}{{spaces_path}}"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT modify space name",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"First room modified\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}:{{gateway_port}}{{spaces_path}}/5edba82e5e9f1faf5aab20f3",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{gateway_port}}{{spaces_path}}",
+							"path": [
+								"5edba82e5e9f1faf5aab20f3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE space",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}:{{gateway_port}}{{spaces_path}}/5edba82e5e9f1faf5aab20f3",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{gateway_port}}{{spaces_path}}",
+							"path": [
+								"5edba82e5e9f1faf5aab20f3"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Groups",
+			"item": [
+				{
+					"name": "GET all groups",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}:{{gateway_port}}{{groups_path}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{gateway_port}}{{groups_path}}"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET group by id",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}:{{gateway_port}}{{groups_path}}/5ed77a6568727f1ec287139a",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{gateway_port}}{{groups_path}}",
+							"path": [
+								"5ed77a6568727f1ec287139a"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST create group",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"New postman group\",\n\t\"educators\": [\"5e777ff9fa01c441b47bfc17\"],\n\t\"collabs\": [\"5e777fedfa01c4be7a7bfc16\"],\n\t\"guys\": [\"5e777fedfa01c4be7a7bfc16\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}:{{gateway_port}}{{groups_path}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{gateway_port}}{{groups_path}}"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT modify group",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"New postman group11 mod\",\n\t\"educators\": [\"5e777ff9fa01c441b47bfc17\"],\n\t\"collabs\": [\"5e777fedfa01c4be7a7bfc16\"],\n\t\"guys\": [\"5e777fd1fa01c448617bfc15\"],\n\t\"balance\": \"0.0\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}:{{gateway_port}}{{groups_path}}/5edc044b9666567c670d6fd3",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{gateway_port}}{{groups_path}}",
+							"path": [
+								"5edc044b9666567c670d6fd3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE group",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}:{{gateway_port}}{{groups_path}}/5edbd03b65d4855ab9f768df",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{gateway_port}}{{groups_path}}",
+							"path": [
+								"5edbd03b65d4855ab9f768df"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "GET all users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}:{{gateway_port}}{{users_path}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{gateway_port}}{{users_path}}"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET user by id",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}:{{gateway_port}}{{users_path}}/5e5d3df10cdd901037a15175",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{gateway_port}}{{users_path}}",
+							"path": [
+								"5e5d3df10cdd901037a15175"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST create user",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"User\",\n\t\"surname\": \"From Postman\",\n\t\"mail\": \"user.frompostman@gmail.com\",\n\t\"password\": \"abc\",\n\t\"phone\": \"34545215\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}:{{gateway_port}}{{users_path}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{gateway_port}}{{users_path}}"
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "99136c09-a75f-4464-b223-9a266bca3641",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "a516479d-273f-4463-afcf-01e9399dc471",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
