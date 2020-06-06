@@ -50,7 +50,7 @@ module.exports = {
 
         let groups = await controller.retrieveAllGroups();
         groups.forEach((item) => {
-            item.href = config.baseURL + ":" + config.groupsPort + config.groupsPath + "/" + item.gid;
+            item.href = config.baseURL + ":" + config.gatewayPort + config.groupsPath + "/" + item.gid;
         });
         return groups;
     },

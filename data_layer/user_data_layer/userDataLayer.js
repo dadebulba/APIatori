@@ -65,7 +65,7 @@ module.exports = {
             item.uid = item._id;
             delete item._id;
 
-            item.href = config.baseURL + ":" + config.usersPort + config.usersPath + "/" + item.uid;
+            item.href = config.baseURL + ":" + config.gatewayPort + config.usersPath + "/" + item.uid;
         });
 
         return usersList;
