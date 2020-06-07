@@ -36,6 +36,7 @@ function mockReturn(mockFun, returnValue) {
 beforeAll(async () => {
     groups.addGroupToUsers = jest.fn().mockReturnValue(new Promise(resolve => resolve(true)));
     groups.deleteGroupToUsers = jest.fn().mockReturnValue(new Promise(resolve => resolve(true)));
+    groups.updateGroupToUsers = jest.fn().mockReturnValue(new Promise(resolve => resolve(true)));
     groups.validateUsers = jest.fn();
     await groups.server_starting;
     //jest.setTimeout(100000); //evito che le richieste vadano in timeout troppo presto (mi serve per debug)

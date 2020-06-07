@@ -33,7 +33,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"email\": \"davide.piva@gmail.com\",\n\t\"password\": \"abc\"\n}",
+							"raw": "{\n\t\"email\": \"admin.admin@admin.com\",\n\t\"password\": \"abc\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
