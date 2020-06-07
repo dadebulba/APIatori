@@ -1,5 +1,5 @@
 const utility = require("../utility.js");
-const Group = require("./groupSchema.js")[0];
+const Group = require("./groupSchema.js");
 
 const ParametersError = require("../../errors/parametersError");
 const DatabaseError = require("../../errors/databaseError");
@@ -51,9 +51,7 @@ module.exports = {
         const excludedFields = {
             __v: 0,
             collaborators: 0,
-            guys: 0,
-            balance: 0,
-            transactions: 0
+            guys: 0
         }
 
         let groups = await Group.find({}, excludedFields);
@@ -82,8 +80,6 @@ module.exports = {
             educators: groupInfo.educators,
             collaborators: groupInfo.collaborators,
             guys: groupInfo.guys,
-            balance: 0.0,
-            transactions: [],
             calendarId: " " 
         });
         result = await newGroup.save();
@@ -132,8 +128,8 @@ module.exports = {
             throw new ParametersError();
 
         let result = await isGroupValid(group);
-        if (!result || group.balance == undefined)
-            throw new ParametersError("'balance' field is required");
+        if (!result)
+            throw new ParametersError();
             
         var updateObj = {
             name: group.name,
@@ -143,10 +139,6 @@ module.exports = {
         };
 
         //Add non-required fields
-        if (group.balance != undefined)
-            updateObj.balance = group.balance;
-        if (group.transactions != undefined)
-            updateObj.transactions = group.transactions;
         if (group.calendarId != undefined)
             updateObj.calendarId = group.calendarId;
 

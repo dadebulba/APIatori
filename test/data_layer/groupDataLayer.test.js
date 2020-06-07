@@ -69,9 +69,6 @@ describe("Get single group", () => {
         expect(res.gid).toEqual(gid);
         expect(res.educators).toEqual(mockGroups[0].educators);
         expect(res.guys).toEqual(mockGroups[0].guys);
-        expect(res.balance).toEqual(0);
-        expect(res.transactions).not.toBeUndefined();
-        expect(res.transactions.length).toEqual(0);
         expect(res.collaborators).not.toBeUndefined();
         expect(res.collaborators.length).toEqual(0);
     });
@@ -143,9 +140,6 @@ describe("Create a new group", () => {
         expect(res.name).toEqual(groupData.name);
         expect(res.educators).toEqual(groupData.educators);
         expect(res.guys).toEqual(groupData.guys);
-        expect(res.balance).toEqual(0);
-        expect(res.transactions).not.toBeUndefined();
-        expect(res.transactions.length).toEqual(0);
         expect(res.collaborators).not.toBeUndefined();
         expect(res.collaborators.length).toEqual(0);
     });
@@ -217,7 +211,6 @@ describe("Modify an existing group", () => {
             name: mockGroups[0].name + "_Modified",
             educators: mockGroups[0].educators,
             guys: mockGroups[0].guys,
-            balance: 0,
             calendarId: "cid"
         };
 
@@ -231,7 +224,6 @@ describe("Modify an existing group", () => {
             name: mockGroups[0].name + "_Modified",
             educators: mockGroups[0].educators,
             guys: mockGroups[0].guys,
-            balance: 0,
             calendarId: "cid"
         };
 
