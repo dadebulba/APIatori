@@ -23,10 +23,10 @@ def main():
         remote_bind_address=("paas-05.fcc21.fogx.me", 22),
         local_bind_address=('0.0.0.0', 10022)
     ) as tunnel:
-        #client = paramiko.SSHClient()
-        #client.load_system_host_keys()
-        #client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        #client.connect('127.0.0.1', 10022)
+        client = paramiko.SSHClient()
+        client.load_system_host_keys()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect('127.0.0.1', 10022)
         # do some operations with client session
         
 
