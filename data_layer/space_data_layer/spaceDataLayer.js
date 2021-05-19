@@ -37,7 +37,7 @@ module.exports = {
         }
         else {
             //MongoDB initialization
-            mongoose.connect(config.mongoURL, mongoOptions);
+            mongoose.connect(config.mongo_spaces_URL, mongoOptions);
             mongoose.Promise = global.Promise;
         }
 
