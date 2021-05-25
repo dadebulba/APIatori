@@ -1,16 +1,3 @@
-terraform {
-    required_providers {
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = ">= 2.2.0"
-    }
-  }
-}
-
-provider "kubernetes" {
-  config_path = "~/.kube/config"
-}
-
 // Gateway autoscaler
 resource "kubernetes_horizontal_pod_autoscaler" "gateway_deployment_autoscaler" {
   metadata {
