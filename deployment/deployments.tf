@@ -34,6 +34,7 @@ resource "kubernetes_deployment" "gateway_deployment" {
         container {
           image = "dadebulba/apiatori-gateway"
           name  = "apiatori-gateway"
+          image_pull_policy = "Always"
           port {
             container_port = 8080
           }
@@ -70,6 +71,7 @@ resource "kubernetes_deployment" "auth_deployment" {
         container {
           image = "dadebulba/apiatori-auth"
           name  = "apiatori-auth"
+          image_pull_policy = "Always"
           port {
             container_port = 3000
           }
@@ -106,6 +108,7 @@ resource "kubernetes_deployment" "spaces_deployment" {
         container {
           image = "dadebulba/apiatori-spaces"
           name  = "apiatori-spaces"
+          image_pull_policy = "Always"
           port {
             container_port = 3002
           }
@@ -142,6 +145,7 @@ resource "kubernetes_deployment" "groups_deployment" {
         container {
           image = "dadebulba/apiatori-groups"
           name  = "apiatori-groups"
+          image_pull_policy = "Always"
           port {
             container_port = 3003
           }
@@ -178,6 +182,7 @@ resource "kubernetes_deployment" "users_deployment" {
         container {
           image = "dadebulba/apiatori-users"
           name  = "apiatori-users"
+          image_pull_policy = "Always"
           port {
             container_port = 3004
           }
@@ -214,6 +219,7 @@ resource "kubernetes_deployment" "mongodb_users_deployment" {
         container {
           image = "mongo:latest"
           name  = "mongodb-users"
+          image_pull_policy = "Always"
           port {
             container_port = 27017
           }
@@ -254,6 +260,7 @@ resource "kubernetes_deployment" "mongodb_spaces_deployment" {
         container {
           image = "mongo:latest"
           name  = "mongodb-spaces"
+          image_pull_policy = "Always"
           port {
             container_port = 27017
           }
@@ -294,6 +301,7 @@ resource "kubernetes_deployment" "mongodb_groups_deployment" {
         container {
           image = "mongo:latest"
           name  = "mongodb-groups"
+          image_pull_policy = "Always"
           port {
             container_port = 27017
           }
