@@ -196,7 +196,6 @@ resource "kubernetes_deployment" "users_deployment" {
   }
 }
 
-/*
 // MongoDB users deployment
 resource "kubernetes_deployment" "mongodb_users_deployment" {
   metadata {
@@ -319,4 +318,3 @@ resource "kubernetes_deployment" "mongodb_groups_deployment" {
     }
   }
 }
-*/
