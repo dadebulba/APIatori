@@ -196,7 +196,7 @@ resource "kubernetes_deployment" "users_deployment" {
   }
 }
 
-// MongoDB users deployment
+// MongoDB deployment
 resource "kubernetes_deployment" "mongodb_users_deployment" {
   metadata {
     name      = "mongodb-users"
@@ -219,88 +219,6 @@ resource "kubernetes_deployment" "mongodb_users_deployment" {
         container {
           image = "mongo:latest"
           name  = "mongodb-users"
-          image_pull_policy = "Always"
-          port {
-            container_port = 27017
-          }
-          env {
-            name  = "MONGO_INITDB_ROOT_USERNAME"
-            value = "apiatori"
-          }
-          env {
-            name  = "MONGO_INITDB_ROOT_PASSWORD"
-            value = "apiatori"
-          }
-        }
-      }
-    }
-  }
-}
-
-// MongoDB spaces deployment
-resource "kubernetes_deployment" "mongodb_spaces_deployment" {
-  metadata {
-    name      = "mongodb-spaces"
-    namespace = "default"
-  }
-  spec {
-    replicas = 1
-    selector {
-      match_labels = {
-        app = "l_mongodb-spaces"
-      }
-    }
-    template {
-      metadata {
-        labels = {
-          app = "l_mongodb-spaces"
-        }
-      }
-      spec {
-        container {
-          image = "mongo:latest"
-          name  = "mongodb-spaces"
-          image_pull_policy = "Always"
-          port {
-            container_port = 27017
-          }
-          env {
-            name  = "MONGO_INITDB_ROOT_USERNAME"
-            value = "apiatori"
-          }
-          env {
-            name  = "MONGO_INITDB_ROOT_PASSWORD"
-            value = "apiatori"
-          }
-        }
-      }
-    }
-  }
-}
-
-// MongoDB groups deployment
-resource "kubernetes_deployment" "mongodb_groups_deployment" {
-  metadata {
-    name      = "mongodb-groups"
-    namespace = "default"
-  }
-  spec {
-    replicas = 1
-    selector {
-      match_labels = {
-        app = "l_mongodb-groups"
-      }
-    }
-    template {
-      metadata {
-        labels = {
-          app = "l_mongodb-groups"
-        }
-      }
-      spec {
-        container {
-          image = "mongo:latest"
-          name  = "mongodb-groups"
           image_pull_policy = "Always"
           port {
             container_port = 27017
