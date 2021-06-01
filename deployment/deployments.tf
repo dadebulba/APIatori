@@ -199,26 +199,26 @@ resource "kubernetes_deployment" "users_deployment" {
 // MongoDB deployment
 resource "kubernetes_deployment" "mongodb_users_deployment" {
   metadata {
-    name      = "mongodb-users"
+    name      = "mongodb"
     namespace = "default"
   }
   spec {
     replicas = 1
     selector {
       match_labels = {
-        app = "l_mongodb-users"
+        app = "l_mongodb"
       }
     }
     template {
       metadata {
         labels = {
-          app = "l_mongodb-users"
+          app = "l_mongodb"
         }
       }
       spec {
         container {
           image = "mongo:latest"
-          name  = "mongodb-users"
+          name  = "mongodb"
           image_pull_policy = "Always"
           port {
             container_port = 27017

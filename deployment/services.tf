@@ -16,3 +16,21 @@ resource "kubernetes_service" "gateway_service" {
     }
   }
 }
+
+// MongoDB service
+resource "kubernetes_service" "mongodb_service" {
+  metadata {
+    name      = "mongodb"
+    namespace = "default"
+  }
+  spec {
+    selector = {
+      app = "l_mongodb"
+    }
+    type = "ClusterIP"
+    port {
+      port        = 27017
+      target_port = 27017
+    }
+  }
+}
