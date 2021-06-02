@@ -88,6 +88,7 @@ app.post('/users', async function (req, res, next) {
         return res.status(201).json(newUser);
     }
     catch (err) {
+        console.log(err);
         next(err);
     }
 });

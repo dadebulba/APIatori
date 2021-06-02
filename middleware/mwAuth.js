@@ -3,7 +3,11 @@ if (process.env.PROD == undefined && process.env.TEST == undefined) process.env[
 const config = require('config');
 const errors = require('../errorMsg.js');
 
-const IdP_URL = config.baseURL + ":" + config.tokenPort + config.tokenPath;
+
+const TOKEN_BASE =  config.get('tokenEndpoint');
+const TOKEN_PORT = config.get('tokenPort');
+const TOKEN_PATH = config.get('tokenPath');
+const TOKEN_ENDPOINT = `${TOKEN_BASE}:${TOKEN_PORT}${TOKEN_PATH}`;
 
 module.exports = async function (req, res, next) {
 
@@ -20,7 +24,7 @@ module.exports = async function (req, res, next) {
         }
     }
     try {
-        let idpResponse = await fetch(IdP_URL, options);
+        let idpResponse = await fetch(TOKEN_ENDPOINT, options);
         if (idpResponse.status == 200) {
             let body = await idpResponse.json();
 

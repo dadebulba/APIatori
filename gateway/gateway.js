@@ -10,16 +10,20 @@ app.use(bodyParser.json());
 const makeApiMiddleware = require("api-express-exporter");
 app.use(makeApiMiddleware({port: 8081}));
 
-const BASE_URL = config.get('baseURL');
 const SPACES_PORT = config.get('spacesPort');
 const GROUPS_PORT = config.get('groupsPort');
 const USERS_PORT = config.get('usersPort');
 const TOKEN_PORT = config.get('tokenPort');
+const SPACES_BASE =  config.get('spacesEndpoint');
+const GROUPS_BASE =  config.get('groupsEndpoint');
+const USERS_BASE =  config.get('usersEndpoint');
+const TOKEN_BASE =  config.get('tokenEndpoint');
 const PORT = config.get('gatewayPort');
-const SPACES_ENDPOINT = `${BASE_URL}:${SPACES_PORT}`;
-const GROUPS_ENDPOINT = `${BASE_URL}:${GROUPS_PORT}`;
-const USERS_ENDPOINT = `${BASE_URL}:${USERS_PORT}`;
-const TOKEN_ENDPOINT = `${BASE_URL}:${TOKEN_PORT}`;
+
+const SPACES_ENDPOINT = `${SPACES_BASE}:${SPACES_PORT}`;
+const GROUPS_ENDPOINT = `${GROUPS_BASE}:${GROUPS_PORT}`;
+const USERS_ENDPOINT = `${USERS_BASE}:${USERS_PORT}`;
+const TOKEN_ENDPOINT = `${TOKEN_BASE}:${TOKEN_PORT}`;
 
 /*** UTILS ***/ 
 function unless(middleware, ...excludedUrl){
@@ -30,6 +34,8 @@ function unless(middleware, ...excludedUrl){
 }
 
 function errorHandler(error, req, res) {
+  console.log("Error:" + error);
+  console.log(req.path);
   if(error.response)
     res.status(error.response.status).json(error.response.data)
   else
@@ -95,6 +101,7 @@ app.get('/users/:id', (req, res) => {
 
 app.post('/users', (req, res) => {
   axios.defaults.baseURL = USERS_ENDPOINT;
+  console.log(req.body);
   axios.post(req.path, req.body, {headers: req.headers}).then(resp => {
     res.send(resp.data)
   }, error => errorHandler(error, req, res))
