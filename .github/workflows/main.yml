@@ -27,8 +27,8 @@ jobs:
         key: ${{ secrets.KEY }}
         port: ${{ secrets.PORT }}
         script: |
-          cd APIatori
+          cd ./APIatori
           git pull origin master
-          cd deployment
+          cd ./deployment
           terraform destroy -auto-approve
           terraform apply -auto-approve
