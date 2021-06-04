@@ -26,4 +26,5 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm install
-    - run: TEST=true jest --forceExit --verbose
+    - run: npm install --save jest
+    - run: npm test
