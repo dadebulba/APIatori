@@ -63,9 +63,6 @@ typings/
 # private folder
 private/
 
-# config folder
-config/
-
 # visual code configuration
 .vscode/
 .idea/
