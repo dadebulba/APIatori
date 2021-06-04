@@ -1,5 +1,7 @@
 const { DateTime } = require("luxon");
 const fetch = require("node-fetch");
+const moment = require("moment");
+
 const levels = {
     EDUCATOR: "educator",
     COLLABORATOR: "collaborator",
@@ -33,7 +35,9 @@ module.exports = {
     validateParamsDate : function(...params){
         const regex = /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/;
         return params.some(dt => {
-            return dt.toString() === 'Invalid Date' || dt.getFullYear() < new Date().getFullYear() || regex.test(dt.toISOString()) === false;
+            //return dt.toString() === 'Invalid Date' || dt.getFullYear() < new Date().getFullYear() || regex.test(dt.toISOString()) === false;
+            // 2020-01-01T14:00:00
+            return !moment(dt, "YYYY-MM-DDThh:mm:ss", true).isValid();
         })
     },
     validateParamsDateOld: function (...params) {
