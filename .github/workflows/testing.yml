@@ -34,5 +34,6 @@ jobs:
           cd ./APIatori
           git pull origin testing
           cd ./deployment/testing
+          terraform init
           terraform destroy -auto-approve
           terraform apply -auto-approve
