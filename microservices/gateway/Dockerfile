@@ -17,7 +17,7 @@ RUN mkdir config
 COPY ./config ./config
 
 # Bundle app source
-COPY ./gateway/gateway.js .
+COPY ./microservices/gateway/gateway.js .
 
 # If you are building your code for production
 RUN npm ci --only=production
