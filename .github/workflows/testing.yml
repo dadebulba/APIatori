@@ -18,8 +18,26 @@ jobs:
     - run: npm install
     - run: npm install --save jest
     - run: npm test
-  deployment:
+  docker:
     needs: integration
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dockerfile: ['auth', 'gateway', 'spaces', 'groups', 'users']
+    steps:
+    - uses: actions/checkout@v2
+      name: Check out code
+
+    - uses: mr-smithers-excellent/docker-build-push@v5
+      name: Build & push Docker image
+      with:
+        image: dadebulba/apiatori-${{ matrix.dockerfile}}
+        registry: hub.docker.com
+        dockerfile: microservices/${{ matrix.dockerfile }}/Dockerfile
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+  deployment:
+    needs: docker
     runs-on: ubuntu-latest
     steps:
     - name: update terraform deployment in testing
