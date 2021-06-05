@@ -39,7 +39,7 @@ resource "kubernetes_deployment" "gateway_deployment" {
             container_port = 8080
           }
           env {
-            name  = "PROD"
+            name  = "TESTING"
             value = true
           }
         }
@@ -76,7 +76,7 @@ resource "kubernetes_deployment" "auth_deployment" {
             container_port = 3000
           }
           env {
-            name  = "PROD"
+            name  = "TESTING"
             value = true
           }
         }
@@ -113,7 +113,7 @@ resource "kubernetes_deployment" "spaces_deployment" {
             container_port = 3002
           }
           env {
-            name  = "PROD"
+            name  = "TESTING"
             value = true
           }
         }
@@ -150,7 +150,7 @@ resource "kubernetes_deployment" "groups_deployment" {
             container_port = 3003
           }
           env {
-            name  = "PROD"
+            name  = "TESTING"
             value = true
           }
         }
@@ -187,7 +187,7 @@ resource "kubernetes_deployment" "users_deployment" {
             container_port = 3004
           }
           env {
-            name  = "PROD"
+            name  = "TESTING"
             value = true
           }
         }

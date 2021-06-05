@@ -9,7 +9,7 @@ docker build -f microservices/auth/Dockerfile -t dadebulba/apiatori-auth .
 docker run --name auth --net host -p 3000:3000 -e PROD=true -d dadebulba/apiatori-auth
 
 # Start gateway
-docker build -f gateway/Dockerfile -t dadebulba/apiatori-gateway .
+docker build -f microservices/gateway/Dockerfile -t dadebulba/apiatori-gateway .
 docker run --name gateway --net host -p 8080:8080 -e PROD=true -d dadebulba/apiatori-gateway
 
 # Start spaces service

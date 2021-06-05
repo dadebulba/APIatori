@@ -5,15 +5,15 @@ const fs = require("fs");
 const http = require('http')
 
 const tokenImpl = require('./tokenImpl.js');
-const errors = (process.env.PROD) ? require("./errorMsg.js") : require('../../errorMsg.js');
-const apiUtility = (process.env.PROD) ? require("./utility.js") : require("../../utility.js");
-const userDataLayer = process.env.PROD ? require("./data_layer/user_data_layer/userDataLayer.js") : require("../../data_layer/user_data_layer/userDataLayer.js");
+const errors = (process.env.PROD || process.env.TESTING) ? require("./errorMsg.js") : require('../../errorMsg.js');
+const apiUtility = (process.env.PROD || process.env.TESTING) ? require("./utility.js") : require("../../utility.js");
+const userDataLayer = (process.env.PROD || process.env.TESTING) ? require("./data_layer/user_data_layer/userDataLayer.js") : require("../../data_layer/user_data_layer/userDataLayer.js");
 
-if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
+if (process.env.PROD == undefined && process.env.TESTING == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config'); 
 
-const privateKeyPath = (process.env.PROD == undefined) ? "../../config/private.pem" : "./config/private.pem";
-const publicKeyPath = (process.env.PROD == undefined) ? "../../config/public.crt" : "./config/public.crt";
+const privateKeyPath = (process.env.PROD == undefined && process.env.TESTING == undefined) ? "../../config/private.pem" : "./config/private.pem";
+const publicKeyPath = (process.env.PROD == undefined && process.env.TESTING == undefined) ? "../../config/public.crt" : "./config/public.crt";
 
 const PORT = config.get('tokenPort');
 const PRIVATE_KEY = fs.readFileSync(privateKeyPath, "utf8");

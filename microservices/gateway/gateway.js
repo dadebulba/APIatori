@@ -1,7 +1,7 @@
 var express = require('express');
 const axios = require('axios');
 
-if (process.env.PROD == undefined) process.env["NODE_CONFIG_DIR"] = "../config";
+if (process.env.PROD == undefined && process.env.TESTING == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
 const config = require('config');
 
 const app = express();
@@ -53,7 +53,7 @@ function errorHandler(error, req, res) {
 }
 
 /** MIDDLEWARES **/
-const mwAuth = (!process.env.PROD) ? require('../middleware/mwAuth') : require('./middleware/mwAuth.js');
+const mwAuth = (!process.env.PROD) ? require('../../middleware/mwAuth') : require('./middleware/mwAuth.js.js');
 app.use(unless(mwAuth, {path: "/spaces", method: "GET"}, {path: "/users", method: "POST"}, {path: "/token", method: "POST"}));
 
 /** ROUTING **/
