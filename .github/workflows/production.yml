@@ -35,5 +35,6 @@ jobs:
           cd ./APIatori
           git pull origin master
           cd ./deployment/production
+          terraform init
           terraform destroy -auto-approve
           terraform apply -auto-approve
