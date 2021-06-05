@@ -1,12 +1,12 @@
 // Gateway service
 resource "kubernetes_service" "gateway_service" {
   metadata {
-    name      = "gateway"
+    name      = "gateway_test"
     namespace = "default"
   }
   spec {
     selector = {
-      app = "l_gateway"
+      app = "l_gateway_test"
     }
     type = "NodePort"
     port {
@@ -20,12 +20,12 @@ resource "kubernetes_service" "gateway_service" {
 // MongoDB service
 resource "kubernetes_service" "mongodb_service" {
   metadata {
-    name      = "mongodb"
+    name      = "mongodb_test"
     namespace = "default"
   }
   spec {
     selector = {
-      app = "l_mongodb"
+      app = "l_mongodb_test"
     }
     type = "ClusterIP"
     port {
@@ -38,12 +38,12 @@ resource "kubernetes_service" "mongodb_service" {
 // Auth service
 resource "kubernetes_service" "auth_service" {
   metadata {
-    name      = "auth"
+    name      = "auth_test"
     namespace = "default"
   }
   spec {
     selector = {
-      app = "l_auth"
+      app = "l_auth_test"
     }
     type = "ClusterIP"
     port {
@@ -56,12 +56,12 @@ resource "kubernetes_service" "auth_service" {
 // Spaces service
 resource "kubernetes_service" "spaces_service" {
   metadata {
-    name      = "spaces"
+    name      = "spaces_test"
     namespace = "default"
   }
   spec {
     selector = {
-      app = "l_spaces"
+      app = "l_spaces_test"
     }
     type = "ClusterIP"
     port {
@@ -74,12 +74,12 @@ resource "kubernetes_service" "spaces_service" {
 // Groups service
 resource "kubernetes_service" "groups_service" {
   metadata {
-    name      = "groups"
+    name      = "groups_test"
     namespace = "default"
   }
   spec {
     selector = {
-      app = "l_groups"
+      app = "l_groups_test"
     }
     type = "ClusterIP"
     port {
@@ -92,12 +92,12 @@ resource "kubernetes_service" "groups_service" {
 // Users service
 resource "kubernetes_service" "users_service" {
   metadata {
-    name      = "users"
+    name      = "users_test"
     namespace = "default"
   }
   spec {
     selector = {
-      app = "l_users"
+      app = "l_users_test"
     }
     type = "ClusterIP"
     port {

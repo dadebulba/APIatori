@@ -20,11 +20,21 @@ const USERS_BASE =  config.get('usersEndpoint');
 const TOKEN_BASE =  config.get('tokenEndpoint');
 const PORT = config.get('gatewayPort');
 
-const SPACES_ENDPOINT = `${SPACES_BASE}:${SPACES_PORT}`;
-const GROUPS_ENDPOINT = `${GROUPS_BASE}:${GROUPS_PORT}`;
-const USERS_ENDPOINT = `${USERS_BASE}:${USERS_PORT}`;
-const TOKEN_ENDPOINT = `${TOKEN_BASE}:${TOKEN_PORT}`;
-
+let SPACES_ENDPOINT = "";
+let GROUPS_ENDPOINT = "";
+let USERS_ENDPOINT = "";
+let TOKEN_ENDPOINT = "";
+if (process.env.TESTING) {
+  SPACES_ENDPOINT = `${SPACES_BASE}:1${SPACES_PORT}`;
+  GROUPS_ENDPOINT = `${GROUPS_BASE}:1${GROUPS_PORT}`;
+  USERS_ENDPOINT = `${USERS_BASE}:1${USERS_PORT}`;
+  TOKEN_ENDPOINT = `${TOKEN_BASE}:1${TOKEN_PORT}`; 
+} else{
+  SPACES_ENDPOINT = `${SPACES_BASE}:${SPACES_PORT}`;
+  GROUPS_ENDPOINT = `${GROUPS_BASE}:${GROUPS_PORT}`;
+  USERS_ENDPOINT = `${USERS_BASE}:${USERS_PORT}`;
+  TOKEN_ENDPOINT = `${TOKEN_BASE}:${TOKEN_PORT}`;
+}
 /*** UTILS ***/ 
 function unless(middleware, ...excludedUrl){
   return function(req, res, next){

@@ -36,7 +36,12 @@ module.exports = {
         }
         else {
             //MongoDB initialization
-            mongoose.connect(config.mongo_users_URL, mongoOptions);
+            if (process.env.TESTING) {
+                mongoose.connect(config.mongo_URL_TEST, mongoOptions);
+            }
+            else {
+                mongoose.connect(config.mongo_URL, mongoOptions);
+            }
             mongoose.Promise = global.Promise;
         }
 
