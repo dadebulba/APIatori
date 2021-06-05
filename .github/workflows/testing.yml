@@ -36,7 +36,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          file: microservices/${{ matrix.dockerfile }}/Dockerfile
+          file: ./microservices/${{ matrix.dockerfile }}/Dockerfile
           tags: dadebulba/apiatori-${{ matrix.dockerfile}}
   deployment:
     needs: docker
