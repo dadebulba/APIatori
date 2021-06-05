@@ -30,9 +30,9 @@ jobs:
         key: ${{ secrets.KEY }}
         port: ${{ secrets.PORT }}
         script: |
-          su - eval
           cd ./APIatori
           git pull origin testing
           cd ./deployment/testing
+          terraform init
           terraform destroy -auto-approve
           terraform apply -auto-approve
