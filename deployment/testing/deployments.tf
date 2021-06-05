@@ -14,20 +14,20 @@ provider "kubernetes" {
 // Gateway deployment
 resource "kubernetes_deployment" "gateway_deployment" {
   metadata {
-    name      = "gateway_test"
+    name      = "gateway-test"
     namespace = "default"
   }
   spec {
     replicas = 2
     selector {
       match_labels = {
-        app = "l_gateway_test"
+        app = "l_gateway-test"
       }
     }
     template {
       metadata {
         labels = {
-          app = "l_gateway_test"
+          app = "l_gateway-test"
         }
       }
       spec {
@@ -51,20 +51,20 @@ resource "kubernetes_deployment" "gateway_deployment" {
 // Identity server deployment
 resource "kubernetes_deployment" "auth_deployment" {
   metadata {
-    name      = "auth_test"
+    name      = "auth-test"
     namespace = "default"
   }
   spec {
     replicas = 1
     selector {
       match_labels = {
-        app = "l_auth_test"
+        app = "l_auth-test"
       }
     }
     template {
       metadata {
         labels = {
-          app = "l_auth_test"
+          app = "l_auth-test"
         }
       }
       spec {
@@ -88,20 +88,20 @@ resource "kubernetes_deployment" "auth_deployment" {
 // Spaces data layer deployment
 resource "kubernetes_deployment" "spaces_deployment" {
   metadata {
-    name      = "spaces_test"
+    name      = "spaces-test"
     namespace = "default"
   }
   spec {
     replicas = 2
     selector {
       match_labels = {
-        app = "l_spaces_test"
+        app = "l_spaces-test"
       }
     }
     template {
       metadata {
         labels = {
-          app = "l_spaces_test"
+          app = "l_spaces-test"
         }
       }
       spec {
@@ -125,20 +125,20 @@ resource "kubernetes_deployment" "spaces_deployment" {
 // Groups data layer deployment
 resource "kubernetes_deployment" "groups_deployment" {
   metadata {
-    name      = "groups_test"
+    name      = "groups-test"
     namespace = "default"
   }
   spec {
     replicas = 2
     selector {
       match_labels = {
-        app = "l_groups_test"
+        app = "l_groups-test"
       }
     }
     template {
       metadata {
         labels = {
-          app = "l_groups_test"
+          app = "l_groups-test"
         }
       }
       spec {
@@ -162,20 +162,20 @@ resource "kubernetes_deployment" "groups_deployment" {
 // Users data layer deployment
 resource "kubernetes_deployment" "users_deployment" {
   metadata {
-    name      = "users_test"
+    name      = "users-test"
     namespace = "default"
   }
   spec {
     replicas = 2
     selector {
       match_labels = {
-        app = "l_users_test"
+        app = "l_users-test"
       }
     }
     template {
       metadata {
         labels = {
-          app = "l_users_test"
+          app = "l_users-test"
         }
       }
       spec {
@@ -199,20 +199,20 @@ resource "kubernetes_deployment" "users_deployment" {
 // MongoDB deployment
 resource "kubernetes_deployment" "mongodb_users_deployment" {
   metadata {
-    name      = "mongodb_test"
+    name      = "mongodb-test"
     namespace = "default"
   }
   spec {
     replicas = 1
     selector {
       match_labels = {
-        app = "l_mongodb_test"
+        app = "l_mongodb-test"
       }
     }
     template {
       metadata {
         labels = {
-          app = "l_mongodb_test"
+          app = "l_mongodb-test"
         }
       }
       spec {
