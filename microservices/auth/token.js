@@ -1,3 +1,4 @@
+console.log(process.env);
 const express = require('express');
 const bodyParser = require('body-parser');
 const bearerToken = require('express-bearer-token');

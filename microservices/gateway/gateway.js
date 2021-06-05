@@ -1,3 +1,4 @@
+console.log(process.env);
 var express = require('express');
 const axios = require('axios');
 
