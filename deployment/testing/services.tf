@@ -10,7 +10,7 @@ resource "kubernetes_service" "gateway_service" {
     }
     type = "NodePort"
     port {
-      node_port   = 30080
+      node_port   = 30081
       port        = 8080
       target_port = 8080
     }
@@ -49,7 +49,7 @@ resource "kubernetes_service" "auth_service" {
     }
     type = "ClusterIP"
     port {
-      port        = 3000
+      port        = 13000
       target_port = 3000
     }
   }
@@ -67,7 +67,7 @@ resource "kubernetes_service" "spaces_service" {
     }
     type = "ClusterIP"
     port {
-      port        = 3002
+      port        = 13002
       target_port = 3002
     }
   }
@@ -85,7 +85,7 @@ resource "kubernetes_service" "groups_service" {
     }
     type = "ClusterIP"
     port {
-      port        = 3003
+      port        = 13003
       target_port = 3003
     }
   }
@@ -103,7 +103,7 @@ resource "kubernetes_service" "users_service" {
     }
     type = "ClusterIP"
     port {
-      port        = 3004
+      port        = 13004
       target_port = 3004
     }
   }
