@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+  labels:
+    app: l_mongodb
+spec:
+  replicas: 1
+  serviceName: 'mongodb'
+  selector:
+    matchLabels:
+      app: l_mongodb
+  template:
+    metadata:
+      labels:
+        app: l_mongodb
+    spec:
+      volumes:
+        - name: apiatori-mongo-storage
+          persistentVolumeClaim:
+            claimName: mongodb-pvc
+      containers:
+        - name: mongodb
+          image: mongo:latest
+          volumeMounts:
+            - mountPath: '/data/db'
+              name: apiatori-mongo-storage
+          env:
+          - name: MONGO_INITDB_ROOT_USERNAME
+            value: "apiatori"
+          - name: MONGO_INITDB_ROOT_PASSWORD
+            value: "apiatori"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+spec:
+  type: ClusterIP
+  selector:
+    app: l_mongodb
+  ports:
+    - name: mongodb
+      protocol: TCP
+      port: 27017
+      targetPort: 27017
