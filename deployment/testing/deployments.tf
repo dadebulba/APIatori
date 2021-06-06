@@ -197,6 +197,7 @@ resource "kubernetes_deployment" "users_deployment" {
 }
 
 // MongoDB deployment
+/*
 resource "kubernetes_deployment" "mongodb_users_deployment" {
   metadata {
     name      = "mongodb-test"
@@ -236,3 +237,4 @@ resource "kubernetes_deployment" "mongodb_users_deployment" {
     }
   }
 }
+*/

@@ -18,6 +18,7 @@ resource "kubernetes_service" "gateway_service" {
 }
 
 // MongoDB service
+/*
 resource "kubernetes_service" "mongodb_service" {
   metadata {
     name      = "mongodb-test"
@@ -34,6 +35,7 @@ resource "kubernetes_service" "mongodb_service" {
     }
   }
 }
+*/
 
 // Auth service
 resource "kubernetes_service" "auth_service" {
