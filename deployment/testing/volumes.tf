@@ -1,6 +1,6 @@
 resource "kubernetes_persistent_volume_claim" "mongo_pvc_testing" {
   metadata {
-    name = "mongo_pvc-testing"
+    name = "mongo-pvc-testing"
   }
   spec {
     access_modes = ["ReadWriteMany"]
@@ -15,7 +15,7 @@ resource "kubernetes_persistent_volume_claim" "mongo_pvc_testing" {
 
 resource "kubernetes_persistent_volume" "mongo_volume_testing" {
   metadata {
-    name = "mongo_volume-testing"
+    name = "mongo-volume-testing"
   }
   spec {
     capacity = {
