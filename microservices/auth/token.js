@@ -17,8 +17,6 @@ else {
     config = require('../../config/default.json');
 }
 
-console.log(process.env);
-console.log(config);
 const privateKeyPath = (process.env.PROD == undefined && process.env.TESTING == undefined) ? "../../config/private.pem" : "./config/private.pem";
 const publicKeyPath = (process.env.PROD == undefined && process.env.TESTING == undefined) ? "../../config/public.crt" : "./config/public.crt";
 

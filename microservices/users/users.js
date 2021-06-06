@@ -1,4 +1,3 @@
-console.log(process.env);
 const express = require('express');
 const bodyParser = require('body-parser');
 const apiUtility = (process.env.PROD || process.env.TESTING) ? require("./utility.js") : require('../../utility.js');
