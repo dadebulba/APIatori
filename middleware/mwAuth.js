@@ -10,7 +10,7 @@ else {
 
 const errors = require('../errorMsg.js');
 
-const TOKEN_BASE =  config.tokenEndpoint;
+const TOKEN_BASE =  (process.env.TESTING) ? `${config.tokenEndpoint}-test` : config.tokenEndpoint;
 const TOKEN_PORT =  (process.env.TESTING) ? `1${config.tokenPort}` : config.tokenPort;
 const TOKEN_PATH =  config.tokenPath;
 const TOKEN_ENDPOINT = `${TOKEN_BASE}:${TOKEN_PORT}${TOKEN_PATH}`;

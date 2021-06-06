@@ -36,11 +36,9 @@ module.exports = {
         else {
             //MongoDB initialization
             if (process.env.TESTING) {
-                console.log("MONGO_TEST: ", config.mongo_URL_TEST);
                 mongoose.connect(config.mongo_URL_TEST, mongoOptions);
             }
             else {
-                console.log("MONGO_PROD: ", config.mongo_URL);
                 mongoose.connect(config.mongo_URL, mongoOptions);
             }
             mongoose.Promise = global.Promise;
