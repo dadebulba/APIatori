@@ -6,9 +6,9 @@ const BOOKINGS_1 = require('../data/bookings_1.json')
 const SPACES = require('../data/spaces.json')
 
 
-const config = require('config');
-const BASE_URL = config.get('baseURL');
-const SPACE_PORT = config.get('spacesPort');
+let config = require('../../config/default.json');
+const BASE_URL = config.baseURL;
+const SPACE_PORT = config.spacesPort;
 const spacesUrl = `${BASE_URL}:${SPACE_PORT}`;
 
 /* -- MOCKS -- */

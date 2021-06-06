@@ -2,8 +2,13 @@ const mongoose = require('mongoose');
 const controller = require('./spaceDataLayerImpl.js');
 const utility = require("../utility.js");
 
-if (process.env.PROD == undefined && process.env.TEST == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
-const config = require('config'); 
+let config = {}
+if (process.env.PROD || process.env.TESTING) {
+    config = require('./config/default.json');
+}
+else {
+    config = require('../../config/default.json');
+}
 
 const DatalayerAlreadyInitializedError = require("../../errors/datalayerAlreadyInitializedError");
 const DatalayerNotInitializedError = require("../../errors/datalayerNotInitializedError");

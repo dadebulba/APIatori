@@ -2,8 +2,13 @@ console.log(process.env);
 var express = require('express');
 const axios = require('axios');
 
-if (process.env.PROD == undefined && process.env.TESTING == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
-const config = require('config');
+let config = {}
+if (process.env.PROD || process.env.TESTING) {
+    config = require('./config/default.json');
+}
+else {
+    config = require('../../config/default.json');
+}
 
 const app = express();
 const bodyParser = require('body-parser');
@@ -11,15 +16,15 @@ app.use(bodyParser.json());
 const makeApiMiddleware = require("api-express-exporter");
 app.use(makeApiMiddleware({port: 8081}));
 
-const SPACES_PORT = config.get('spacesPort');
-const GROUPS_PORT = config.get('groupsPort');
-const USERS_PORT = config.get('usersPort');
-const TOKEN_PORT = config.get('tokenPort');
-const SPACES_BASE =  config.get('spacesEndpoint');
-const GROUPS_BASE =  config.get('groupsEndpoint');
-const USERS_BASE =  config.get('usersEndpoint');
-const TOKEN_BASE =  config.get('tokenEndpoint');
-const PORT = config.get('gatewayPort');
+const SPACES_PORT = config.spacesPort;
+const GROUPS_PORT = config.groupsPort;
+const USERS_PORT =  config.usersPort;
+const TOKEN_PORT =  config.tokenPort;
+const SPACES_BASE = config.spacesEndpoint;
+const GROUPS_BASE = config.groupsEndpoint;
+const USERS_BASE =  config.usersEndpoint;
+const TOKEN_BASE =  config.tokenEndpoint;
+const PORT = config.gatewayPort;
 
 let SPACES_ENDPOINT = "";
 let GROUPS_ENDPOINT = "";
