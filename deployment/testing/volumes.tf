@@ -9,7 +9,7 @@ resource "kubernetes_persistent_volume_claim" "mongo_pvc_testing" {
         storage = "1Gi"
       }
     }
-    volume_name = "${kubernetes_persistent_volume.mongo_volume_testing.metadata.name}"
+    volume_name = "${kubernetes_persistent_volume.mongo_volume_testing.metadata.0.name}"
   }
 }
 
