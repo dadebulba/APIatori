@@ -29,37 +29,7 @@ spec:
           - name: MONGO_INITDB_ROOT_USERNAME
             value: "apiatori"
           - name: MONGO_INITDB_ROOT_PASSWORD
-            value: "apiatori" 
----
-kind: PersistentVolume
-apiVersion: v1
-metadata:
-  name: mongodb-volume-test
-  labels:
-    name: l_mongodb-volume-test
-spec:
-  capacity:
-    storage: 1Gi
-  storageClassName: standard
-  accessModes:
-    - ReadOnlyMany
-  hostPath:
-    path: /home/eval/apiatori-mongodb-volume
-    type: FileOrCreate
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mongodb-pvc-testing
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
-  selector:
-    matchLabels:
-      name: l_mongodb-volume-test
+            value: "apiatori"
 ---
 apiVersion: v1
 kind: Service
