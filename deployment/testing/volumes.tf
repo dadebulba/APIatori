@@ -24,7 +24,7 @@ resource "kubernetes_persistent_volume" "mongo_volume_testing" {
     access_modes = ["ReadWriteOnce"]
     persistent_volume_source {
       host_path {
-        path = "/var/local/apiatori-testing"
+        path = "/home/eval/volume-apiatori-testing"
         type = "DirectoryOrCreate"
       }
     }
