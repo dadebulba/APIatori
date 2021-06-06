@@ -3,7 +3,7 @@ const controller = require('./userDataLayerImpl.js');
 
 let config = {}
 if (process.env.PROD || process.env.TESTING) {
-    config = require('./config/default.json');
+    config = require('../config/default.json');
 }
 else {
     config = require('../../config/default.json');
