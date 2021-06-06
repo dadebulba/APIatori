@@ -1,0 +1,25 @@
+{
+    "baseURL": "http://localhost",
+
+    "tokenPath" : "/token",
+    "groupsPath": "/groups",
+    "financePath": "/finances",
+    "usersPath": "/users",
+    "spacesPath": "/spaces",
+
+    "tokenPort": 3000,
+    "financesPort": 3001,
+    "spacesPort": 3002,
+    "groupsPort": 3003,
+    "usersPort": 3004,
+    "gatewayPort": 8080,
+
+    "spacesEndpoint":"http://spaces",
+    "groupsEndpoint":"http://groups",
+    "usersEndpoint":"http://users",
+    "tokenEndpoint":"http://auth",
+    
+    "mongo_users_URL": "mongodb://apiatori:apiatori@mongodb:27017",
+    "mongo_spaces_URL": "mongodb://apiatori:apiatori@mongodb:27017",
+    "mongo_groups_URL": "mongodb://apiatori:apiatori@mongodb:27017"
+}
