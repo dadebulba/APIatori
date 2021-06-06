@@ -3,7 +3,7 @@ resource "kubernetes_persistent_volume_claim" "mongo_pvc_testing" {
     name = "mongo-pvc-testing"
   }
   spec {
-    access_modes = ["ReadWriteMany"]
+    access_modes = ["ReadWriteOnce"]
     resources {
       requests = {
         storage = "1Gi"
@@ -19,19 +19,14 @@ resource "kubernetes_persistent_volume" "mongo_volume_testing" {
   }
   spec {
     capacity = {
-      storage = "1Gi"
+      storage = "2Gi"
     }
-    access_modes = ["ReadWriteMany"]
+    access_modes = ["ReadWriteOnce"]
     persistent_volume_source {
       host_path {
         path = "/var/local/apiatori-testing"
         type = "DirectoryOrCreate"
       }
-      /*
-      gce_persistent_disk {
-        pd_name = "test-123"
-      }
-      */
     }
   }
 }
