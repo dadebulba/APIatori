@@ -6,12 +6,15 @@ const errors = (process.env.PROD ||  process.env.TESTING) ? require("./errorMsg.
 const userDataLayer = (process.env.PROD || process.env.TESTING) ? require("./data_layer/user_data_layer/userDataLayer") : require("../../data_layer/user_data_layer/userDataLayer");
 const http = require('http')
 
-if (process.env.PROD == undefined && process.env.TEST == undefined)
-    process.env["NODE_CONFIG_DIR"] = "../../config";
+let config = {}
+if (process.env.PROD || process.env.TESTING) {
+    config = require('./config/default.json');
+}
+else {
+    config = require('../../config/default.json');
+}
 
-const config = require('config');
-
-const PORT = config.get('usersPort');
+const PORT = config.usersPort;
 const LEVELS = apiUtility.levels;
 const app = express();
 app.use(bodyParser.json());

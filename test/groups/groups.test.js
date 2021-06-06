@@ -6,9 +6,10 @@ const GROUPS = require('../data/groups.json')
 
 let groups = require("../../microservices/groups/groups");
 
-const config = require('config');
-const BASE_URL = config.get('baseURL');
-const GROUP_PORT = config.get('groupsPort');
+let config = require('../../config/default.json');
+
+const BASE_URL = config.baseURL;
+const GROUP_PORT = config.groupsPort;
 const groupsEndpoint = `${BASE_URL}:${GROUP_PORT}`;
 
 /* -- MOCKS -- */

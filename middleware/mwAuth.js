@@ -1,12 +1,19 @@
 const fetch = require("node-fetch");
-if (process.env.PROD == undefined && process.env.TEST == undefined) process.env["NODE_CONFIG_DIR"] = "../config";
-const config = require('config');
+
+let config = {}
+if (process.env.PROD || process.env.TESTING) {
+    config = require('./config/default.json');
+}
+else {
+    config = require('../../config/default.json');
+}
+
 const errors = require('../errorMsg.js');
 
 
-const TOKEN_BASE =  config.get('tokenEndpoint');
-const TOKEN_PORT = config.get('tokenPort');
-const TOKEN_PATH = config.get('tokenPath');
+const TOKEN_BASE =  config.tokenEndpoint;
+const TOKEN_PORT =  config.tokenPort;
+const TOKEN_PATH =  config.tokenPath;
 const TOKEN_ENDPOINT = `${TOKEN_BASE}:${TOKEN_PORT}${TOKEN_PATH}`;
 
 module.exports = async function (req, res, next) {

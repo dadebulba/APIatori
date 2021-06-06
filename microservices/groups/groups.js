@@ -15,12 +15,15 @@ if (!process.env.TEST){
         GoogleCalendarAdapter = require("../../adapters/googleCalendarAdapter");
 }
 
-if (process.env.PROD == undefined && process.env.TEST == undefined)
-    process.env["NODE_CONFIG_DIR"] = "../../config";
+let config = {}
+if (process.env.PROD || process.env.TESTING) {
+    config = require('./config/default.json');
+}
+else {
+    config = require('../../config/default.json');
+}
 
-const config = require('config');
-
-const PORT = config.get('groupsPort');
+const PORT = config.groupsPort;
 const LEVELS = apiUtility.levels;
 const app = express();
 app.use(bodyParser.json());

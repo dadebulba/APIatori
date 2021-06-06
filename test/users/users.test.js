@@ -6,9 +6,9 @@ const USERS = require('../data/users.json')
 
 const users_api = require("../../microservices/users/users");
 
-const config = require('config');
-const BASE_URL = config.get('baseURL');
-const USERS_PORT = config.get('usersPort');
+let config = require('../../config/default.json');
+const BASE_URL = config.baseURL;
+const USERS_PORT = config.usersPort;
 const USERS_ENDPOINT = `${BASE_URL}:${USERS_PORT}`;
 
 /* -- MOCKS -- */

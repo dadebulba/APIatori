@@ -1,4 +1,3 @@
-console.log(process.env);
 const express = require('express');
 const bodyParser = require('body-parser');
 const bearerToken = require('express-bearer-token');
@@ -10,13 +9,20 @@ const errors = (process.env.PROD || process.env.TESTING) ? require("./errorMsg.j
 const apiUtility = (process.env.PROD || process.env.TESTING) ? require("./utility.js") : require("../../utility.js");
 const userDataLayer = (process.env.PROD || process.env.TESTING) ? require("./data_layer/user_data_layer/userDataLayer.js") : require("../../data_layer/user_data_layer/userDataLayer.js");
 
-if (process.env.PROD == undefined && process.env.TESTING == undefined) process.env["NODE_CONFIG_DIR"] = "../../config";
-const config = require('config'); 
+let config = {}
+if (process.env.PROD || process.env.TESTING) {
+    config = require('./config/default.json');
+}
+else {
+    config = require('../../config/default.json');
+}
 
+console.log(process.env);
+console.log(config);
 const privateKeyPath = (process.env.PROD == undefined && process.env.TESTING == undefined) ? "../../config/private.pem" : "./config/private.pem";
 const publicKeyPath = (process.env.PROD == undefined && process.env.TESTING == undefined) ? "../../config/public.crt" : "./config/public.crt";
 
-const PORT = config.get('tokenPort');
+const PORT = config.tokenPort;
 const PRIVATE_KEY = fs.readFileSync(privateKeyPath, "utf8");
 const PUBLIC_KEY = fs.readFileSync(publicKeyPath, "utf8");
 
