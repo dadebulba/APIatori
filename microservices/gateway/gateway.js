@@ -59,7 +59,7 @@ function errorHandler(error, req, res) {
 }
 
 /** MIDDLEWARES **/
-const mwAuth = (!process.env.PROD) ? require('../../middleware/mwAuth') : require('./middleware/mwAuth.js.js');
+const mwAuth = (process.env.PROD || process.env.TESTING) ?  require('./middleware/mwAuth.js') : require('../../middleware/mwAuth');
 app.use(unless(mwAuth, {path: "/spaces", method: "GET"}, {path: "/users", method: "POST"}, {path: "/token", method: "POST"}));
 
 /** ROUTING **/
