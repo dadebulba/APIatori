@@ -1,13 +1,7 @@
 const mongoose = require('mongoose');
 const controller = require('./groupDataLayerImpl.js');
 
-let config = {}
-if (process.env.PROD || process.env.TESTING) {
-    config = require('../config/default.json');
-}
-else {
-    config = require('../../config/default.json');
-}
+let config = require('../../config/default.json');
 
 const DatalayerAlreadyInitializedError = require("../../errors/datalayerAlreadyInitializedError");
 const DatalayerNotInitializedError = require("../../errors/datalayerNotInitializedError");
