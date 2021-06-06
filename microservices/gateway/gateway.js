@@ -15,14 +15,14 @@ app.use(bodyParser.json());
 const makeApiMiddleware = require("api-express-exporter");
 app.use(makeApiMiddleware({port: 8081}));
 
+const SPACES_BASE = config.spacesEndpoint;
+const USERS_BASE =  config.usersEndpoint;
+const GROUPS_BASE = config.groupsEndpoint;
+const TOKEN_BASE =  config.tokenEndpoint;
 const SPACES_PORT = config.spacesPort;
 const GROUPS_PORT = config.groupsPort;
 const USERS_PORT =  config.usersPort;
 const TOKEN_PORT =  config.tokenPort;
-const SPACES_BASE = config.spacesEndpoint;
-const GROUPS_BASE = config.groupsEndpoint;
-const USERS_BASE =  config.usersEndpoint;
-const TOKEN_BASE =  config.tokenEndpoint;
 const PORT = config.gatewayPort;
 
 let SPACES_ENDPOINT = "";
@@ -30,10 +30,10 @@ let GROUPS_ENDPOINT = "";
 let USERS_ENDPOINT = "";
 let TOKEN_ENDPOINT = "";
 if (process.env.TESTING) {
-  SPACES_ENDPOINT = `${SPACES_BASE}:1${SPACES_PORT}`;
-  GROUPS_ENDPOINT = `${GROUPS_BASE}:1${GROUPS_PORT}`;
-  USERS_ENDPOINT = `${USERS_BASE}:1${USERS_PORT}`;
-  TOKEN_ENDPOINT = `${TOKEN_BASE}:1${TOKEN_PORT}`; 
+  SPACES_ENDPOINT = `${SPACES_BASE}-test:1${SPACES_PORT}`;
+  GROUPS_ENDPOINT = `${GROUPS_BASE}-test:1${GROUPS_PORT}`;
+  USERS_ENDPOINT = `${USERS_BASE}-test:1${USERS_PORT}`;
+  TOKEN_ENDPOINT = `${TOKEN_BASE}-test:1${TOKEN_PORT}`; 
 } else{
   SPACES_ENDPOINT = `${SPACES_BASE}:${SPACES_PORT}`;
   GROUPS_ENDPOINT = `${GROUPS_BASE}:${GROUPS_PORT}`;
