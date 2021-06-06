@@ -20,5 +20,5 @@
     "tokenEndpoint":"http://auth",
     
     "mongo_URL": "mongodb://apiatori:apiatori@mongodb:27017",
-    "mongo_URL_TEST": "mongodb://apiatori:apiatori@mongodb_test:27018"
+    "mongo_URL_TEST": "mongodb://apiatori:apiatori@mongodb-test:27018"
 }
