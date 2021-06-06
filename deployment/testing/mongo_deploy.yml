@@ -43,7 +43,7 @@ spec:
   storageClassName: standard
   accessModes:
     - ReadOnlyMany
-  host_path:
+  hostPath:
     path: /home/eval/apiatori-mongodb-volume
     type: FileOrCreate
 ---
