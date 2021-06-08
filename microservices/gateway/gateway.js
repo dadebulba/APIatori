@@ -12,8 +12,6 @@ else {
 const app = express();
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
-const makeApiMiddleware = require("api-express-exporter");
-app.use(makeApiMiddleware({port: 8081}));
 
 const SPACES_PORT = config.spacesPort;
 const GROUPS_PORT = config.groupsPort;
